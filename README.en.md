@@ -1,22 +1,31 @@
 # global_resource_tool
 
 #### Description
-{**When you're done, you can delete the content in this README and update the file with details for others getting started with your repository**}
+OpenHarmony resource compile tool
 
 #### Software Architecture
-Software architecture description
+>developtools/   
+>>----global_resource_tool
+>>>----include  
+>>>----src
+>>>----third_party denpence third patry lib make script
+>>>----CMakeLists.txt
+>>>----win32.cmake windows cross compile script
 
 #### Installation
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1.  gcc/g++ version 9.3.0
+2.  cmake version mini 3.15
+3.  mkdir build
+4.  cd build
+5.  cmake ../restool_standard
+6.  make
+7.  compile result restool binary
 
 #### Instructions
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1.  restool -v show version.
+2.  restool show help.
 
 #### Contribution
 

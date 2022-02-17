@@ -1,25 +1,32 @@
 # global_resource_tool
 
 #### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+OpenHarmony 资源编译编译工具
 
 #### 软件架构
-软件架构说明
+>developtools/   
+>>----global_resource_tool
+>>>----include  
+>>>----src
+>>>----third_party 依赖三方库编译脚本
+>>>----CMakeLists.txt
+>>>----win32.cmake windows交叉编译脚本  
 
 
 #### 安装教程
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1.  编译环境gcc/g++ 9.3.0
+2.  cmake 版本最低3.15
+3.  与global_resource_tool同级目录新建build
+4.  cd build
+5.  cmake ../global_resource_tool
+6.  make
+7.  编译结果输出restool
 
 #### 使用说明
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1.  restool -v 显示版本信息
+2.  restool 显示帮助信息
 
 #### 参与贡献
 
