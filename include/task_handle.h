@@ -21,7 +21,6 @@
 namespace OHOS {
 namespace Global {
 namespace Restool {
-
 class TaskHandle {
 public:
     TaskHandle() {};

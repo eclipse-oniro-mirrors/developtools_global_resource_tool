@@ -16,8 +16,8 @@
 #include "header.h"
 #include<algorithm>
 #include<fstream>
-#include<iostream>
 #include<iomanip>
+#include<iostream>
 
 namespace OHOS {
 namespace Global {

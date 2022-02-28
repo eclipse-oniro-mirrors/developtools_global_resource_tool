@@ -173,11 +173,11 @@ uint32_t IdWorker::InitIdDefined()
     string idDefinedPath;
     if (type_ == ResourceIdCluster::RES_ID_SYS) {
         for (const auto &inputPath : packageParser.GetInputs()) {
-           idDefinedPath = filesystem::path(inputPath).append(RESOURCES_DIR)
-               .append("base").append("element").append(ID_DEFINED_FILE).string();
-           if (InitIdDefined(idDefinedPath) != RESTOOL_SUCCESS) {
-               return RESTOOL_ERROR;
-           }
+            idDefinedPath = filesystem::path(inputPath).append(RESOURCES_DIR)
+                .append("base").append("element").append(ID_DEFINED_FILE).string();
+            if (InitIdDefined(idDefinedPath) != RESTOOL_SUCCESS) {
+                return RESTOOL_ERROR;
+            }
         }
         return RESTOOL_SUCCESS;
     }

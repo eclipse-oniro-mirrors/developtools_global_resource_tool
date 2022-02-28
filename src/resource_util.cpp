@@ -34,7 +34,7 @@ const map<string, ResourceUtil::IgnoreType> ResourceUtil::IGNORE_FILE_REGEX = {
     { "desktop\\.ini", IgnoreType::IGNORE_ALL },
     { "picasa\\.ini", IgnoreType::IGNORE_ALL },
     { "\\..+", IgnoreType::IGNORE_ALL },
-    { "_.+",IgnoreType::IGNORE_DIR },
+    { "_.+", IgnoreType::IGNORE_DIR },
     { "cvs", IgnoreType::IGNORE_ALL },
     { "thumbs\\.db", IgnoreType::IGNORE_ALL },
     { ".+~", IgnoreType::IGNORE_ALL }
@@ -88,7 +88,7 @@ bool ResourceUtil::OpenJsonFile(const string &path, Json::Value &root)
     readBuilder["collectComments"] = false;
     readBuilder["failIfExtra"] = true;
     JSONCPP_STRING errs;
-    if(!parseFromStream(readBuilder, ifs, &root, &errs)) {
+    if (!parseFromStream(readBuilder, ifs, &root, &errs)) {
         cerr << "Error: parseFromStream '" << path;
         cerr << "\n" << errs << endl;
         ifs.close();
@@ -144,7 +144,7 @@ string ResourceUtil::ResTypeToString(ResType type)
 string ResourceUtil::GetIdName(const string &name, ResType type)
 {
     if (type != ResType::MEDIA && type != ResType::LAYOUT && type != ResType::PROF &&
-        type != ResType::ANIMATION && type != ResType::GRAPHIC ) {
+        type != ResType::ANIMATION && type != ResType::GRAPHIC) {
         return name;
     }
 

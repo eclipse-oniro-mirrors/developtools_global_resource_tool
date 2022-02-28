@@ -24,35 +24,35 @@ namespace Global {
 namespace Restool {
 using namespace std;
 const map<string, ResType> ReferenceParser::ID_REFS = {
-   { "^\\$id:", ResType::ID },
-   { "^\\$boolean:", ResType::BOOLEAN },
-   { "^\\$color:", ResType::COLOR },
-   { "^\\$float:", ResType::FLOAT },
-   { "^\\$media:", ResType::MEDIA },
-   { "^\\$profile:", ResType::PROF },
-   { "^\\$integer:", ResType::INTEGER },
-   { "^\\$string:", ResType::STRING },
-   { "^\\$layout:", ResType::LAYOUT },
-   { "^\\$pattern:", ResType::PATTERN },
-   { "^\\$plural:", ResType::PLURAL },
-   { "^\\$graphic:", ResType::GRAPHIC },
-   { "^\\$theme:", ResType::THEME }
+    { "^\\$id:", ResType::ID },
+    { "^\\$boolean:", ResType::BOOLEAN },
+    { "^\\$color:", ResType::COLOR },
+    { "^\\$float:", ResType::FLOAT },
+    { "^\\$media:", ResType::MEDIA },
+    { "^\\$profile:", ResType::PROF },
+    { "^\\$integer:", ResType::INTEGER },
+    { "^\\$string:", ResType::STRING },
+    { "^\\$layout:", ResType::LAYOUT },
+    { "^\\$pattern:", ResType::PATTERN },
+    { "^\\$plural:", ResType::PLURAL },
+    { "^\\$graphic:", ResType::GRAPHIC },
+    { "^\\$theme:", ResType::THEME }
 };
 
 const map<string, ResType> ReferenceParser::ID_OHOS_REFS = {
-   { "^\\$ohos:id:", ResType::ID },
-   { "^\\$ohos:boolean:", ResType::BOOLEAN },
-   { "^\\$ohos:color:", ResType::COLOR },
-   { "^\\$ohos:float:", ResType::FLOAT },
-   { "^\\$ohos:media:", ResType::MEDIA },
-   { "^\\$ohos:profile:", ResType::PROF },
-   { "^\\$ohos:integer:", ResType::INTEGER },
-   { "^\\$ohos:string:", ResType::STRING },
-   { "^\\$ohos:layout:", ResType::LAYOUT },
-   { "^\\$ohos:pattern:", ResType::PATTERN },
-   { "^\\$ohos:plural:", ResType::PLURAL },
-   { "^\\$ohos:graphic:", ResType::GRAPHIC },
-   { "^\\$ohos:theme:", ResType::THEME }
+    { "^\\$ohos:id:", ResType::ID },
+    { "^\\$ohos:boolean:", ResType::BOOLEAN },
+    { "^\\$ohos:color:", ResType::COLOR },
+    { "^\\$ohos:float:", ResType::FLOAT },
+    { "^\\$ohos:media:", ResType::MEDIA },
+    { "^\\$ohos:profile:", ResType::PROF },
+    { "^\\$ohos:integer:", ResType::INTEGER },
+    { "^\\$ohos:string:", ResType::STRING },
+    { "^\\$ohos:layout:", ResType::LAYOUT },
+    { "^\\$ohos:pattern:", ResType::PATTERN },
+    { "^\\$ohos:plural:", ResType::PLURAL },
+    { "^\\$ohos:graphic:", ResType::GRAPHIC },
+    { "^\\$ohos:theme:", ResType::THEME }
 };
 
 ReferenceParser::ReferenceParser() : idWorker_(IdWorker::GetInstance())
@@ -75,7 +75,7 @@ uint32_t ReferenceParser::ParseRefInSolidXml(const vector<string> &solidXmlFolde
         XmlKeyNode xmlKeyNode;
         if (!xmlKeyNode.LoadFromFile(filePath, [this](auto &key) -> bool {
             return ParseRefString(key);
-        })) {
+            })) {
             return RESTOOL_ERROR;
         }
 
@@ -103,10 +103,10 @@ uint32_t ReferenceParser::ParseRefInElement(map<int32_t, vector<ResourceItem>> &
 
 uint32_t ReferenceParser::ParseRefInString(string &value, bool &update) const
 {
-   if (ParseRefString(value, update)) {
-       return RESTOOL_SUCCESS;
-   }
-   return RESTOOL_ERROR;
+    if (ParseRefString(value, update)) {
+        return RESTOOL_SUCCESS;
+    }
+    return RESTOOL_ERROR;
 }
 
 uint32_t ReferenceParser::ParseRefInProfile(const string &output) const
@@ -156,7 +156,7 @@ bool ReferenceParser::ParseRefResourceItem(ResourceItem &resourceItem) const
     string data;
     bool update = false;
     if (IsStringOfResourceItem(resType)) {
-        data= string(reinterpret_cast<const char *>(resourceItem.GetData()), resourceItem.GetDataLength());
+        data = string(reinterpret_cast<const char *>(resourceItem.GetData()), resourceItem.GetDataLength());
         if (!ParseRefString(data, update)) {
             cerr << "Error: in " << resourceItem.GetFilePath() << endl;
             return false;

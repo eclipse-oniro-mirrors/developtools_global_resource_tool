@@ -76,7 +76,7 @@ uint32_t JsonCompiler::CompileSingleFile(const FileInfo &fileInfo)
     return RESTOOL_SUCCESS;
 }
 
-//below private
+// below private
 void JsonCompiler::InitParser()
 {
     using namespace placeholders;
@@ -169,12 +169,12 @@ bool JsonCompiler::HandleBoolean(const Json::Value &objectNode, ResourceItem &re
 {
     Json::Value valueNode = objectNode[TAG_VALUE];
     if (valueNode.isString()) {
-       regex ref("^\\$boolean:.*");
-       if (!regex_match(valueNode.asString(), ref)) {
-           cerr << "Error: '" << valueNode.asString() << "' only refer '$boolean:xxx',";
-           cerr << resourceItem.GetFilePath() << endl;
-           return false;
-       }
+        regex ref("^\\$boolean:.*");
+        if (!regex_match(valueNode.asString(), ref)) {
+            cerr << "Error: '" << valueNode.asString() << "' only refer '$boolean:xxx',";
+            cerr << resourceItem.GetFilePath() << endl;
+            return false;
+        }
     } else if (!valueNode.isBool()) {
         cerr << "Error: '" << resourceItem.GetName() << "' value not boolean," << resourceItem.GetFilePath() << endl;
         return false;

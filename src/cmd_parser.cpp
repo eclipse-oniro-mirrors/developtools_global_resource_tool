@@ -302,7 +302,7 @@ uint32_t PackageParser::ParseCommand(int argc, char *argv[])
     restoolPath_ = string(argv[0]);
     while (true) {
         int optIndex = 0;
-        int c = getopt_long(argc, argv, CMD_PARAMS.c_str(), CMD_OPTS,&optIndex);
+        int c = getopt_long(argc, argv, CMD_PARAMS.c_str(), CMD_OPTS, &optIndex);
         if (c == -1) {
             break;
         }

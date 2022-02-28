@@ -16,8 +16,8 @@
 #include "generic_compiler.h"
 #include<filesystem>
 #include<iostream>
-#include "restool_errors.h"
 #include "resource_util.h"
+#include "restool_errors.h"
 
 namespace OHOS {
 namespace Global {

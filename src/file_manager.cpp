@@ -52,7 +52,7 @@ uint32_t FileManager::ScanIncrement(const string &output)
     return ParseReference(output, sxmlFolders);
 }
 
-//below private founction
+// below private founction
 uint32_t FileManager::ScanModule(const string &input, const string &output,
     map<ResType, vector<DirectoryInfo>> &resTypeOfDirs)
 {

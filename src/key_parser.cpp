@@ -51,7 +51,8 @@ bool KeyParser::Parse(const string &folderName, vector<KeyParam> &keyparams)
     return true;
 }
 
-bool KeyParser::ParseMatch(const vector<string> &keys, vector<KeyParam> &keyparams, const vector<parse_key_founction> &founctions)
+bool KeyParser::ParseMatch(const vector<string> &keys,
+    vector<KeyParam> &keyparams, const vector<parse_key_founction> &founctions)
 {
     size_t next = 0;
     for (const auto &key : keys) {
@@ -71,7 +72,8 @@ bool KeyParser::ParseMatch(const vector<string> &keys, vector<KeyParam> &keypara
     return true;
 }
 
-bool KeyParser::ParseMatchBySeq(const vector<string> &keys, vector<KeyParam> &keyparams, const vector<parse_key_founction> &founctions)
+bool KeyParser::ParseMatchBySeq(const vector<string> &keys,
+    vector<KeyParam> &keyparams, const vector<parse_key_founction> &founctions)
 {
     for (size_t i = 0; i < keys.size(); i++) {
         if (!founctions[i](keys[i], keyparams)) {

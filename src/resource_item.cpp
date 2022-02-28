@@ -31,7 +31,7 @@ ResourceItem::ResourceItem(const ResourceItem &other)
 }
 
 ResourceItem::ResourceItem(const string &name, const vector<KeyParam> &keyparams, ResType type)
-    :data_(nullptr), dataLen_(0), name_(name),keyparams_(keyparams), type_(type)
+    : data_(nullptr), dataLen_(0), name_(name), keyparams_(keyparams), type_(type)
 {
 }
 
@@ -118,7 +118,7 @@ ResourceItem &ResourceItem::operator=(const ResourceItem &other)
     return *this;
 }
 
-//below private founction
+// below private founction
 void ResourceItem::ReleaseData()
 {
     if (data_ != nullptr) {

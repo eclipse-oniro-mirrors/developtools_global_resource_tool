@@ -78,7 +78,7 @@ bool SolidXml::FlushNodeKeys(const string &filePath, map<XmlKeyNode::KeyType, sh
     return SaveToFile(filePath);
 }
 
-//below private
+// below private
 void SolidXml::Compile(const xmlNodePtr nodePtr, shared_ptr<XmlNode> &node)
 {
     if (nodePtr->type == XML_COMMENT_NODE) {
@@ -119,7 +119,7 @@ void SolidXml::CompileAttr(const xmlAttrPtr attrPtr, shared_ptr<XmlNode> &node)
         return;
     }
 
-    xmlChar * xmlValue = xmlNodeListGetString(attrPtr->doc, attrPtr->children, 1);
+    xmlChar *xmlValue = xmlNodeListGetString(attrPtr->doc, attrPtr->children, 1);
     string value(reinterpret_cast<const char *>(xmlValue));
     PretreatmentAttr(value);
     xmlFree(xmlValue);

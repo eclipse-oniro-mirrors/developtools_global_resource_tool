@@ -45,12 +45,12 @@ const map<string, string> ConfigParser::JSON_ARRAY_IDS = {
 bool ConfigParser::useModule_ = false;
 
 ConfigParser::ConfigParser()
-    : filePath_("") ,packageName_("") ,moduleName_(""), moduleType_(ModuleType::NONE)
+    : filePath_(""), packageName_(""), moduleName_(""), moduleType_(ModuleType::NONE)
 {
 }
 
 ConfigParser::ConfigParser(const string &filePath)
-    : filePath_(filePath) ,packageName_("") ,moduleName_(""), moduleType_(ModuleType::NONE)
+    : filePath_(filePath), packageName_(""), moduleName_(""), moduleType_(ModuleType::NONE)
 {
 }
 

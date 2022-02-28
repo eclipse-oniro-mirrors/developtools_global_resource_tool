@@ -56,7 +56,7 @@ bool XmlKeyNode::SaveToFile(const string &filePath) const
     }
 
     vector<pair<string, int32_t>> sets(keyMap_.begin(), keyMap_.end());
-    sort(sets.begin(), sets.end(),[](const auto &a, const auto &b) {
+    sort(sets.begin(), sets.end(), [](const auto &a, const auto &b) {
         return a.second < b.second;
     });
 

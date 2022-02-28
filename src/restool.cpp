@@ -19,7 +19,8 @@
 using namespace std;
 using namespace OHOS::Global::Restool;
 
-uint32_t ProccssHap(PackageParser &packageParser) {
+uint32_t ProccssHap(PackageParser &packageParser)
+{
     TaskHandle taskHandle;
     return taskHandle.HandlePackage(packageParser);
 }

@@ -28,8 +28,10 @@ public:
 
 private:
     typedef bool (*parse_key_founction)(const std::string &folderName, std::vector<KeyParam> &keyparams);
-    static bool ParseMatch(const std::vector<std::string> &keys, std::vector<KeyParam> &keyparams, const std::vector<parse_key_founction> &founctions);
-    static bool ParseMatchBySeq(const std::vector<std::string> &keys, std::vector<KeyParam> &keyparams, const std::vector<parse_key_founction> &founctions);
+    static bool ParseMatch(const std::vector<std::string> &keys,
+        std::vector<KeyParam> &keyparams, const std::vector<parse_key_founction> &founctions);
+    static bool ParseMatchBySeq(const std::vector<std::string> &keys,
+        std::vector<KeyParam> &keyparams, const std::vector<parse_key_founction> &founctions);
 
     static bool ParseMccMnc(const std::string &folderName, std::vector<KeyParam> &keyparams);
     static bool ParseMcc(const std::string &folderName, std::vector<KeyParam> &keyparams);
