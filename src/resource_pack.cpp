@@ -71,7 +71,7 @@ uint32_t ResourcePack::Package()
     return RESTOOL_SUCCESS;
 }
 
-//below private founction
+// below private founction
 uint32_t ResourcePack::Init()
 {
     InitHeaderCreater();
@@ -185,7 +185,7 @@ uint32_t ResourcePack::InitConfigJson()
 {
     string config = packageParser_.GetConfig();
     if (config.empty()) {
-        if( packageParser_.GetInputs().size() > 1) {
+        if (packageParser_.GetInputs().size() > 1) {
             cerr << "Error: more input path, -j config.json empty" << endl;
             return RESTOOL_ERROR;
         }
@@ -234,8 +234,7 @@ uint32_t ResourcePack::GenerateCplusHeader(const string &headerPath) const
         buffer << "#define RESOURCE_TABLE_H\n\n";
         buffer << "#include<stdint.h>\n\n";
         buffer << "namespace OHOS {\n";
-    },
-    [](stringstream &buffer, const IdWorker::ResourceId& resourceId) {
+    }, [](stringstream &buffer, const IdWorker::ResourceId& resourceId) {
         string name = resourceId.type + "_" + resourceId.name;
         transform(name.begin(), name.end(), name.begin(), ::toupper);
         buffer << "const int32_t " << name << " = ";
@@ -254,8 +253,7 @@ uint32_t ResourcePack::GenerateJsHeader(const std::string &headerPath) const
     uint32_t result = JsHeader.Create([](stringstream &buffer) {
         buffer << Header::LICENSE_HEADER << "\n";
         buffer << "export default {\n";
-    },
-    [&itemType](stringstream &buffer, const IdWorker::ResourceId& resourceId) {
+    }, [&itemType](stringstream &buffer, const IdWorker::ResourceId& resourceId) {
         if (itemType != resourceId.type) {
             if (!itemType.empty()) {
                 buffer << "\n" << "    " << "},\n";

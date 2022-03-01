@@ -15,10 +15,10 @@
 
 #include "resource_table.h"
 #include <filesystem>
-#include "securec.h"
 #include "cmd_parser.h"
 #include "file_manager.h"
 #include "resource_util.h"
+#include "securec.h"
 
 namespace OHOS {
 namespace Global {
