@@ -1,4 +1,4 @@
-# gloRelated to the storehousebal_resource_tool
+# global_resource_tool
 
 #### Description
 OpenHarmony resource compile tool
