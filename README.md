@@ -1,29 +1,31 @@
 # global_resource_tool
 
-#### 介绍
-OpenHarmony 资源编译编译工具
+#### Description
+OpenHarmony resource compile tool
 
-#### 软件架构
+#### Directory Structure
 >developtools/   
 >>----global_resource_tool
 >>>----include  
 >>>----src  
->>>----third_party 依赖三方库编译脚本  
+>>>----third_party dependence third patry lib make script  
 >>>----CMakeLists.txt  
->>>----win32.cmake windows交叉编译脚本  
+>>>----win32.cmake windows cross compile script
 
+#### Instructions
 
-#### 安装教程
-
-1.  编译环境gcc/g++ 9.3.0
-2.  cmake 版本最低3.15
-3.  与global_resource_tool同级目录新建build
+1.  gcc/g++ version 9.3.0 required
+2.  cmake version mini 3.15 required
+3.  mkdir build
 4.  cd build
-5.  cmake ../global_resource_tool
+5.  cmake ../restool_standard
 6.  make
-7.  编译结果输出restool
+7.  compile result restool binary
 
-#### 使用说明
+####  Related to the storehouse
 
-1.  restool -v 显示版本信息
-2.  restool 显示帮助信息
+third_party_libxml2  
+third_party_jsoncpp  
+third_party_sqlite  
+third_party_bounds_checking_function
+
