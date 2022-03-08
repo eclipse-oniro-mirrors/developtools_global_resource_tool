@@ -39,6 +39,8 @@ run ./restool, show command:
 -r resource ID header file path  
 -p package name  
 
+./restool -i main -o out -r out/ResourceTable.h -p ohos.demo  
+
 using IDE(recommonded)
 ##  Related to the storehouse
 

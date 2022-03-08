@@ -39,7 +39,9 @@
 -r 资源ID头文件  
 -p 应用包名  
 
-复杂场景推荐使用IDE 工具。  
+./restool -i main -o out -r out/ResourceTable.h -p ohos.demo  
+
+推荐使用IDE工具。  
 
 ## 相关仓
 
