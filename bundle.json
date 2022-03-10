@@ -1,0 +1,34 @@
+{
+    "name": "@ohos/restool",
+    "description": "OpenHarmony resource compile.",
+    "version": "3.1",
+    "license": "Apache License 2.0",
+    "pubiishAs": "code-segment",
+    "segment": {
+      "destPath": "developtools/global_resource_tool"
+    },
+    "dirs": {},
+    "scripts": {},
+    "component": {
+      "name": "restool",
+      "subsystem": "developtools",
+      "syscap": [],
+      "feature": [],
+      "adapted_system_type": ["mini", "small", "standard" ],
+      "deps": {
+        "components": [],
+        "third_party": [
+          "bounds_checking_function",
+          "libxml2",
+          "jsoncpp",
+          "sqlite"
+        ]
+      },
+      "build": {
+        "sub_component": [ "//developtools/global_resource_tool:restool" ],
+        "inner_kits": [],
+        "test": []
+      }
+    }
+  }
+  

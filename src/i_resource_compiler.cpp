@@ -14,8 +14,9 @@
  */
 
 #include "i_resource_compiler.h"
-#include <filesystem>
+#include <algorithm>
 #include <iostream>
+#include "file_entry.h"
 #include "id_worker.h"
 #include "resource_util.h"
 #include "restool_errors.h"
@@ -43,17 +44,21 @@ uint32_t IResourceCompiler::Compile(const vector<DirectoryInfo> &directoryInfos)
     map<string, vector<FileInfo>> setsByDirectory;
     for (const auto &directoryInfo : directoryInfos) {
         string outputFolder = GetOutputFolder(directoryInfo);
-        for (const auto &it : filesystem::directory_iterator(directoryInfo.dirPath)) {
-            if (ResourceUtil::IsIgnoreFile(it.path().filename().string(), it.status().type())) {
+        FileEntry f(directoryInfo.dirPath);
+        if (!f.Init()) {
+            return RESTOOL_ERROR;
+        }
+        for (const auto &it : f.GetChilds()) {
+            if (ResourceUtil::IsIgnoreFile(it->GetFilePath().GetFilename(), it->IsFile())) {
                 continue;
             }
 
-            if (it.is_directory()) {
-                cout << "Error: '" << it.path().string() << "' not regular." << endl;
+            if (!it->IsFile()) {
+                cout << "Error: '" << it->GetFilePath().GetPath() << "' not regular." << endl;
                 return RESTOOL_ERROR;
             }
 
-            FileInfo fileInfo = { directoryInfo, it.path().string(), it.path().filename().string() };
+            FileInfo fileInfo = { directoryInfo, it->GetFilePath().GetPath(), it->GetFilePath().GetFilename() };
             fileInfos.push_back(fileInfo);
             setsByDirectory[outputFolder].push_back(fileInfo);
         }
@@ -63,6 +68,7 @@ uint32_t IResourceCompiler::Compile(const vector<DirectoryInfo> &directoryInfos)
         return a.filePath < b.filePath;
     });
     for (const auto &fileInfo : fileInfos) {
+        cout << "compile " << fileInfo.filePath << endl;
         if (CompileSingleFile(fileInfo) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }
@@ -93,8 +99,8 @@ uint32_t IResourceCompiler::Compile(const FileInfo &fileInfo)
     }
     map<string, vector<FileInfo>> setsByDirectory;
     if (NeedIfConvertToSolidXml()) {
-        string outputFolder = filesystem::path(output_).append(RESOURCES_DIR)
-            .append(fileInfo.limitKey).append(fileInfo.fileCluster).string();
+        string outputFolder = FileEntry::FilePath(output_).Append(RESOURCES_DIR)
+            .Append(fileInfo.limitKey).Append(fileInfo.fileCluster).GetPath();
         setsByDirectory[outputFolder].push_back(fileInfo);
     }
 
@@ -201,7 +207,7 @@ void IResourceCompiler::ListXmlFile(const vector<FileInfo> &fileInfos, vector<st
 
 bool IResourceCompiler::IsXmlFile(const FileInfo &fileInfo) const
 {
-    if (filesystem::path(fileInfo.filePath).extension() != ".xml") {
+    if (FileEntry::FilePath(fileInfo.filePath).GetExtension() != ".xml") {
         return false;
     }
     return true;
@@ -209,8 +215,8 @@ bool IResourceCompiler::IsXmlFile(const FileInfo &fileInfo) const
 
 bool IResourceCompiler::HasConvertedToSolidXml(const FileInfo &fileInfo) const
 {
-    string solidXmlPath = filesystem::path(output_).append(RESOURCES_DIR).append(fileInfo.limitKey)
-        .append(fileInfo.fileCluster).append(fileInfo.filename).replace_extension(".sxml").string();
+    string solidXmlPath = FileEntry::FilePath(output_).Append(RESOURCES_DIR).Append(fileInfo.limitKey)
+        .Append(fileInfo.fileCluster).Append(fileInfo.filename).ReplaceExtension(".sxml").GetPath();
     if (ResourceUtil::FileExist(solidXmlPath)) {
         return true;
     }
@@ -224,8 +230,8 @@ bool IResourceCompiler::NeedIfConvertToSolidXml() const
 
 string IResourceCompiler::GetOutputFolder(const DirectoryInfo &directoryInfo) const
 {
-    string outputFolder = filesystem::path(output_).append(RESOURCES_DIR)
-        .append(directoryInfo.limitKey).append(directoryInfo.fileCluster).string();
+    string outputFolder = FileEntry::FilePath(output_).Append(RESOURCES_DIR)
+        .Append(directoryInfo.limitKey).Append(directoryInfo.fileCluster).GetPath();
     return outputFolder;
 }
 }

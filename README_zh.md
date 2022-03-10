@@ -10,22 +10,37 @@
 |----global_resource_tool
 |    |----include  
 |    |----src  
-|    |----third_party 依赖三方库编译脚本  
+|    |----test  
+|    |----build 依赖三方库编译脚本  
+|    |----BUILD.gn  
 |    |----CMakeLists.txt  
 |    |----win32.cmake windows交叉编译脚本  
 ```
 
 ## 使用说明
 
-### 代码编译命令
+### 快速调试编译
 
-1.  编译环境gcc/g++ 9.3.0
-2.  cmake 版本最低3.15
-3.  与global_resource_tool同级目录新建build
-4.  cd build
-5.  cmake ../global_resource_tool
-6.  make
-7.  编译结果输出restool
+1.  ubuntu 18 系统预装 gcc/g++  
+2.  cmake 版本最低3.15  
+3.  与global_resource_tool同级目录新建build  
+4.  cd build  
+5.  cmake ../global_resource_tool  
+6.  make  
+7.  编译结果输出restool  
+
+### SDK编译命令
+
+1.  ./build.sh --product-nane ohos-sdk  
+
+SDK 编译参考https://gitee.com/openharmony/build/blob/master/README_zh.md 仓编译sdk说明。  
+
+### 测试用例
+
+1.PC 上运行 python test/test.py 参数1  参数2  
+
+参数1  restool 命令路径  
+参数2  输出结果路径  
 
 ### 命令帮助
 

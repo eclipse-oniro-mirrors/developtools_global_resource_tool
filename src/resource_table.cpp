@@ -14,8 +14,8 @@
  */
 
 #include "resource_table.h"
-#include <filesystem>
 #include "cmd_parser.h"
+#include "file_entry.h"
 #include "file_manager.h"
 #include "resource_util.h"
 #include "securec.h"
@@ -28,7 +28,7 @@ ResourceTable::ResourceTable()
 {
     auto &parser =CmdParser<PackageParser>::GetInstance();
     auto &packageParser = parser.GetCmdParser();
-    indexFilePath_ = filesystem::path(packageParser.GetOutput()).append(RESOURCE_INDEX_FILE).string();
+    indexFilePath_ = FileEntry::FilePath(packageParser.GetOutput()).Append(RESOURCE_INDEX_FILE).GetPath();
 }
 
 ResourceTable::~ResourceTable()

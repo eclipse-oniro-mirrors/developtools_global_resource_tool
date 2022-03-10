@@ -14,7 +14,7 @@
  */
 
 #include "key_manager.h"
-#include<filesystem>
+#include "file_entry.h"
 #include "resource_util.h"
 
 namespace OHOS {
@@ -32,7 +32,7 @@ KeyManager::KeyManager()
 bool KeyManager::LoadKey(const string &keysPath)
 {
     for (auto &key : keys_) {
-        string keyPath = filesystem::path(keysPath).append(XmlKeyNode::KEY_TO_FILE_NAME.at(key.first)).string();
+        string keyPath = FileEntry::FilePath(keysPath).Append(XmlKeyNode::KEY_TO_FILE_NAME.at(key.first)).GetPath();
         if (!ResourceUtil::FileExist(keyPath)) {
             continue;
         }
@@ -46,7 +46,7 @@ bool KeyManager::LoadKey(const string &keysPath)
 bool KeyManager::SaveKey(const string &keysPath)
 {
     for (const auto &iter : keys_) {
-        string keyPath = filesystem::path(keysPath).append(XmlKeyNode::KEY_TO_FILE_NAME.at(iter.first)).string();
+        string keyPath = FileEntry::FilePath(keysPath).Append(XmlKeyNode::KEY_TO_FILE_NAME.at(iter.first)).GetPath();
         if (!iter.second->SaveToFile(keyPath)) {
             return false;
         }

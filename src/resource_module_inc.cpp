@@ -14,9 +14,9 @@
  */
 
 #include "resource_module_inc.h"
-#include<filesystem>
 #include<iostream>
 #include "factory_resource_compiler.h"
+#include "file_entry.h"
 #include "increment_index.h"
 #include "restool_errors.h"
 
@@ -38,19 +38,19 @@ uint32_t ResourceModuleInc::ScanResource(const vector<IncrementList::FileIncreme
         if (fileIncrement.dirType == ResType::ELEMENT) {
             continue;
         }
-        string filePathDel = filesystem::path(moduleOutput_).append(RESOURCES_DIR)
-            .append(fileIncrement.limitKey).append(fileIncrement.fileCluster).append(fileIncrement.filename).string();
+        string filePathDel = FileEntry::FilePath(moduleOutput_).Append(RESOURCES_DIR)
+            .Append(fileIncrement.limitKey).Append(fileIncrement.fileCluster).Append(fileIncrement.filename).GetPath();
         if (ResourceUtil::NeedConverToSolidXml(fileIncrement.dirType) &&
-            filesystem::path(filePathDel).extension().string() == ".xml") {
-            filePathDel = filesystem::path(filePathDel).replace_extension(".sxml").string();
+            FileEntry::FilePath(filePathDel).GetExtension() == ".xml") {
+            filePathDel = FileEntry::FilePath(filePathDel).ReplaceExtension(".sxml").GetPath();
         }
-        if (!filesystem::remove(filePathDel)) {
+        if (remove(filePathDel.c_str()) != 0) {
             cerr << "Error: delete '" << filePathDel << "' fail" << endl;
             return RESTOOL_ERROR;
         }
     }
 
-    string indexPath = filesystem::path(moduleOutput_).append(IncrementIndex::INDEX_FILE).string();
+    string indexPath = FileEntry::FilePath(moduleOutput_).Append(IncrementIndex::INDEX_FILE).GetPath();
     IncrementIndex moduleIndex(indexPath, folder_);
     moduleIndex.SetSkipPaths(skips);
     if (!moduleIndex.Load(owner_)) {
@@ -74,7 +74,7 @@ uint32_t ResourceModuleInc::ScanResource(const vector<IncrementList::FileIncreme
 
 uint32_t ResourceModuleInc::SaveIndex() const
 {
-    string indexPath = filesystem::path(moduleOutput_).append(IncrementIndex::INDEX_FILE).string();
+    string indexPath = FileEntry::FilePath(moduleOutput_).Append(IncrementIndex::INDEX_FILE).GetPath();
     IncrementIndex moduleIndex(indexPath, folder_);
     if (!moduleIndex.Save(owner_)) {
         return RESTOOL_ERROR;

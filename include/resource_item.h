@@ -35,7 +35,7 @@ public:
     void SetLimitKey(const std::string &limitKey);
 
     const int8_t *GetData() const;
-    const uint32_t GetDataLength() const;
+    uint32_t GetDataLength() const;
     const std::string &GetName() const;
     const ResType &GetResType() const;
     const std::vector<KeyParam> &GetKeyParam() const;

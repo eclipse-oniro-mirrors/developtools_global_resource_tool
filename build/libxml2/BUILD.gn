@@ -1,0 +1,143 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import("//build/ohos.gni")
+LIBXML_PATH = "//third_party/libxml2"
+
+config("restool_libxml2_config") {
+    include_dirs = []
+    if (is_mingw) {
+        include_dirs += [ 
+          "//developtools/global_resource_tool/build/libxml2/win32/include"
+        ]
+        defines = [ "LIBXML_STATIC"]
+    } else {
+        include_dirs += [ 
+          "${LIBXML_PATH}/config"
+        ]
+    }
+
+    include_dirs += [
+        "${LIBXML_PATH}/include"
+    ]
+
+    cflags_cc = [
+      "-std=c++17"
+    ]
+
+    cflags_c = [
+      "-Wno-implicit-fallthrough",
+      "-Wno-implicit-function-declaration",
+      "-Wno-int-conversion"
+    ]
+}
+
+ohos_static_library("restool_libxml2") {
+  sources = [
+    "${LIBXML_PATH}/DOCBparser.c",
+    "${LIBXML_PATH}/HTMLparser.c",
+    "${LIBXML_PATH}/HTMLtree.c",
+    "${LIBXML_PATH}/SAX.c",
+    "${LIBXML_PATH}/SAX2.c",
+    "${LIBXML_PATH}/buf.c",
+    "${LIBXML_PATH}/c14n.c",
+    "${LIBXML_PATH}/catalog.c",
+    "${LIBXML_PATH}/chvalid.c",
+    "${LIBXML_PATH}/debugXML.c",
+    "${LIBXML_PATH}/dict.c",
+    "${LIBXML_PATH}/encoding.c",
+    "${LIBXML_PATH}/entities.c",
+    "${LIBXML_PATH}/error.c",
+    "${LIBXML_PATH}/globals.c",
+    "${LIBXML_PATH}/hash.c",
+    "${LIBXML_PATH}/include/libxml/DOCBparser.h",
+    "${LIBXML_PATH}/include/libxml/HTMLparser.h",
+    "${LIBXML_PATH}/include/libxml/HTMLtree.h",
+    "${LIBXML_PATH}/include/libxml/SAX.h",
+    "${LIBXML_PATH}/include/libxml/SAX2.h",
+    "${LIBXML_PATH}/include/libxml/c14n.h",
+    "${LIBXML_PATH}/include/libxml/catalog.h",
+    "${LIBXML_PATH}/include/libxml/chvalid.h",
+    "${LIBXML_PATH}/include/libxml/debugXML.h",
+    "${LIBXML_PATH}/include/libxml/dict.h",
+    "${LIBXML_PATH}/include/libxml/encoding.h",
+    "${LIBXML_PATH}/include/libxml/entities.h",
+    "${LIBXML_PATH}/include/libxml/globals.h",
+    "${LIBXML_PATH}/include/libxml/hash.h",
+    "${LIBXML_PATH}/include/libxml/list.h",
+    "${LIBXML_PATH}/include/libxml/nanoftp.h",
+    "${LIBXML_PATH}/include/libxml/nanohttp.h",
+    "${LIBXML_PATH}/include/libxml/parser.h",
+    "${LIBXML_PATH}/include/libxml/parserInternals.h",
+    "${LIBXML_PATH}/include/libxml/pattern.h",
+    "${LIBXML_PATH}/include/libxml/relaxng.h",
+    "${LIBXML_PATH}/include/libxml/schemasInternals.h",
+    "${LIBXML_PATH}/include/libxml/schematron.h",
+    "${LIBXML_PATH}/include/libxml/threads.h",
+    "${LIBXML_PATH}/include/libxml/tree.h",
+    "${LIBXML_PATH}/include/libxml/uri.h",
+    "${LIBXML_PATH}/include/libxml/valid.h",
+    "${LIBXML_PATH}/include/libxml/xinclude.h",
+    "${LIBXML_PATH}/include/libxml/xlink.h",
+    "${LIBXML_PATH}/include/libxml/xmlIO.h",
+    "${LIBXML_PATH}/include/libxml/xmlautomata.h",
+    "${LIBXML_PATH}/include/libxml/xmlerror.h",
+    "${LIBXML_PATH}/include/libxml/xmlexports.h",
+    "${LIBXML_PATH}/include/libxml/xmlmemory.h",
+    "${LIBXML_PATH}/include/libxml/xmlmodule.h",
+    "${LIBXML_PATH}/include/libxml/xmlreader.h",
+    "${LIBXML_PATH}/include/libxml/xmlregexp.h",
+    "${LIBXML_PATH}/include/libxml/xmlsave.h",
+    "${LIBXML_PATH}/include/libxml/xmlschemas.h",
+    "${LIBXML_PATH}/include/libxml/xmlschemastypes.h",
+    "${LIBXML_PATH}/include/libxml/xmlstring.h",
+    "${LIBXML_PATH}/include/libxml/xmlunicode.h",
+    "${LIBXML_PATH}/include/libxml/xmlwriter.h",
+    "${LIBXML_PATH}/include/libxml/xpath.h",
+    "${LIBXML_PATH}/include/libxml/xpathInternals.h",
+    "${LIBXML_PATH}/include/libxml/xpointer.h",
+    "${LIBXML_PATH}/legacy.c",
+    "${LIBXML_PATH}/list.c",
+    "${LIBXML_PATH}/nanoftp.c",
+    "${LIBXML_PATH}/nanohttp.c",
+    "${LIBXML_PATH}/parser.c",
+    "${LIBXML_PATH}/parserInternals.c",
+    "${LIBXML_PATH}/pattern.c",
+    "${LIBXML_PATH}/relaxng.c",
+    "${LIBXML_PATH}/schematron.c",
+    "${LIBXML_PATH}/threads.c",
+    "${LIBXML_PATH}/tree.c",
+    "${LIBXML_PATH}/uri.c",
+    "${LIBXML_PATH}/valid.c",
+    "${LIBXML_PATH}/xinclude.c",
+    "${LIBXML_PATH}/xlink.c",
+    "${LIBXML_PATH}/xmlIO.c",
+    "${LIBXML_PATH}/xmlmemory.c",
+    "${LIBXML_PATH}/xmlmodule.c",
+    "${LIBXML_PATH}/xmlreader.c",
+    "${LIBXML_PATH}/xmlregexp.c",
+    "${LIBXML_PATH}/xmlsave.c",
+    "${LIBXML_PATH}/xmlschemas.c",
+    "${LIBXML_PATH}/xmlschemastypes.c",
+    "${LIBXML_PATH}/xmlstring.c",
+    "${LIBXML_PATH}/xmlunicode.c",
+    "${LIBXML_PATH}/xmlwriter.c",
+    "${LIBXML_PATH}/xpath.c",
+    "${LIBXML_PATH}/xpointer.c",
+    "${LIBXML_PATH}/xzlib.c"
+    ]
+
+    public_configs = [ ":restool_libxml2_config" ]
+
+    subsystem_name = "developtools"
+    part_name = "global_restool"
+}

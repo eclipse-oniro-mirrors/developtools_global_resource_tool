@@ -15,8 +15,8 @@
 
 #include "module_combine.h"
 #include<algorithm>
-#include<filesystem>
 #include<iostream>
+#include "file_entry.h"
 #include "key_manager.h"
 #include "resource_util.h"
 #include "solid_xml.h"
@@ -32,7 +32,7 @@ ModuleCombine::ModuleCombine(const string &modulePath, const string &outputPath)
 
 bool ModuleCombine::Combine()
 {
-    string resourceDir = filesystem::path(modulePath_).append(RESOURCES_DIR).string();
+    string resourceDir = FileEntry::FilePath(modulePath_).Append(RESOURCES_DIR).GetPath();
     ResourceDirectory resourceDirectory;
     if (!resourceDirectory.ScanResources(resourceDir, [this](const DirectoryInfo &info) -> bool {
         return CombineDirectory(info);
@@ -45,27 +45,31 @@ bool ModuleCombine::Combine()
 // below private
 bool ModuleCombine::CombineDirectory(const DirectoryInfo &directoryInfo)
 {
-    string outputFolder = filesystem::path(outputPath_).append(RESOURCES_DIR)
-        .append(directoryInfo.limitKey).append(directoryInfo.fileCluster).string();
+    string outputFolder = FileEntry::FilePath(outputPath_).Append(RESOURCES_DIR)
+        .Append(directoryInfo.limitKey).Append(directoryInfo.fileCluster).GetPath();
     if (!ResourceUtil::CreateDirs(outputFolder)) {
         return false;
     }
 
     map<string, string> sxmlPaths;
-    for (const auto &entry : filesystem::directory_iterator(directoryInfo.dirPath)) {
-        string src = entry.path().string();
-        if (entry.is_directory()) {
+    FileEntry f(directoryInfo.dirPath);
+    if (!f.Init()) {
+        return false;
+    }
+    for (const auto &entry : f.GetChilds()) {
+        string src = entry->GetFilePath().GetPath();
+        if (!entry->IsFile()) {
             cerr << "Error: " << src << " is directory." << endl;
             return false;
         }
 
-        string filename = entry.path().filename().string();
-        string dst = filesystem::path(outputFolder).append(filename).string();
+        string filename = entry->GetFilePath().GetFilename();
+        string dst = FileEntry::FilePath(outputFolder).Append(filename).GetPath();
         if (ResourceUtil::FileExist(dst)) {
             continue;
         }
 
-        if (entry.path().extension().string() == ".sxml") {
+        if (entry->GetFilePath().GetExtension() == ".sxml") {
             sxmlPaths.emplace(src, dst);
             continue;
         }

@@ -63,9 +63,12 @@
                 <filteritem type="filepath" name="projectroot/[a-zA-Z0-9]{20,}.sh" desc="Temp files"/>
                 <filteritem type="filepath" name="src/test/.*" desc="Test files"/>
             </filefilter>
-            <filefilter name="defaultPolicyFilter" desc="Filters for compatibility，license header policies">
+            <filefilter name="defaultPolicyFilter" desc="Filters for compatibility, license header policies">
+                <filteritem type="filename" name="config.h" desc="开源软件libxml2头文件"/>
+                <filteritem type="filename" name="xmlversion.h" desc="开源软件libxml2头文件"/>
             </filefilter>
             <filefilter name="copyrightPolicyFilter" desc="Filters for copyright header policies">
+                <filteritem type="filename" name="config.h" desc="开源软件libxml2头文件"/>
             </filefilter>
             <filefilter name="licenseFileNamePolicyFilter" desc="Filters for LICENSE file policies">
             </filefilter>

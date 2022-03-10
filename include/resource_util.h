@@ -16,7 +16,6 @@
 #ifndef OHOS_RESTOOL_RESOURCE_UTIL_H
 #define OHOS_RESTOOL_RESOURCE_UTIL_H
 
-#include<filesystem>
 #include<vector>
 #include "resource_data.h"
 #include "json/json.h"
@@ -126,9 +125,10 @@ public:
     /**
      * @brief ignore file or directory
      * @param filename: file or directory name
+     * @param isFile: ture if is file, other false
      * @return true if ignore, other false
      */
-    static bool IsIgnoreFile(const std::string &filename, std::filesystem::file_type type);
+    static bool IsIgnoreFile(const std::string &filename, bool isFile);
 
     /**
      * @brief need convert to solid xml
