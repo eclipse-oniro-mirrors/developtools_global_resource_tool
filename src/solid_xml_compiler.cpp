@@ -14,7 +14,6 @@
  */
 
 #include "solid_xml_compiler.h"
-#include<filesystem>
 #include<iostream>
 #include<regex>
 #include "resource_util.h"

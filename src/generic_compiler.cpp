@@ -14,8 +14,8 @@
  */
 
 #include "generic_compiler.h"
-#include<filesystem>
 #include<iostream>
+#include "file_entry.h"
 #include "resource_util.h"
 #include "restool_errors.h"
 
@@ -55,7 +55,7 @@ bool GenericCompiler::PostFile(const FileInfo &fileInfo)
 
     string data = fileInfo.filename;
     if (IsConvertToSolidXml(fileInfo)) {
-        data = filesystem::path(data).replace_extension(".sxml").string();
+        data = FileEntry::FilePath(data).ReplaceExtension(".sxml").GetPath();
     }
     data = moduleName_ + SEPARATOR + RESOURCES_DIR + SEPARATOR + \
         fileInfo.limitKey + SEPARATOR + fileInfo.fileCluster + SEPARATOR + data;
@@ -69,7 +69,7 @@ bool GenericCompiler::PostFile(const FileInfo &fileInfo)
 string GenericCompiler::GetOutputFilePath(const FileInfo &fileInfo) const
 {
     string outputFolder = GetOutputFolder(fileInfo);
-    string outputFilePath = filesystem::path(outputFolder).append(fileInfo.filename).string();
+    string outputFilePath = FileEntry::FilePath(outputFolder).Append(fileInfo.filename).GetPath();
     return outputFilePath;
 }
 

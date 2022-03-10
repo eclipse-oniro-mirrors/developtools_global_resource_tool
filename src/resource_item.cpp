@@ -79,7 +79,7 @@ const int8_t *ResourceItem::GetData() const
     return data_;
 }
 
-const uint32_t ResourceItem::GetDataLength() const
+uint32_t ResourceItem::GetDataLength() const
 {
     return dataLen_;
 }

@@ -16,6 +16,7 @@
 #include "reference_parser.h"
 #include<iostream>
 #include<regex>
+#include "file_entry.h"
 #include "restool_errors.h"
 #include "xml_key_node.h"
 
@@ -66,8 +67,8 @@ ReferenceParser::~ReferenceParser()
 uint32_t ReferenceParser::ParseRefInSolidXml(const vector<string> &solidXmlFolders) const
 {
     for (const auto &solidXmlFolder : solidXmlFolders) {
-        string filePath = filesystem::path(solidXmlFolder)
-            .append(XmlKeyNode::KEY_TO_FILE_NAME.at(XmlKeyNode::KeyType::CONSTANT)).string();
+        string filePath = FileEntry::FilePath(solidXmlFolder)
+            .Append(XmlKeyNode::KEY_TO_FILE_NAME.at(XmlKeyNode::KeyType::CONSTANT)).GetPath();
         if (!ResourceUtil::FileExist(filePath)) {
             continue;
         }
@@ -111,22 +112,23 @@ uint32_t ReferenceParser::ParseRefInString(string &value, bool &update) const
 
 uint32_t ReferenceParser::ParseRefInProfile(const string &output) const
 {
-    string profileFolder = filesystem::path(output).append(RESOURCES_DIR).append("base").append("profile").string();
+    string profileFolder = FileEntry::FilePath(output).Append(RESOURCES_DIR).Append("base").Append("profile").GetPath();
     if (!ResourceUtil::FileExist(profileFolder)) {
         return RESTOOL_SUCCESS;
     }
 
-    for (const auto &entry : filesystem::directory_iterator(profileFolder)) {
-        if (entry.is_directory()) {
-            cerr << "Error: '" << entry.path().string() << "' is directory." << endl;
+    FileEntry f(profileFolder);
+    for (const auto &entry : f.GetChilds()) {
+        if (!entry->IsFile()) {
+            cerr << "Error: '" << entry->GetFilePath().GetPath() << "' is directory." << endl;
             return false;
         }
 
-        if (entry.path().extension() != ".json" ) {
+        if (entry->GetFilePath().GetExtension() != ".json" ) {
             continue;
         }
 
-        if (ParseRefInJson(entry.path().string()) != RESTOOL_SUCCESS) {
+        if (ParseRefInJson(entry->GetFilePath().GetPath()) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }
     }

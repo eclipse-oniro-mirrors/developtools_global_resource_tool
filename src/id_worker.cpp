@@ -14,10 +14,10 @@
  */
 
 #include "id_worker.h"
-#include<filesystem>
 #include<iostream>
 #include<regex>
 #include "cmd_parser.h"
+#include "file_entry.h"
 
 namespace OHOS {
 namespace Global {
@@ -173,8 +173,8 @@ uint32_t IdWorker::InitIdDefined()
     string idDefinedPath;
     if (type_ == ResourceIdCluster::RES_ID_SYS) {
         for (const auto &inputPath : packageParser.GetInputs()) {
-            idDefinedPath = filesystem::path(inputPath).append(RESOURCES_DIR)
-                .append("base").append("element").append(ID_DEFINED_FILE).string();
+            idDefinedPath = FileEntry::FilePath(inputPath).Append(RESOURCES_DIR)
+                .Append("base").Append("element").Append(ID_DEFINED_FILE).GetPath();
             if (InitIdDefined(idDefinedPath) != RESTOOL_SUCCESS) {
                 return RESTOOL_ERROR;
             }
@@ -182,7 +182,7 @@ uint32_t IdWorker::InitIdDefined()
         return RESTOOL_SUCCESS;
     }
 
-    idDefinedPath = filesystem::path(packageParser.GetRestoolPath()).parent_path().append(ID_DEFINED_FILE).string();
+    idDefinedPath = FileEntry::FilePath(packageParser.GetRestoolPath()).GetParent().Append(ID_DEFINED_FILE).GetPath();
     if (InitIdDefined(idDefinedPath) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }

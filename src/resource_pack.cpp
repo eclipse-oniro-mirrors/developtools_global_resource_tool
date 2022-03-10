@@ -15,7 +15,8 @@
 
 #include "resource_pack.h"
 #include<algorithm>
-#include<filesystem>
+#include<iomanip>
+#include "file_entry.h"
 #include "file_manager.h"
 #include "header.h"
 #include "increment_manager.h"
@@ -141,14 +142,14 @@ void ResourcePack::InitHeaderCreater()
 uint32_t ResourcePack::InitOutput() const
 {
     string cachePath = packageParser_.GetCachePath();
-    string indexPath = filesystem::path(cachePath).append(IncrementManager::ID_JSON_FILE).string();
+    string indexPath = FileEntry::FilePath(cachePath).Append(IncrementManager::ID_JSON_FILE).GetPath();
     if (!cachePath.empty() && ResourceUtil::FileExist(indexPath)) {
         return RESTOOL_SUCCESS;
     }
 
     bool forceWrite = packageParser_.GetForceWrite();
     string output = packageParser_.GetOutput();
-    string resourcesPath = filesystem::path(output).append(RESOURCES_DIR).string();
+    string resourcesPath = FileEntry::FilePath(output).Append(RESOURCES_DIR).GetPath();
     if (ResourceUtil::FileExist(resourcesPath)) {
         if (!forceWrite) {
             cerr << "Error: output path '" << resourcesPath << "' exists." << endl;
@@ -165,10 +166,10 @@ uint32_t ResourcePack::InitOutput() const
 uint32_t ResourcePack::GenerateHeader() const
 {
     auto headerPaths = packageParser_.GetResourceHeaders();
-    string textPath = filesystem::path(packageParser_.GetOutput()).append("ResourceTable.txt").string();
+    string textPath = FileEntry::FilePath(packageParser_.GetOutput()).Append("ResourceTable.txt").GetPath();
     headerPaths.push_back(textPath);
     for (const auto &headerPath : headerPaths) {
-        string extension = filesystem::path(headerPath).extension().string();
+        string extension = FileEntry::FilePath(headerPath).GetExtension();
         auto it = headerCreaters_.find(extension);
         if (it == headerCreaters_.end()) {
             cout << "Warning: don't support header file format '" << headerPath << "'" << endl;
@@ -189,13 +190,13 @@ uint32_t ResourcePack::InitConfigJson()
             cerr << "Error: more input path, -j config.json empty" << endl;
             return RESTOOL_ERROR;
         }
-        config = filesystem::path(packageParser_.GetInputs()[0]).append(CONFIG_JSON).string();
+        config = FileEntry::FilePath(packageParser_.GetInputs()[0]).Append(CONFIG_JSON).GetPath();
         if (!ResourceUtil::FileExist(config)) {
-            config = filesystem::path(packageParser_.GetInputs()[0]).append(MODULE_JSON).string();
+            config = FileEntry::FilePath(packageParser_.GetInputs()[0]).Append(MODULE_JSON).GetPath();
         }
     }
 
-    if (filesystem::path(config).filename().string() == MODULE_JSON) {
+    if (FileEntry::FilePath(config).GetFilename() == MODULE_JSON) {
         ConfigParser::SetUseModule();
     }
     configJson_ = ConfigParser(config);
@@ -274,17 +275,18 @@ uint32_t ResourcePack::GenerateJsHeader(const std::string &headerPath) const
 uint32_t ResourcePack::CopyRawFile(const vector<string> &inputs) const
 {
     for (const auto &input : inputs) {
-        string rawfilePath = filesystem::path(input).append(RAW_FILE_DIR).string();
+        string rawfilePath = FileEntry::FilePath(input).Append(RAW_FILE_DIR).GetPath();
         if (!ResourceUtil::FileExist(rawfilePath)) {
             continue;
         }
 
-        if (!filesystem::is_directory(rawfilePath)) {
+        if (!FileEntry::IsDirectory(rawfilePath)) {
             cerr << "Error: '" << rawfilePath << "' not directory." << endl;
             return RESTOOL_ERROR;
         }
 
-        string dst = filesystem::path(packageParser_.GetOutput()).append(RESOURCES_DIR).append(RAW_FILE_DIR).string();
+        string dst = FileEntry::FilePath(packageParser_.GetOutput())
+            .Append(RESOURCES_DIR).Append(RAW_FILE_DIR).GetPath();
         if (CopyRawFileImpl(rawfilePath, dst) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }
@@ -297,22 +299,27 @@ uint32_t ResourcePack::CopyRawFileImpl(const string &src, const string &dst) con
     if (!ResourceUtil::CreateDirs(dst)) {
         return RESTOOL_ERROR;
     }
-    for (const auto &entry : filesystem::directory_iterator(src)) {
-        string filename = entry.path().filename().string();
-        if (ResourceUtil::IsIgnoreFile(filename, entry.status().type())) {
+
+    FileEntry f(src);
+    if (!f.Init()) {
+        return RESTOOL_ERROR;
+    }
+    for (const auto &entry : f.GetChilds()) {
+        string filename = entry->GetFilePath().GetFilename();
+        if (ResourceUtil::IsIgnoreFile(filename, entry->IsFile())) {
             continue;
         }
 
-        string subPath = filesystem::path(dst).append(filename).string();
-        if (entry.is_directory()) {
-            if (CopyRawFileImpl(entry.path().string(), subPath) != RESTOOL_SUCCESS) {
+        string subPath = FileEntry::FilePath(dst).Append(filename).GetPath();
+        if (!entry->IsFile()) {
+            if (CopyRawFileImpl(entry->GetFilePath().GetPath(), subPath) != RESTOOL_SUCCESS) {
                 return RESTOOL_ERROR;
             }
         } else {
             if (ResourceUtil::FileExist(subPath)) {
                 continue;
             }
-            if (!ResourceUtil::CopyFleInner(entry.path().string(), subPath)) {
+            if (!ResourceUtil::CopyFleInner(entry->GetFilePath().GetPath(), subPath)) {
                 return RESTOOL_ERROR;
             }
         }
@@ -325,7 +332,8 @@ uint32_t ResourcePack::GenerateConfigJson()
     if (configJson_.ParseRefence() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
-    string outputPath = filesystem::path(packageParser_.GetOutput()).append(ConfigParser::GetConfigName()).string();
+    string outputPath = FileEntry::FilePath(packageParser_.GetOutput())
+        .Append(ConfigParser::GetConfigName()).GetPath();
     return configJson_.Save(outputPath);
 }
 

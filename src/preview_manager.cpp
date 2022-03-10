@@ -14,9 +14,9 @@
  */
 
 #include "preview_manager.h"
-#include<filesystem>
 #include<iostream>
 #include "factory_resource_compiler.h"
+#include "file_entry.h"
 #include "key_parser.h"
 #include "resource_module.h"
 #include "resource_util.h"
@@ -36,7 +36,7 @@ uint32_t PreviewManager::ScanModules(const vector<string> &modulePaths, const st
 {
 
     SqliteDatabase &database = SqliteDatabase::GetInstance();
-    string dbPath = filesystem::path(output).append("resources.db").string();
+    string dbPath = FileEntry::FilePath(output).Append("resources.db").GetPath();
     database.Init(dbPath);
     if(!database.OpenDatabase()) {
         return RESTOOL_ERROR;
@@ -48,7 +48,7 @@ uint32_t PreviewManager::ScanModules(const vector<string> &modulePaths, const st
     }
 
     for (const auto &iter : modulePaths) {
-        if (filesystem::is_directory(iter)) {
+        if (FileEntry::IsDirectory(iter)) {
             ResourceModule resourceMoudle(iter, output, "");
             resourceMoudle.SetPreviewMode(true);
             database.SetPriority(priority);
@@ -74,10 +74,10 @@ bool PreviewManager::ScanFile(const string &filePath, int32_t priority)
     }
     FileInfo fileInfo;
     fileInfo.filePath = filePath;
-    fileInfo.filename = filesystem::path(filePath).filename().string();
-    fileInfo.dirPath = filesystem::path(filePath).parent_path().string();
-    fileInfo.fileCluster = filesystem::path(fileInfo.dirPath).filename().string();
-    fileInfo.limitKey = filesystem::path(fileInfo.dirPath).parent_path().filename().string();
+    fileInfo.filename = FileEntry::FilePath(filePath).GetFilename();
+    fileInfo.dirPath = FileEntry::FilePath(filePath).GetParent().GetPath();
+    fileInfo.fileCluster = FileEntry::FilePath(fileInfo.dirPath).GetFilename();
+    fileInfo.limitKey = FileEntry::FilePath(fileInfo.dirPath).GetParent().GetFilename();
 
     fileInfo.dirType = ResourceUtil::GetResTypeByDir(fileInfo.fileCluster);
     if (fileInfo.dirType == ResType::INVALID_RES_TYPE) {

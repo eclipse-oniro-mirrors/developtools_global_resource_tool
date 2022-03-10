@@ -15,6 +15,7 @@
 
 #include "resource_merge.h"
 #include "cmd_parser.h"
+#include "file_entry.h"
 
 namespace OHOS {
 namespace Global {
@@ -46,8 +47,8 @@ uint32_t ResourceMerge::Init()
 
     map<ConfigParser::ModuleType, vector<string>> inputTypes;
     for (auto it = inputs.crbegin(); it != inputs.crend(); it++) {
-        string filePath = filesystem::path(*it).append(ConfigParser::GetConfigName()).string();
-        string resourceDir = filesystem::path(*it).append(RESOURCES_DIR).string();
+        string filePath = FileEntry::FilePath(*it).Append(ConfigParser::GetConfigName()).GetPath();
+        string resourceDir = FileEntry::FilePath(*it).Append(RESOURCES_DIR).GetPath();
         ConfigParser::ModuleType moduleType = ConfigParser::ModuleType::NONE;
         if (!ResourceUtil::FileExist(filePath)) {
             inputTypes[moduleType].push_back(resourceDir);

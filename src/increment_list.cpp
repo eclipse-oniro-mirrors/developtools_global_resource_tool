@@ -15,8 +15,8 @@
 
 #include "increment_list.h"
 #include<algorithm>
-#include<filesystem>
 #include<iostream>
+#include "file_entry.h"
 #include "key_parser.h"
 
 namespace OHOS {
@@ -52,14 +52,14 @@ bool IncrementList::GetFromPath(const string &filePath, FileIncrement &info) con
         return false;
     }
     info.rootPath = folder_[priority];
-    string rootPath = filesystem::path(info.rootPath).append("").string();
+    string rootPath = FileEntry::FilePath(info.rootPath).Append("").GetPath();
     info.relativePath = filePath.substr(rootPath.length());
     vector<string> segments;
     if (!ParseSegment(info.relativePath, segments)) {
         return false;
     }
 
-    info.dirPath = filesystem::path(filePath).parent_path().string();
+    info.dirPath = FileEntry::FilePath(filePath).GetParent().GetPath();
     info.filePath = filePath;
     info.limitKey = segments[SEG_LIMIT_KEY];
     if (info.limitKey == RAW_FILE_DIR) {
@@ -84,7 +84,7 @@ bool IncrementList::GetFromPath(const string &filePath, FileIncrement &info) con
 int32_t IncrementList::GetPriority(const string &filePath) const
 {
     auto result = find_if(folder_.begin(), folder_.end(), [&filePath](auto &iter) {
-        string rootPath = filesystem::path(iter).append("").string();
+        string rootPath = FileEntry::FilePath(iter).Append("").GetPath();
         if (filePath.length() <= rootPath.length()) {
             return false;
         }
@@ -101,8 +101,8 @@ int32_t IncrementList::GetPriority(const string &filePath) const
 
 bool IncrementList::ParseSegment(const string &filePath, vector<string> &segments) const
 {
-    for (const auto &it : filesystem::path(filePath)) {
-        segments.push_back(it.string());
+    for (const auto &it : FileEntry::FilePath(filePath).GetSegments()) {
+        segments.push_back(it);
     }
 
     if (segments.size() >= (SEG_RESOURCE + 1) && segments[SEG_RESOURCE] != RESOURCES_DIR) {

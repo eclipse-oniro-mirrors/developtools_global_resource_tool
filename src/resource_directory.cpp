@@ -15,6 +15,7 @@
 
 #include "resource_directory.h"
 #include<iostream>
+#include "file_entry.h"
 #include "resource_util.h"
 
 namespace OHOS {
@@ -23,14 +24,19 @@ namespace Restool {
 using namespace std;
 bool ResourceDirectory::ScanResources(const string &resourcesDir, function<bool(const DirectoryInfo&)> callback) const
 {
-    for (auto &it : filesystem::directory_iterator(resourcesDir)) {
-        string limitKey = it.path().filename().string();
-        if (ResourceUtil::IsIgnoreFile(limitKey, it.status().type())) {
+    FileEntry f(resourcesDir);
+    if (!f.Init()) {
+        return false;
+    }
+
+    for (const auto &it : f.GetChilds()) {
+        string limitKey = it->GetFilePath().GetFilename();
+        if (ResourceUtil::IsIgnoreFile(limitKey, it->IsFile())) {
             continue;
         }
 
-        if (!it.is_directory()) {
-            cerr << "Error: '" << it.path().string() << "' not directory." << endl;
+        if (it->IsFile()) {
+            cerr << "Error: '" << it->GetFilePath().GetPath() << "' not directory." << endl;
             return false;
         }
 
@@ -38,7 +44,7 @@ bool ResourceDirectory::ScanResources(const string &resourcesDir, function<bool(
             continue;
         }
 
-        if (!ScanResourceLimitKeyDir(it.path().string(), limitKey, callback)) {
+        if (!ScanResourceLimitKeyDir(it->GetFilePath().GetPath(), limitKey, callback)) {
             return false;
         }
     }
@@ -55,14 +61,18 @@ bool ResourceDirectory::ScanResourceLimitKeyDir(const string &resourceTypeDir, c
         return false;
     }
 
-    for (auto &it : filesystem::directory_iterator(resourceTypeDir)) {
-        string dirPath = it.path().string();
-        string fileCluster = it.path().filename().string();
-        if (ResourceUtil::IsIgnoreFile(fileCluster, it.status().type())) {
+    FileEntry f(resourceTypeDir);
+    if (!f.Init()) {
+        return false;
+    }
+    for (const auto &it : f.GetChilds()) {
+        string dirPath = it->GetFilePath().GetPath();
+        string fileCluster = it->GetFilePath().GetFilename();
+        if (ResourceUtil::IsIgnoreFile(fileCluster, it->IsFile())) {
             continue;
         } 
 
-        if (!it.is_directory()) {
+        if (it->IsFile()) {
             cerr << "Error: '" << dirPath << "' not directory." << endl;
             return false;
         }

@@ -18,6 +18,7 @@
 #include<fstream>
 #include<iostream>
 #include<regex>
+#include "file_entry.h"
 #ifdef __WIN32
 #include "windows.h"
 #endif
@@ -62,18 +63,12 @@ void ResourceUtil::Split(const string &str, vector<string> &out, const string &s
 
 bool ResourceUtil::FileExist(const string &path)
 {
-    return filesystem::exists(path);
+    return FileEntry::Exist(path);
 }
 
 bool ResourceUtil::RmoveAllDir(const string &path)
 {
-    error_code err;
-    filesystem::remove_all(path, err);
-    if (err) {
-        cerr << "Error: remove all " << path << " failed, msg :=" << err.message() << endl;
-        return false;
-    }
-    return true;
+    return FileEntry::RemoveAllDir(path);
 }
 
 bool ResourceUtil::OpenJsonFile(const string &path, Json::Value &root)
@@ -225,12 +220,8 @@ bool ResourceUtil::CopyFleInner(const string &src, const string &dst)
         return false;
     }
 #else
-    error_code err;
-    filesystem::path from(src);
-    filesystem::path to(dst);
-    if (!filesystem::copy_file(from, to, filesystem::copy_options::overwrite_existing, err)) {
+    if (!FileEntry::CopyFile(src, dst)) {
         cerr << "Error: copy file fail from '" << src << "' to '" << dst << "'" << endl;
-        cerr << err.message() << endl;
         return false;
     }
 #endif
@@ -242,22 +233,20 @@ bool ResourceUtil::CreateDirs(const string &filePath)
     if (FileExist(filePath)) {
         return true;
     }
-
-    error_code err;
-    if (!filesystem::create_directories(filePath, err)) {
-        cerr << "Error: create directory fail '" << filePath << "'" << endl;
-        return false;
+    
+    if (!FileEntry::CreateDirs(filePath)) {
+        cerr << "Error: create dir fail '" << filePath << "'" << endl;
     }
     return true;
 }
 
-bool ResourceUtil::IsIgnoreFile(const string &filename, filesystem::file_type type)
+bool ResourceUtil::IsIgnoreFile(const string &filename, bool isFile)
 {
     string key = filename;
     transform(key.begin(), key.end(), key.begin(), ::tolower);
     for (const auto &iter : IGNORE_FILE_REGEX) {
-        if ((iter.second == IgnoreType::IGNORE_FILE && type != filesystem::file_type::regular) ||
-            (iter.second == IgnoreType::IGNORE_DIR && type != filesystem::file_type::directory)) {
+        if ((iter.second == IgnoreType::IGNORE_FILE && !isFile) ||
+            (iter.second == IgnoreType::IGNORE_DIR && isFile)) {
             continue;
         }
         if (regex_match(key, regex(iter.first))) {

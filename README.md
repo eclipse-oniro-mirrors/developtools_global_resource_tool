@@ -10,22 +10,37 @@ restool(resource tool) is used in computer.In OpenHarmony SDK toolchain.When IDE
 |----global_resource_tool
 |    |----include  
 |    |----src  
-|    |----third_party dependence third patry lib make script  
+|    |----test
+|    |----build dependence third patry lib make script  
 |    |----CMakeLists.txt  
+|    |----BUILD.gn  
 |    |----win32.cmake windows cross compile script
 ```
 
 ## Instructions
 
-### Compile
+### Quickly Build
 
-1.  gcc/g++ version 9.3.0 required
-2.  cmake version mini 3.15 required
-3.  mkdir build
-4.  cd build
-5.  cmake ../restool_standard
-6.  make
-7.  compile result restool binary
+1.  ubuntu 18 preinstalled gcc/g++  
+2.  cmake version mini 3.15 required  
+3.  mkdir build  
+4.  cd build  
+5.  cmake ../global_resource_tool    
+6.  make  
+7.  compile result restool binary  
+
+### SDK Build
+
+1.  ./build.sh --product-name ohos-sdk  
+
+SDK build refer to https://gitee.com/openharmony/build/blob/master/README_zh.md  
+
+### Test
+
+1.in PC,  run python test/test.py param1 param2
+
+param1:  restool path  
+param2:  result path  
 
 ### Help
 

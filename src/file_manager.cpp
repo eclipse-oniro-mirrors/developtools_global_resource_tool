@@ -15,9 +15,9 @@
 
 #include "file_manager.h"
 #include<algorithm>
-#include<filesystem>
 #include<iostream>
 #include "factory_resource_compiler.h"
+#include "file_entry.h"
 #include "key_parser.h"
 #include "reference_parser.h"
 #include "resource_directory.h"
@@ -97,8 +97,8 @@ void FileManager::FilterRefSolidXml(const string &output, vector<string> &output
             continue;
         }
         for (const auto &resourceDir : iter.second) {
-            string outputPath = filesystem::path(output).append(RESOURCES_DIR).append(resourceDir.limitKey)
-                .append(resourceDir.fileCluster).string();
+            string outputPath = FileEntry::FilePath(output).Append(RESOURCES_DIR).Append(resourceDir.limitKey)
+                .Append(resourceDir.fileCluster).GetPath();
             if (find(outputPaths.begin(), outputPaths.end(), outputPath) == outputPaths.end()) {
                outputPaths.push_back(outputPath);
             }

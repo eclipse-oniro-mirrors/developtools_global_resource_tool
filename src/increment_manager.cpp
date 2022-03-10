@@ -16,13 +16,13 @@
 #include "increment_manager.h"
 #include<algorithm>
 #include<iostream>
+#include "file_entry.h"
 #include "id_worker.h"
 #include "key_parser.h"
+#include "module_combine.h"
+#include "resource_module_inc.h"
 #include "restool_errors.h"
 #include "xml_key_node.h"
-
-#include "resource_module_inc.h"
-#include "module_combine.h"
 
 namespace OHOS {
 namespace Global {
@@ -65,7 +65,7 @@ uint32_t IncrementManager::Init(const string &cachePath, const vector<std::strin
 // below private
 bool IncrementManager::InitIdJson()
 {
-    string idJsonPath = filesystem::path(cachePath_).append(ID_JSON_FILE).string();
+    string idJsonPath = FileEntry::FilePath(cachePath_).Append(ID_JSON_FILE).GetPath();
     if (!ResourceUtil::FileExist(idJsonPath)) {
         return true;
     }
@@ -93,7 +93,7 @@ bool IncrementManager::ScanModules(const vector<IncrementList::FileIncrement> &d
 
     for (auto &iter : moduleInfos) {
         string pathHash = ResourceUtil::GenerateHash(iter.rootPath);
-        string moduleCachePath = filesystem::path(cachePath_).append(pathHash).string();
+        string moduleCachePath = FileEntry::FilePath(cachePath_).Append(pathHash).GetPath();
         ResourceModuleInc resourceModuleInc(iter.rootPath, moduleCachePath, moduleName_, folder_);
         if (FirstIncrement()) {
             if (resourceModuleInc.ResourceModule::ScanResource() != RESTOOL_SUCCESS) {
@@ -125,7 +125,7 @@ bool IncrementManager::ScanModules(const vector<IncrementList::FileIncrement> &d
 
 bool IncrementManager::InitList(vector<IncrementList::FileIncrement> &dels) const
 {
-    string listPath = filesystem::path(cachePath_).append(IncrementList::RESTOOL_LIST_FILE).string();
+    string listPath = FileEntry::FilePath(cachePath_).Append(IncrementList::RESTOOL_LIST_FILE).GetPath();
     if (!ResourceUtil::FileExist(listPath)) {
         return true;
     }
@@ -158,7 +158,7 @@ bool IncrementManager::SaveIdJson() const
         root[to_string(iter.first)] = node;
     }
 
-    string idJsonPath = filesystem::path(cachePath_).append(ID_JSON_FILE).string();
+    string idJsonPath = FileEntry::FilePath(cachePath_).Append(ID_JSON_FILE).GetPath();
     if (!ResourceUtil::SaveToJsonFile(idJsonPath, root)) {
         return false;
     }
@@ -168,7 +168,7 @@ bool IncrementManager::SaveIdJson() const
 bool IncrementManager::LoadIdJson()
 {
     Json::Value root;
-    string idJsonPath = filesystem::path(cachePath_).append(ID_JSON_FILE).string();
+    string idJsonPath = FileEntry::FilePath(cachePath_).Append(ID_JSON_FILE).GetPath();
     if (!ResourceUtil::OpenJsonFile(idJsonPath, root)) {
         return false;
     }
@@ -229,15 +229,15 @@ void IncrementManager::DeleteRawFile(vector<IncrementList::FileIncrement> &dels)
             it++;
             continue;
         }
-        string rawFilePath = filesystem::path(outputPath_).append(it->relativePath).string();
-        filesystem::remove(rawFilePath);
+        string rawFilePath = FileEntry::FilePath(outputPath_).Append(it->relativePath).GetPath();
+        remove(rawFilePath.c_str());
         it = dels.erase(it);
     }
 }
 
 bool IncrementManager::ClearSolidXml() const
 {
-    string resourceDir = filesystem::path(outputPath_).append(RESOURCES_DIR).string();
+    string resourceDir = FileEntry::FilePath(outputPath_).Append(RESOURCES_DIR).GetPath();
     if (!ResourceUtil::FileExist(resourceDir)) {
         return true;
     }
@@ -248,19 +248,24 @@ bool IncrementManager::ClearSolidXml() const
             return true;
         }
 
-        for (const auto &entry : filesystem::directory_iterator(info.dirPath)) {
-            if (entry.is_directory()) {
-                cerr << "Error: '" << entry.path().string() << "' is directroy." << endl;
+        FileEntry f(info.dirPath);
+        if (!f.Init()) {
+            return false;
+        }
+
+        for (const auto &entry : f.GetChilds()) {
+            if (!entry->IsFile()) {
+                cerr << "Error: '" << entry->GetFilePath().GetPath() << "' is directroy." << endl;
                 return false;
             }
 
-            string extension = entry.path().extension().string();
+            string extension = entry->GetFilePath().GetExtension();
             if (extension != ".sxml" && extension != ".key" && extension != ".json") {
                 continue;
             }
 
-            if (!filesystem::remove(entry.path().string())) {
-                cerr << "Error: remove '" << entry.path().string() << "' fail." << endl;
+            if (remove(entry->GetFilePath().GetPath().c_str()) != 0) {
+                cerr << "Error: remove '" << entry->GetFilePath().GetPath() << "' fail." << endl;
                 return false;
             }
         }
@@ -270,39 +275,6 @@ bool IncrementManager::ClearSolidXml() const
     }
     return true;
 }
-/*
-{
-    "0x01000000":
-    {
-        "name":"xxxxx",
-        "type":"string"
-    }
-}
-{
-    "header":{
-        "folder":["xxxx", "xxxx", "xxxx", "xxxx"]
-    },
-    "index":{
-       "0x01000000":{
-           "filepath":{
-               "data":"xxxx",
-               "name":"xxxx",
-               "type":"xxxx",
-               "limitkey":"xxxx"
-           }
-       },
-   }
-}
-
-{
-    "del":[
-        "xx/xx/xx/xxx"
-    ],
-    "fix":[
-        "xxx/xxx/xx"
-    ]
-}
-*/
 }
 }
 }

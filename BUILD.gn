@@ -1,0 +1,85 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//build/test.gni")
+ohos_executable("restool") {
+    sources = [ 
+        "src/xml/key_manager.cpp",
+        "src/xml/solid_xml.cpp",
+        "src/xml/xml_converter.cpp",
+        "src/xml/xml_key_node.cpp",
+        "src/cmd_list.cpp",
+        "src/cmd_parser.cpp",
+        "src/config_parser.cpp",
+        "src/factory_resource_compiler.cpp",
+        "src/file_entry.cpp",
+        "src/file_manager.cpp",
+        "src/generic_compiler.cpp",
+        "src/header.cpp",
+        "src/i_resource_compiler.cpp",
+        "src/id_worker.cpp",
+        "src/increment_index.cpp",
+        "src/increment_list.cpp",
+        "src/increment_manager.cpp",
+        "src/json_compiler.cpp",
+        "src/key_parser.cpp",
+        "src/module_combine.cpp",
+        "src/preview_manager.cpp",
+        "src/reference_parser.cpp",
+        "src/resource_directory.cpp",
+        "src/resource_item.cpp",
+        "src/resource_merge.cpp",
+        "src/resource_module.cpp",
+        "src/resource_module_inc.cpp",
+        "src/resource_pack.cpp",
+        "src/resource_table.cpp",
+        "src/resource_util.cpp",
+        "src/restool.cpp",
+        "src/solid_xml_compiler.cpp",
+        "src/sqlite_database.cpp",
+        "src/task_handle.cpp" 
+    ]
+
+    include_dirs = []
+    if (is_mingw) {
+        include_dirs += [
+            "//developtools/global_resource_tool/build/libxml2/win32/include"
+        ]
+    }
+    include_dirs += [
+        "include",
+        "//third_party/libxml2/include",
+        "//third_party/jsoncpp/include",
+        "//third_party/sqlite/include",
+        "//third_party/bounds_checking_function/include"
+    ]
+
+    deps = [ 
+        "//developtools/global_resource_tool/build/jsoncpp:restool_jsoncpp",
+        "//developtools/global_resource_tool/build/sqlite3:restool_sqlite",
+       "//developtools/global_resource_tool/build/libxml2:restool_libxml2",
+        "//developtools/global_resource_tool/build/bounds_checking_function:restool_bounds_checking_function"
+    ]
+
+    cflags = [ "-std=c++17" ]
+    if (is_mingw) {
+        ldflags = [ "-static", "-lws2_32" ]
+    }
+    subsystem_name = "developtools"
+    part_name = "global_restool"
+}
+
+ohos_unittest_py("restool_test") {
+    sources = [ "test/test.py" ]
+}

@@ -14,7 +14,7 @@
  */
 
 #include "resource_module.h"
-#include<filesystem>
+#include<algorithm>
 #include<iostream>
 #include "factory_resource_compiler.h"
 #include "restool_errors.h"

@@ -14,7 +14,7 @@
  */
 
 #include "xml_converter.h"
-#include<filesystem>
+#include "file_entry.h"
 #include "resource_util.h"
 #include "solid_xml.h"
 
@@ -38,8 +38,8 @@ bool XmlConverter::GenerateSolidXml()
     }
     for (const auto &xmlPath : xmlPaths_) {
         SolidXml solidXml(xmlPath, keyManager.GetKeys());
-        string filename = filesystem::path(xmlPath).filename().string();
-        string filePath = filesystem::path(outputPath_).append(filename).replace_extension(".sxml").string();
+        string filename = FileEntry::FilePath(xmlPath).GetFilename();
+        string filePath = FileEntry::FilePath(outputPath_).Append(filename).ReplaceExtension(".sxml").GetPath();
         if (!solidXml.GenerateSolidXml(filePath)) {
             return false;
         }
