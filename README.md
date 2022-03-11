@@ -1,7 +1,7 @@
 # OpenHarmony resource compile tool  
 
 ## Description
-resource tool is used in computer.In OpenHarmony SDK toolchain.Provide to IDE.Support Window,Linux, MacOS platform.
+resource tool is used in computer.In OpenHarmony SDK toolchain.Provide to IDE.Support Windows, Linux, MacOS platform.
 
 ## Directory Structure
 
@@ -31,7 +31,7 @@ In PC, run `python test.py ./restool ./out`
 
 resource tool usually integrate to IDE, OpenHarmony compile system.
 
-resouce tool command e.g:  
+resource tool command e.g:  
 
 -v version  
 -i input resource path  

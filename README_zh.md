@@ -1,7 +1,7 @@
 # OpenHarmony资源编译工具
 
 ## 介绍
-资源编译工具属于PC端工具，在OpenHarmony SDK中toolchain目录下，提供给IDE使用，支持Window, Linux, MacOS平台。
+资源编译工具属于PC端工具，在OpenHarmony SDK中toolchain目录下，提供给IDE使用，支持Windows, Linux, MacOS平台。
 
 ## 目录
 
