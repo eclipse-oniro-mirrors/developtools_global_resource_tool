@@ -1,7 +1,7 @@
-# OpenHarmony 应用资源编译工具
+# OpenHarmony资源编译工具
 
 ## 介绍
-资源编译工具属于PC端工具，在OpenHarmony SDK中 toolchain 目录下。 提供给IDE使用，支持window, linux, macos平台。
+资源编译工具属于PC端工具，在OpenHarmony SDK中toolchain目录下，提供给IDE使用，支持Window, Linux, MacOS平台。
 
 ## 目录
 
@@ -14,40 +14,24 @@
 |    |----build 依赖三方库编译脚本  
 |    |----BUILD.gn  
 |    |----CMakeLists.txt  
-|    |----win32.cmake windows交叉编译脚本  
+|    |----win32.cmake Windows交叉编译脚本  
 ```
 
 ## 使用说明
 
-### 快速调试编译
-
-1.  ubuntu 18 系统预装 gcc/g++  
-2.  cmake 版本最低3.15  
-3.  与global_resource_tool同级目录新建build  
-```
-4.  cd build  
-5.  cmake ../global_resource_tool  
-6.  make
-```  
-7.  编译结果输出restool  
-
 ### SDK编译命令
 
-1.  `./build.sh --product-nane ohos-sdk`  
-[SDK 编译参考](https://gitee.com/openharmony/build/blob/master/README_zh.md)
+[SDK编译命令参考](https://gitee.com/openharmony/build/blob/master/README_zh.md)
 
 ### 测试用例
 
-1.PC 上运行 `python test/test.py 参数1  参数2`  
-
-参数1  restool 命令路径  
-参数2  输出结果路径  
-
+PC 上运行 `python test/test.py ./restool  ./out`  
+ 
 ### 命令帮助
 
-本工具一般被IDE 和OpenHarmony 编译系统集成调用。    
+本工具由IDE和OpenHarmony编译系统集成调用。    
 
-手动执行./restool 会提示支持的命令行参数。简单命令参数如下：
+支持的命令行参数，例如：
 
 -v 显示工具版本号  
 -i 资源输入目录  
@@ -56,8 +40,6 @@
 -p 应用包名  
 
 `./restool -i main -o out -r out/ResourceTable.h -p ohos.demo`    
-
-推荐使用IDE工具。  
 
 ## 相关仓
 
