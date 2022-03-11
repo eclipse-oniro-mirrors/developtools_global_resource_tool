@@ -34,7 +34,7 @@
 ### SDK编译命令
 
 1.  `./build.sh --product-nane ohos-sdk`  
-[SDK 编译参考](https://gitee.com/openharmony/build/blob/master/README_zh.md "编译sdk说明")。  
+[SDK 编译参考](https://gitee.com/openharmony/build/blob/master/README_zh.md)
 
 ### 测试用例
 
