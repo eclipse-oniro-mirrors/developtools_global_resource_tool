@@ -68,7 +68,7 @@ ohos_executable("restool") {
     deps = [ 
         "//developtools/global_resource_tool/build/jsoncpp:restool_jsoncpp",
         "//developtools/global_resource_tool/build/sqlite3:restool_sqlite",
-       "//developtools/global_resource_tool/build/libxml2:restool_libxml2",
+        "//developtools/global_resource_tool/build/libxml2:restool_libxml2",
         "//developtools/global_resource_tool/build/bounds_checking_function:restool_bounds_checking_function"
     ]
 
