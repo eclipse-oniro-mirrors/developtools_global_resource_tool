@@ -25,7 +25,7 @@ resource tool is used in computer.In OpenHarmony SDK toolchain.Provide to IDE.Su
 
 ### Test
 
-In PC, run `python test/test.py ./restool ./out`  
+In PC, run `python test.py ./restool ./out`  
 
 ### Help
 

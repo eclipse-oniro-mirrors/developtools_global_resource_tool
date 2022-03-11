@@ -25,7 +25,7 @@
 
 ### 测试用例
 
-PC 上运行 `python test/test.py ./restool  ./out`  
+PC 上运行 `python test.py ./restool  ./out`  
  
 ### 命令帮助
 
