@@ -14,31 +14,24 @@ import("//build/ohos.gni")
 LIBXML_PATH = "//third_party/libxml2"
 
 config("restool_libxml2_config") {
-    include_dirs = []
-    if (is_mingw) {
-        include_dirs += [ 
-          "//developtools/global_resource_tool/build/libxml2/win32/include"
-        ]
-        defines = [ "LIBXML_STATIC"]
-    } else {
-        include_dirs += [ 
-          "${LIBXML_PATH}/config"
-        ]
-    }
+  include_dirs = []
+  if (is_mingw) {
+    include_dirs +=
+        [ "//developtools/global_resource_tool/build/libxml2/win32/include" ]
+    defines = [ "LIBXML_STATIC" ]
+  } else {
+    include_dirs += [ "${LIBXML_PATH}/config" ]
+  }
 
-    include_dirs += [
-        "${LIBXML_PATH}/include"
-    ]
+  include_dirs += [ "${LIBXML_PATH}/include" ]
 
-    cflags_cc = [
-      "-std=c++17"
-    ]
+  cflags_cc = [ "-std=c++17" ]
 
-    cflags_c = [
-      "-Wno-implicit-fallthrough",
-      "-Wno-implicit-function-declaration",
-      "-Wno-int-conversion"
-    ]
+  cflags_c = [
+    "-Wno-implicit-fallthrough",
+    "-Wno-implicit-function-declaration",
+    "-Wno-int-conversion",
+  ]
 }
 
 ohos_static_library("restool_libxml2") {
@@ -133,11 +126,11 @@ ohos_static_library("restool_libxml2") {
     "${LIBXML_PATH}/xmlwriter.c",
     "${LIBXML_PATH}/xpath.c",
     "${LIBXML_PATH}/xpointer.c",
-    "${LIBXML_PATH}/xzlib.c"
-    ]
+    "${LIBXML_PATH}/xzlib.c",
+  ]
 
-    public_configs = [ ":restool_libxml2_config" ]
+  public_configs = [ ":restool_libxml2_config" ]
 
-    subsystem_name = "developtools"
-    part_name = "global_restool"
+  subsystem_name = "developtools"
+  part_name = "global_restool"
 }
