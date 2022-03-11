@@ -1,7 +1,7 @@
 # OpenHarmony resource compile tool  
 
 ## Description
-restool(resource tool) is used in computer.In OpenHarmony SDK toolchain.Provide to IDE.Support window,linux, macos platform.
+resource tool is used in computer.In OpenHarmony SDK toolchain.Provide to IDE.Support window,linux, macos platform.
 
 ## Directory Structure
 
@@ -33,17 +33,13 @@ restool(resource tool) is used in computer.In OpenHarmony SDK toolchain.Provide 
 
 ### SDK Build
 
-```
-1.  ./build.sh --product-name ohos-sdk  
-```
+1. ` ./build.sh --product-name ohos-sdk `  
 
-SDK build refer to https://gitee.com/openharmony/build/blob/master/README_zh.md  
+[SDK build refer]( https://gitee.com/openharmony/build/blob/master/README_zh.md )
 
 ### Test
 
-```
-1.in PC,  run python test/test.py param1 param2
-```
+1.in PC,  run `python test/test.py param1 param2`  
 
 param1:  restool path  
 param2:  result path  
@@ -60,9 +56,8 @@ run ./restool, show command:
 -r resource ID header file path  
 -p package name  
 
-```
-./restool -i main -o out -r out/ResourceTable.h -p ohos.demo  
-```
+`./restool -i main -o out -r out/ResourceTable.h -p ohos.demo`  
+
 using IDE(recommonded)
 ##  Related to the storehouse
 
