@@ -10,21 +10,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
- 
+
 import("//build/ohos.gni")
 ohos_static_library("restool_jsoncpp") {
-    sources = [
-        "//third_party/jsoncpp/src/lib_json/json_reader.cpp",
-        "//third_party/jsoncpp/src/lib_json/json_value.cpp",
-        "//third_party/jsoncpp/src/lib_json/json_writer.cpp"
-    ]
+  sources = [
+    "//third_party/jsoncpp/src/lib_json/json_reader.cpp",
+    "//third_party/jsoncpp/src/lib_json/json_value.cpp",
+    "//third_party/jsoncpp/src/lib_json/json_writer.cpp",
+  ]
 
-    include_dirs = [
-        "//third_party/jsoncpp/include"
-    ]
+  include_dirs = [ "//third_party/jsoncpp/include" ]
 
-    cflags = [ "-std=c++17" ]
-    use_exceptions = true
-    subsystem_name = "developtools"
-    part_name = "global_restool"
+  cflags = [ "-std=c++17" ]
+  use_exceptions = true
+  subsystem_name = "developtools"
+  part_name = "global_restool"
 }

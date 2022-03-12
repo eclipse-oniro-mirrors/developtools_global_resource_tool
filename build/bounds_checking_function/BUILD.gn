@@ -10,28 +10,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
- 
+
 import("//build/ohos.gni")
 import("//third_party/bounds_checking_function/libsec_src.gni")
 ohos_static_library("restool_bounds_checking_function") {
-    sources = libsec_sources
+  sources = libsec_sources
 
-    include_dirs = [
-        "//third_party/bounds_checking_function/include"
-    ]
+  include_dirs = [ "//third_party/bounds_checking_function/include" ]
 
-    cflags_cc  = [ "-std=c++17" ]
-    cflags_c =[
-        "-Wno-attributes",
-        "-Wno-inconsistent-dllimport",
-        "-D_INC_STRING_S",
-        "-D_INC_WCHAR_S",
-        "-D_SECIMP=//",
-        "-D_STDIO_S_DEFINED",
-       "-D_INC_STDIO_S",
-       "-D_INC_STDLIB_S",
-       "-D_INC_MEMORY_S"
-    ]
-    subsystem_name = "developtools"
-    part_name = "global_restool"
+  cflags_cc = [ "-std=c++17" ]
+  cflags_c = [
+    "-Wno-attributes",
+    "-Wno-inconsistent-dllimport",
+    "-D_INC_STRING_S",
+    "-D_INC_WCHAR_S",
+    "-D_SECIMP=//",
+    "-D_STDIO_S_DEFINED",
+    "-D_INC_STDIO_S",
+    "-D_INC_STDLIB_S",
+    "-D_INC_MEMORY_S",
+  ]
+  subsystem_name = "developtools"
+  part_name = "global_restool"
 }
