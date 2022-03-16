@@ -20,7 +20,7 @@
 #include "resource_data.h"
 #include "resource_item.h"
 #include "increment_manager.h"
-#include "singleton_object.h"
+#include "singleton.h"
 
 namespace OHOS {
 namespace Global {

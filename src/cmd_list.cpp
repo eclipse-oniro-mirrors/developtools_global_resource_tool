@@ -45,8 +45,8 @@ uint32_t CmdList::Init(const string &filePath, function<uint32_t(int c, const st
     if (GetArray(root["ResourceTable"], 'r', callback) != RESTOOL_SUCCESS ||
         GetString(root["applicationResource"], 'i', callback) != RESTOOL_SUCCESS ||
         GetArray(root["moduleResources"], 'i', callback) != RESTOOL_SUCCESS ||
-        GetArray(root["dependencies"], 'i', callback) != RESTOOL_SUCCESS ) {
-        return RESTOOL_ERROR; 
+        GetArray(root["dependencies"], 'i', callback) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
     }
 
     callback('f', "");

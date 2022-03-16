@@ -112,7 +112,7 @@ const std::map<std::string, ResolutionType> g_resolutionMap = {
     { "ldpi",  ResolutionType::LDPI },
     { "xldpi", ResolutionType::XLDPI },
     { "xxldpi", ResolutionType::XXLDPI },
-    { "xxxldpi", ResolutionType::XXXLDPI },  
+    { "xxxldpi", ResolutionType::XXXLDPI },
 };
 
 enum class NightMode {

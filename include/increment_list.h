@@ -48,7 +48,7 @@ private:
         SEG_RESOURCE = 0,
         SEG_LIMIT_KEY = 1,
         SEG_FILE_CLUSTER = 2,
-        SEG_FILE_NAME =3,
+        SEG_FILE_NAME = 3,
         SEG_MAX
     };
 };

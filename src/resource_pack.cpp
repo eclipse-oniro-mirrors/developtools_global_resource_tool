@@ -91,7 +91,7 @@ uint32_t ResourcePack::Init()
 }
 
 uint32_t ResourcePack::InitModule()
-{    
+{
     IdWorker::ResourceIdCluster hapType = IdWorker::ResourceIdCluster::RES_ID_APP;
     string packageName = packageParser_.GetPackageName();
     if (packageName == "ohos.global.systemres") {

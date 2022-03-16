@@ -20,7 +20,7 @@
 #include<iostream>
 #include<functional>
 #include<vector>
-#include "singleton_object.h"
+#include "singleton.h"
 #include "resource_data.h"
 #include "restool_errors.h"
 

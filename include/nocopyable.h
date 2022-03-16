@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_RESTOOL_NOCOPYABLE_OBJECT_H
-#define OHOS_RESTOOL_NOCOPYABLE_OBJECT_H
+#ifndef OHOS_RESTOOL_NOCOPYABLE_H
+#define OHOS_RESTOOL_NOCOPYABLE_H
 
 namespace OHOS {
 namespace Global {

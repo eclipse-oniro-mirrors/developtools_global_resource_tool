@@ -16,7 +16,7 @@
 #ifndef OHOS_RESTOOL_SINGLETON_OBJECT_H
 #define OHOS_RESTOOL_SINGLETON_OBJECT_H
 
-#include "nocopyable_object.h"
+#include "nocopyable.h"
 
 namespace OHOS {
 namespace Global {

@@ -34,11 +34,10 @@ PreviewManager::~PreviewManager()
 
 uint32_t PreviewManager::ScanModules(const vector<string> &modulePaths, const string &output)
 {
-
     SqliteDatabase &database = SqliteDatabase::GetInstance();
     string dbPath = FileEntry::FilePath(output).Append("resources.db").GetPath();
     database.Init(dbPath);
-    if(!database.OpenDatabase()) {
+    if (!database.OpenDatabase()) {
         return RESTOOL_ERROR;
     }
 

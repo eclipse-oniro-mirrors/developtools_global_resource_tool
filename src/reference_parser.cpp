@@ -124,7 +124,7 @@ uint32_t ReferenceParser::ParseRefInProfile(const string &output) const
             return false;
         }
 
-        if (entry->GetFilePath().GetExtension() != ".json" ) {
+        if (entry->GetFilePath().GetExtension() != ".json") {
             continue;
         }
 
@@ -305,7 +305,7 @@ bool ReferenceParser::ParseRefJsonImpl(Json::Value &node) const
         }
     } else if (node.isArray()) {
         for (Json::ArrayIndex i = 0; i < node.size(); i++) {
-             if (!ParseRefJsonImpl(node[i])) {
+            if (!ParseRefJsonImpl(node[i])) {
                 return false;
             }
         }

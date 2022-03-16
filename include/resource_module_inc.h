@@ -24,7 +24,8 @@ namespace Global {
 namespace Restool {
 class ResourceModuleInc : public ResourceModule {
 public:
-    ResourceModuleInc(const std::string &modulePath, const std::string &moduleOutput, const std::string &moduleName, const std::vector<std::string> &folder);
+    ResourceModuleInc(const std::string &modulePath, const std::string &moduleOutput,
+		      const std::string &moduleName, const std::vector<std::string> &folder);
     virtual ~ResourceModuleInc() {};
     uint32_t ScanResource(const std::vector<IncrementList::FileIncrement> &fileIncrements);
     uint32_t SaveIndex() const;

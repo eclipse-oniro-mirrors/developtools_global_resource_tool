@@ -53,7 +53,7 @@ bool ResourceDirectory::ScanResources(const string &resourcesDir, function<bool(
 
 // below private
 bool ResourceDirectory::ScanResourceLimitKeyDir(const string &resourceTypeDir, const string &limitKey,
-        function<bool(const DirectoryInfo&)> callback) const
+    function<bool(const DirectoryInfo&)> callback) const
 {
     vector<KeyParam> keyParams;
     if (!KeyParser::Parse(limitKey, keyParams)) {
@@ -70,7 +70,7 @@ bool ResourceDirectory::ScanResourceLimitKeyDir(const string &resourceTypeDir, c
         string fileCluster = it->GetFilePath().GetFilename();
         if (ResourceUtil::IsIgnoreFile(fileCluster, it->IsFile())) {
             continue;
-        } 
+	}
 
         if (it->IsFile()) {
             cerr << "Error: '" << dirPath << "' not directory." << endl;

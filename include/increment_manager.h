@@ -19,7 +19,7 @@
 #include<string>
 #include "resource_util.h"
 #include "resource_item.h"
-#include "singleton_object.h"
+#include "singleton.h"
 
 #include "increment_list.h"
 #include "increment_index.h"

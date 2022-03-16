@@ -66,7 +66,7 @@ bool SqliteDatabase::Insert(const ResourceItem &resourceItem)
         return false;
     }
 
-    if (id >= 0 ) {
+    if (id >= 0) {
         return true;
     }
 
@@ -186,11 +186,11 @@ string SqliteDatabase::GetValue(const ResourceItem &resourceItem) const
     string data(reinterpret_cast<const char *>(resourceItem.GetData()), resourceItem.GetDataLength());
     if (resourceItem.GetResType() == ResType::STRARRAY || resourceItem.GetResType() == ResType::INTARRAY ||
         resourceItem.GetResType() == ResType::THEME || resourceItem.GetResType() == ResType::PATTERN ||
-        resourceItem.GetResType() == ResType::PLURAL ) {
+        resourceItem.GetResType() == ResType::PLURAL) {
         vector<string> contents = ResourceUtil::DecomposeStrings(data);
         Json::Value array(Json::arrayValue);
         for (const auto &iter : contents) {
-             array.append(iter);
+            array.append(iter);
         }
         data = array.toStyledString();
     }
