@@ -18,7 +18,7 @@
 
 #include<string>
 #include "resource_item.h"
-#include "singleton_object.h"
+#include "singleton.h"
 #include "sqlite3.h"
 
 namespace OHOS {
@@ -37,7 +37,7 @@ private:
     bool CreateTable();
     std::string GetValue(const ResourceItem &resourceItem) const;
     std::string dbPath_;
-    sqlite3 * db_ = nullptr;
+    sqlite3 *db_ = nullptr;
     static int32_t id_;
     int32_t priority_ = 0;
 };

@@ -26,7 +26,7 @@ namespace Restool {
 using namespace std;
 ResourceTable::ResourceTable()
 {
-    auto &parser =CmdParser<PackageParser>::GetInstance();
+    auto &parser = CmdParser<PackageParser>::GetInstance();
     auto &packageParser = parser.GetCmdParser();
     indexFilePath_ = FileEntry::FilePath(packageParser.GetOutput()).Append(RESOURCE_INDEX_FILE).GetPath();
 }
@@ -58,7 +58,7 @@ uint32_t ResourceTable::CreateResourceTable()
     return RESTOOL_SUCCESS;
 }
 
-//below private
+// below private
 uint32_t ResourceTable::SaveToResouorceIndex(const map<string, vector<TableData>> &configs) const
 {
     uint32_t pos = 0;
@@ -173,7 +173,7 @@ bool ResourceTable::SaveRecordItem(const map<string, vector<TableData>> &configs
             out.write(reinterpret_cast<const char *>(&recordItem.resType), sizeof(uint32_t));
             out.write(reinterpret_cast<const char *>(&recordItem.id), sizeof(uint32_t));
             out.write(reinterpret_cast<const char *>(data.c_str()), data.length());
-        }        
+        }
     }
     return true;
 }

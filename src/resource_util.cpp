@@ -87,7 +87,7 @@ bool ResourceUtil::OpenJsonFile(const string &path, Json::Value &root)
         cerr << "Error: parseFromStream '" << path;
         cerr << "\n" << errs << endl;
         ifs.close();
-        return false; 
+        return false;
     }
     ifs.close();
     return true;
@@ -182,7 +182,7 @@ vector<string> ResourceUtil::DecomposeStrings(const string &content)
     while (pos < length) {
         if (pos + HEAD_LENGTH >= length) {
             result.clear();
-            return result; 
+            return result;
         }
         uint16_t size = (content[pos] & 0xff) | ((content[pos + 1] & 0xff) << 8);
         pos += HEAD_LENGTH;

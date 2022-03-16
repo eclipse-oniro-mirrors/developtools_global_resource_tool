@@ -270,12 +270,12 @@ bool SolidXml::SaveToFile(const std::string &filePath) const
 
     // write namespace
     for (const auto &nameSpace : nameSpaces_) {
-        out.write(reinterpret_cast<const char *>(&nameSpace), sizeof(int32_t));   
+        out.write(reinterpret_cast<const char *>(&nameSpace), sizeof(int32_t));
     }
 
     // write href
     for (const auto &href : hrefs_) {
-        out.write(reinterpret_cast<const char *>(&href), sizeof(int32_t));   
+        out.write(reinterpret_cast<const char *>(&href), sizeof(int32_t));
     }
     return true;
 }

@@ -208,7 +208,7 @@ bool JsonCompiler::HandleStringArray(const Json::Value &objectNode, ResourceItem
             }
             values.push_back(value.asString());
             return true;
-    });   
+    });
 }
 
 bool JsonCompiler::HandleIntegerArray(const Json::Value &objectNode, ResourceItem &resourceItem) const
@@ -444,7 +444,7 @@ bool JsonCompiler::CheckPluralValue(const Json::Value &arrayItem, const Resource
     if (find(QUANTITY_ATTRS.begin(), QUANTITY_ATTRS.end(), quantityValue) == QUANTITY_ATTRS.end()) {
         string buffer(" ");
         for_each(QUANTITY_ATTRS.begin(), QUANTITY_ATTRS.end(), [&buffer](auto iter) {
-                buffer.append(iter).append(" "); 
+                buffer.append(iter).append(" ");
             });
         cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity '" << quantityValue;
         cerr << "' not in [" << buffer << "]," << resourceItem.GetFilePath() << endl;

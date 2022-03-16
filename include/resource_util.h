@@ -29,7 +29,7 @@ public:
      * @brief split the string with given splitter.
      * @param str: input string.
      * @param out: the array of strings computed by splitter.
-     * @param splitter: the split string. 
+     * @param splitter: the split string.
      */
     static void Split(const std::string &str, std::vector<std::string> &out, const std::string &splitter);
 
@@ -66,14 +66,14 @@ public:
     /**
      * @brief get resource type from directory.
      * @param name: directory name.
-     * @return resrouce type.
+     * @return resource type.
      */
     static ResType GetResTypeByDir(const std::string &name);
 
     /**
      * @brief ResType to string
      * @param type: ResType
-     * @return resrouce type string.
+     * @return resource type string.
      */
     static std::string ResTypeToString(ResType type);
 
@@ -86,7 +86,7 @@ public:
     static std::string GetIdName(const std::string &name, ResType type);
 
     /**
-     * @brief compose multi strings to string 
+     * @brief compose multi strings to string
      * @param contents: multi strings
      * @param addNull: if true, string length contains '\0'.
      * @return return string, empty if error
@@ -94,7 +94,7 @@ public:
     static std::string ComposeStrings(const std::vector<std::string> &contents, bool addNull = false);
 
     /**
-     * @brief decompose string to multi strings 
+     * @brief decompose string to multi strings
      * @param content: string
      * @return return string vector, empty if error
      */

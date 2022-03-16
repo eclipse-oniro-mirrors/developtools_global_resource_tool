@@ -130,7 +130,7 @@ uint32_t PackageParser::AddOutput(const string& argValue)
         return RESTOOL_ERROR;
     }
 
-    output_ = argValue;   
+    output_ = argValue;
     return RESTOOL_SUCCESS;
 }
 
@@ -204,7 +204,6 @@ uint32_t PackageParser::AddCachePath(const string& argValue)
 
 uint32_t PackageParser::CheckParam() const
 {
-
     if (inputs_.empty()) {
         cerr << "Error: input path empty." << endl;
         return RESTOOL_ERROR;

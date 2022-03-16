@@ -35,7 +35,7 @@ uint32_t FileManager::ScanModules(const vector<string> &inputs, const string &ou
     vector<string> sxmlFolders;
     for (auto input : inputs) {
         map<ResType, vector<DirectoryInfo>> resTypeOfDirs;
-        if(ScanModule(input, output, resTypeOfDirs) != RESTOOL_SUCCESS) {
+        if (ScanModule(input, output, resTypeOfDirs) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }
         FilterRefSolidXml(output, sxmlFolders, resTypeOfDirs);
@@ -100,7 +100,7 @@ void FileManager::FilterRefSolidXml(const string &output, vector<string> &output
             string outputPath = FileEntry::FilePath(output).Append(RESOURCES_DIR).Append(resourceDir.limitKey)
                 .Append(resourceDir.fileCluster).GetPath();
             if (find(outputPaths.begin(), outputPaths.end(), outputPath) == outputPaths.end()) {
-               outputPaths.push_back(outputPath);
+                outputPaths.push_back(outputPath);
             }
         }
     }

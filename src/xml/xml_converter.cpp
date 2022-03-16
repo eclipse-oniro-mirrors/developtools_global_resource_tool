@@ -49,12 +49,12 @@ bool XmlConverter::GenerateSolidXml()
 
 bool XmlConverter::GenerateKey()
 {
-   return keyManager.SaveKey(outputPath_);
+    return keyManager.SaveKey(outputPath_);
 }
 
 bool XmlConverter::LoadKeys(const std::string &folderPath)
 {
-   return keyManager.LoadKey(folderPath);
+    return keyManager.LoadKey(folderPath);
 }
 }
 }

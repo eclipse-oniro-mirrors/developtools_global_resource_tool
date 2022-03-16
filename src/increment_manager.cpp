@@ -230,7 +230,9 @@ void IncrementManager::DeleteRawFile(vector<IncrementList::FileIncrement> &dels)
             continue;
         }
         string rawFilePath = FileEntry::FilePath(outputPath_).Append(it->relativePath).GetPath();
-        remove(rawFilePath.c_str());
+        if (remove(rawFilePath.c_str()) != 0) {
+            cout << "Warning: remove fail '" << rawFilePath << "'" << endl;
+        }
         it = dels.erase(it);
     }
 }
