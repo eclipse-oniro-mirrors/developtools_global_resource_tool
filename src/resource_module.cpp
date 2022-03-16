@@ -43,7 +43,7 @@ uint32_t ResourceModule::ScanResource()
     }
 
     ResourceDirectory directory;
-    if (!directory.ScanResources(modulePath_,[this](const DirectoryInfo &info) -> bool {
+    if (!directory.ScanResources(modulePath_, [this](const DirectoryInfo &info) -> bool {
             scanDirs_[info.dirType].push_back(info);
             return true;
         })) {
@@ -79,7 +79,7 @@ const map<ResType, vector<DirectoryInfo>> &ResourceModule::GetScanDirectorys() c
 }
 
 uint32_t ResourceModule::MergeResourceItem(map<int32_t, vector<ResourceItem>> &alls,
-        const map<int32_t, vector<ResourceItem>> &other, bool tipError)
+    const map<int32_t, vector<ResourceItem>> &other, bool tipError)
 {
     for (const auto &iter : other) {
         auto result = alls.emplace(iter.first, iter.second);

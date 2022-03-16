@@ -144,12 +144,12 @@ uint32_t IResourceCompiler::ConvertToSolidXml(const map<string, vector<FileInfo>
 
 uint32_t IResourceCompiler::CompileSingleFile(const FileInfo &fileInfo)
 {
-    return RESTOOL_SUCCESS;  
+    return RESTOOL_SUCCESS;
 }
 
 uint32_t IResourceCompiler::PostCommit()
 {
-    IdWorker &idWorker = IdWorker::GetInstance(); 
+    IdWorker &idWorker = IdWorker::GetInstance();
     for (const auto &nameInfo : nameInfos_) {
         int32_t id = idWorker.GenerateId(nameInfo.first.first, nameInfo.first.second);
         if (id < 0) {
@@ -159,7 +159,7 @@ uint32_t IResourceCompiler::PostCommit()
         }
         resourceInfos_.emplace(id, nameInfo.second);
     }
-    return RESTOOL_SUCCESS; 
+    return RESTOOL_SUCCESS;
 }
 
 bool IResourceCompiler::MergeResourceItem(const ResourceItem &resourceItem)

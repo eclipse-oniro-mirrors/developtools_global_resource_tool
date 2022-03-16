@@ -127,7 +127,7 @@ bool FileEntry::IsDirectory(const string &path)
 {
     struct stat s;
     stat(path.c_str(), &s);
-    return S_ISDIR(s.st_mode);    
+    return S_ISDIR(s.st_mode);
 }
 
 FileEntry::FilePath::FilePath(const string &path) : filePath_(path)
@@ -198,10 +198,10 @@ const vector<string> FileEntry::FilePath::GetSegments() const
 // below private
 bool FileEntry::IsIgnore(const string &filename) const
 {
-   if (filename == "." || filename == "..") {
-       return true;
-   }
-   return false;
+    if (filename == "." || filename == "..") {
+        return true;
+    }
+    return false;
 }
 
 bool FileEntry::RemoveAllDirInner(const FileEntry &entry)
@@ -224,7 +224,7 @@ bool FileEntry::CreateDirsInner(const string &path, string::size_type offset)
     if (pos == string::npos) {
 #if _WIN32
         return mkdir(path.c_str());
- #else
+#else
         return mkdir(path.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == 0;
 #endif
     }
@@ -242,7 +242,7 @@ bool FileEntry::CreateDirsInner(const string &path, string::size_type offset)
     return CreateDirsInner(path, pos + 1);
 }
 
-void FileEntry::FilePath::Format() 
+void FileEntry::FilePath::Format()
 {
     if (filePath_.back() != SEPARATE.front()) {
         return;
@@ -264,7 +264,7 @@ void FileEntry::FilePath::Init()
     pos = filename_.find_last_of('.');
     if (pos != string::npos && pos + 1 < filename_.length()) {
         extension_ = filename_.substr(pos);
-    }    
+    }
 }
 }
 }

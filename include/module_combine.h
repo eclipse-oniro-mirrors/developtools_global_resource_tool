@@ -30,7 +30,7 @@ public:
 private:
     bool CombineDirectory(const DirectoryInfo &directoryInfo);
     bool CombineSolidXml(const std::string &src, const std::string &dst,
-        const std::map<std::string , std::string> &sxmlPaths);
+        const std::map<std::string, std::string> &sxmlPaths);
     const std::string &modulePath_;
     const std::string &outputPath_;
 };

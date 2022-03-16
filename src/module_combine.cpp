@@ -89,7 +89,7 @@ bool ModuleCombine::CombineDirectory(const DirectoryInfo &directoryInfo)
     return CombineSolidXml(directoryInfo.dirPath, outputFolder, sxmlPaths);
 }
 
-bool ModuleCombine::CombineSolidXml(const string &src, const string &dst, const map<string , string> &sxmlPaths)
+bool ModuleCombine::CombineSolidXml(const string &src, const string &dst, const map<string, string> &sxmlPaths)
 {
     if (sxmlPaths.empty()) {
         return true;

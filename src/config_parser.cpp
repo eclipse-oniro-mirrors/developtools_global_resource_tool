@@ -245,7 +245,7 @@ bool ConfigParser::GetRefIdFromString(string &value, bool &update, const string 
     smatch result;
     if (regex_search(value, result, regex(match))) {
         value = value.substr(result[0].str().length());
-        return true; 
+        return true;
     }
     cerr << error << endl;
     return false;
