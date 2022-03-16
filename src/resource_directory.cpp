@@ -70,7 +70,7 @@ bool ResourceDirectory::ScanResourceLimitKeyDir(const string &resourceTypeDir, c
         string fileCluster = it->GetFilePath().GetFilename();
         if (ResourceUtil::IsIgnoreFile(fileCluster, it->IsFile())) {
             continue;
-	}
+        }
 
         if (it->IsFile()) {
             cerr << "Error: '" << dirPath << "' not directory." << endl;
