@@ -33,6 +33,10 @@ uint32_t PackCmdHandle(PackageParser &packageParser)
 
 int main(int argc, char *argv[])
 {
+    if (argv == nullptr) {
+        cerr << "Error: argv null" << endl;
+        return RESTOOL_ERROR;
+    }
     auto &parser = CmdParser<PackageParser>::GetInstance();
     if (parser.Parse(argc, argv) != RESTOOL_SUCCESS) {
         parser.ShowUseage();

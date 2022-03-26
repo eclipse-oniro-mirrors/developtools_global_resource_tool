@@ -75,7 +75,7 @@ bool ResourceUtil::OpenJsonFile(const string &path, Json::Value &root)
 {
     ifstream ifs(path, ios::binary);
     if (!ifs) {
-        cerr << "Error: open json faild '" << path << "'" << endl;
+        cerr << "Error: open json failed '" << path << "'" << endl;
         return false;
     }
 
