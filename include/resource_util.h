@@ -116,7 +116,7 @@ public:
     static bool CopyFleInner(const std::string &src, const std::string &dst);
 
     /**
-     * @brief create directorys
+     * @brief create directories
      * @param filePath: directory path
      * @return true if success, other false
      */

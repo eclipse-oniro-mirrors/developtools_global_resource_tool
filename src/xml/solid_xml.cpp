@@ -43,9 +43,14 @@ bool SolidXml::GenerateSolidXml(const string &filePath)
         return false;
     }
 
+    xmlNodePtr rootNode = xmlDocGetRootElement(doc);
+    if (rootNode == nullptr) {
+        xmlFreeDoc(doc);
+        return false;
+    }
     auto root = make_shared<XmlNode>();
     nodes_.push_back(root);
-    Compile(xmlDocGetRootElement(doc), root);
+    Compile(rootNode, root);
     xmlFreeDoc(doc);
     return SaveToFile(filePath);
 }
