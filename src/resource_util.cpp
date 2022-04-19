@@ -236,6 +236,7 @@ bool ResourceUtil::CreateDirs(const string &filePath)
     
     if (!FileEntry::CreateDirs(filePath)) {
         cerr << "Error: create dir fail '" << filePath << "'" << endl;
+        return false;
     }
     return true;
 }
