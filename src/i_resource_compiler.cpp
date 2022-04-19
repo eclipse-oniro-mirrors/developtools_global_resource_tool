@@ -68,7 +68,6 @@ uint32_t IResourceCompiler::Compile(const vector<DirectoryInfo> &directoryInfos)
         return a.filePath < b.filePath;
     });
     for (const auto &fileInfo : fileInfos) {
-        cout << "compile " << fileInfo.filePath << endl;
         if (CompileSingleFile(fileInfo) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }

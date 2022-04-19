@@ -169,7 +169,7 @@ bool JsonCompiler::HandleBoolean(const Json::Value &objectNode, ResourceItem &re
 {
     Json::Value valueNode = objectNode[TAG_VALUE];
     if (valueNode.isString()) {
-        regex ref("^\\$boolean:.*");
+        regex ref("^\\$(ohos:)?boolean:.*");
         if (!regex_match(valueNode.asString(), ref)) {
             cerr << "Error: '" << valueNode.asString() << "' only refer '$boolean:xxx',";
             cerr << resourceItem.GetFilePath() << endl;
@@ -290,17 +290,17 @@ bool JsonCompiler::CheckJsonStringValue(const Json::Value &valueNode, const Reso
     }
 
     const map<ResType, string> REFS = {
-        { ResType::STRING, "$string:" },
-        { ResType::STRARRAY, "$string:" },
-        { ResType::COLOR, "$color:" },
-        { ResType::FLOAT, "$float:" }
+        { ResType::STRING, "\\$(ohos:)?string:" },
+        { ResType::STRARRAY, "\\$(ohos:)?string:" },
+        { ResType::COLOR, "\\$(ohos:)?color:" },
+        { ResType::FLOAT, "\\$(ohos:)?float:" }
     };
 
     string value = valueNode.asString();
     ResType type = resourceItem.GetResType();
     regex ref("^\\$.+:");
     smatch result;
-    if (regex_search(value, result, ref) && result[0] != REFS.at(type)) {
+    if (regex_search(value, result, ref) && !regex_match(result[0].str(), regex(REFS.at(type)))) {
         cerr << "Error: '" << value << "' only refer '"<< REFS.at(type) << "xxx',";
         cerr << resourceItem.GetFilePath() << endl;
         return false;
@@ -311,7 +311,7 @@ bool JsonCompiler::CheckJsonStringValue(const Json::Value &valueNode, const Reso
 bool JsonCompiler::CheckJsonIntegerValue(const Json::Value &valueNode, const ResourceItem &resourceItem) const
 {
     if (valueNode.isString()) {
-        regex ref("^\\$integer:.*");
+        regex ref("^\\$(ohos:)?integer:.*");
         if (!regex_match(valueNode.asString(), ref)) {
             cerr << "Error: '" << valueNode.asString() << "' only refer '$integer:xxx',";
             cerr << resourceItem.GetFilePath() << endl;
