@@ -19,8 +19,8 @@ config("restool_libxml2_config") {
     include_dirs +=
         [ "//developtools/global_resource_tool/build/libxml2/win32/include" ]
     defines = [ "LIBXML_STATIC" ]
-  } else {
-    include_dirs += [ "${LIBXML_PATH}/config" ]
+  } else if (is_mac) {
+    defines = [ "LIBXML_THREAD_ENABLED" ]
   }
 
   include_dirs += [ "${LIBXML_PATH}/include" ]
