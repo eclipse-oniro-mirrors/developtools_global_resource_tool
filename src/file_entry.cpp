@@ -228,7 +228,7 @@ bool FileEntry::CreateDirsInner(const string &path, string::size_type offset)
 #endif
     }
 
-    string subPath = path.substr(0, pos);
+    string subPath = path.substr(0, pos + 1);
     if (!Exist(subPath)) {
 #if _WIN32
         if (mkdir(subPath.c_str()) != 0) {
