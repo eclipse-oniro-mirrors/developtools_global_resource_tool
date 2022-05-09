@@ -123,7 +123,7 @@ uint32_t ResourcePack::InitModule()
         }
 
         int32_t startId = ((it - moduleNames.begin()) + 1) * 0x01000000;
-        if (startId == 0x07000000) {
+        if (startId >= 0x07000000) {
             startId = startId + 0x01000000;
         }
         return idWorker.Init(hapType, startId);
