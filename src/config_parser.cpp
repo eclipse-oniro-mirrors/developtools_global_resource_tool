@@ -34,7 +34,11 @@ const map<string, string> ConfigParser::JSON_STRING_IDS = {
     { "label", "^\\$string:" },
     { "description", "^\\$string:" },
     { "theme", "^\\$theme:" },
-    { "reason", "^\\$string:" }
+    { "reason", "^\\$string:" },
+    { "startWindowIcon", "^\\$media:" },
+    { "startWindowBackground", "^\\$color:"},
+    { "resource", "^\\$[a-z]+:" },
+    { "extra", "^\\$[a-z]+:" }
 };
 
 const map<string, string> ConfigParser::JSON_ARRAY_IDS = {

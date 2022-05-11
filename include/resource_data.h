@@ -32,7 +32,7 @@ const static std::string ID_DEFINED_FILE = "id_defined.json";
 const static std::string RESOURCE_INDEX_FILE = "resources.index";
 const static std::string SEPARATOR = "/";
 const static int32_t VERSION_MAX_LEN = 128;
-static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 2.007" };
+static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 2.008" };
 const static int32_t TAG_LEN = 4;
 
 enum class KeyType {

@@ -27,7 +27,7 @@ public:
     ReferenceParser();
     virtual ~ReferenceParser();
     uint32_t ParseRefInSolidXml(const std::vector<std::string> &solidXmlFolders) const;
-    uint32_t ParseRefInElement(std::map<int32_t, std::vector<ResourceItem>> &alls) const;
+    uint32_t ParseRefInElement(std::map<int32_t, std::vector<ResourceItem>> &items) const;
     uint32_t ParseRefInString(std::string &value, bool &update) const;
     uint32_t ParseRefInProfile(const std::string &output) const;
     uint32_t ParseRefInJson(const std::string &filePath) const;

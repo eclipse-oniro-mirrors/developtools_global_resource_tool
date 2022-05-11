@@ -65,7 +65,6 @@ const vector<unique_ptr<FileEntry>> FileEntry::GetChilds() const
 
         filePath = filePath_.GetPath() + SEPARATE + filename;
         unique_ptr<FileEntry> f = make_unique<FileEntry>(filePath);
-        cout <<  filePath << endl;
         f->Init();
         children.push_back(move(f));
     }
@@ -223,13 +222,13 @@ bool FileEntry::CreateDirsInner(const string &path, string::size_type offset)
     string::size_type pos = path.find_first_of(SEPARATE.front(), offset);
     if (pos == string::npos) {
 #if _WIN32
-        return mkdir(path.c_str());
+        return mkdir(path.c_str()) == 0;
 #else
         return mkdir(path.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == 0;
 #endif
     }
 
-    string subPath = path.substr(0, pos);
+    string subPath = path.substr(0, pos + 1);
     if (!Exist(subPath)) {
 #if _WIN32
         if (mkdir(subPath.c_str()) != 0) {

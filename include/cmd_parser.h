@@ -35,7 +35,7 @@ public:
 class PackageParser : public ICmdParser {
 public:
     PackageParser() {};
-    ~PackageParser() = default;
+    virtual ~PackageParser() = default;
     uint32_t Parse(int argc, char *argv[]) override;
     const std::vector<std::string> &GetInputs() const;
     const std::string &GetPackageName() const;
@@ -104,7 +104,7 @@ template<class T>
 void CmdParser<T>::ShowUseage()
 {
     std::cout << "This is an OHOS Packaging Tool.\n";
-    std::cout << "Useage:\n";
+    std::cout << "Usage:\n";
     std::cout << TOOL_NAME << " [arguments] Package the OHOS resources.\n";
     std::cout << "[arguments]:\n";
     std::cout << "    -i    input resource path, can add more.\n";

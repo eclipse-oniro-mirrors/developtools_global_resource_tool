@@ -75,7 +75,7 @@ bool ResourceUtil::OpenJsonFile(const string &path, Json::Value &root)
 {
     ifstream ifs(path, ios::binary);
     if (!ifs) {
-        cerr << "Error: open json faild '" << path << "'" << endl;
+        cerr << "Error: open json failed '" << path << "'" << endl;
         return false;
     }
 
@@ -236,6 +236,7 @@ bool ResourceUtil::CreateDirs(const string &filePath)
     
     if (!FileEntry::CreateDirs(filePath)) {
         cerr << "Error: create dir fail '" << filePath << "'" << endl;
+        return false;
     }
     return true;
 }

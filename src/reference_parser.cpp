@@ -87,9 +87,9 @@ uint32_t ReferenceParser::ParseRefInSolidXml(const vector<string> &solidXmlFolde
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ReferenceParser::ParseRefInElement(map<int32_t, vector<ResourceItem>> &alls) const
+uint32_t ReferenceParser::ParseRefInElement(map<int32_t, vector<ResourceItem>> &items) const
 {
-    for (auto &iter : alls) {
+    for (auto &iter : items) {
         for (auto &resourceItem : iter.second) {
             if (IsNotElement(resourceItem.GetResType())) {
                 break;

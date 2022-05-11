@@ -46,7 +46,7 @@ uint32_t FileManager::ScanModules(const vector<string> &inputs, const string &ou
 uint32_t FileManager::ScanIncrement(const string &output)
 {
     auto &incrementManager = IncrementManager::GetInstance();
-    alls_ = incrementManager.GetResourceItems();
+    items_ = incrementManager.GetResourceItems();
     vector<string> sxmlFolders;
     FilterRefSolidXml(output, sxmlFolders, incrementManager.GetScanDirs());
     return ParseReference(output, sxmlFolders);
@@ -67,14 +67,14 @@ uint32_t FileManager::ScanModule(const string &input, const string &output,
 
 uint32_t FileManager::MergeResourceItem(const map<int32_t, vector<ResourceItem>> &resourceInfos)
 {
-    return ResourceModule::MergeResourceItem(alls_, resourceInfos);
+    return ResourceModule::MergeResourceItem(items_, resourceInfos);
 }
 
 uint32_t FileManager::ParseReference(const string &output, const vector<string> &sxmlFolders)
 {
     ReferenceParser referenceParser;
     if (referenceParser.ParseRefInSolidXml(sxmlFolders) != RESTOOL_SUCCESS ||
-        referenceParser.ParseRefInElement(alls_) != RESTOOL_SUCCESS ||
+        referenceParser.ParseRefInElement(items_) != RESTOOL_SUCCESS ||
         referenceParser.ParseRefInProfile(output) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
