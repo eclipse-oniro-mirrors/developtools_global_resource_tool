@@ -87,7 +87,7 @@ ohos_unittest_py("restool_test") {
 }
 
 ID_DEFINED_PATH =
-    "//utils/resources/systemres/main/resources/base/element/id_defined.json"
+    "//utils/system_resources/systemres/main/resources/base/element/id_defined.json"
 
 ohos_copy("restool_id_defined") {
   sources = [ "${ID_DEFINED_PATH}" ]
