@@ -43,8 +43,11 @@ resource tool command e.g:
 
 ##  Related to the storehouse
 
-third_party_libxml2  
-third_party_jsoncpp  
-third_party_sqlite  
-third_party_bounds_checking_function
+[third_party_libxml2](https://gitee.com/openharmony/third_party_libxml2/README.md)
+
+[third_party_jsoncpp](https://gitee.com/openharmony/third_party_jsoncpp/README.md)
+
+[third_party_sqlite](https://gitee.com/openharmony/third_party_sqlite/README.md)
+
+[third_party_bounds_checking_function](https://gitee.com/openharmony/third_party_bounds_checking_function/README.md)
 
