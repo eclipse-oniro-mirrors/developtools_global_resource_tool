@@ -8,13 +8,13 @@
 ```
 /developtools
 |----global_resource_tool
-|    |----include  
-|    |----src  
-|    |----test  
-|    |----build 依赖三方库编译脚本  
-|    |----BUILD.gn  
-|    |----CMakeLists.txt  
-|    |----win32.cmake Windows交叉编译脚本  
+|    |----include         #头文件
+|    |----src             #源代码文件
+|    |----test            #测试用例
+|    |----build           #依赖三方库编译脚本  
+|    |----BUILD.gn        #编译脚本
+|    |----CMakeLists.txt  #CMake文件
+|    |----win32.cmake     #Windows交叉编译脚本  
 ```
 
 ## 使用说明
@@ -42,6 +42,8 @@ PC 上运行 `python test.py ./restool  ./out`
 `./restool -i main -o out -r out/ResourceTable.h -p ohos.demo`    
 
 ## 相关仓
+
+**global_resource_tool**
 
 [third_party_libxml2](https://gitee.com/openharmony/third_party_libxml2/README_zh.md)
 

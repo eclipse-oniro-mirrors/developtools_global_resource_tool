@@ -6,22 +6,22 @@ resource tool is used in computer.In OpenHarmony SDK toolchain.Provide to IDE.Su
 ## Directory Structure
 
 ```
-/developtools   
+/developtools
 |----global_resource_tool
-|    |----include  
-|    |----src  
-|    |----test
-|    |----build dependence third patry lib make script  
-|    |----CMakeLists.txt  
-|    |----BUILD.gn  
-|    |----win32.cmake Windows cross compile script
+|    |----include         #Header file
+|    |----src             #source code file
+|    |----test            #Test case
+|    |----build           #Depending on the third-party library compilation script
+|    |----BUILD.gn        #Compile script
+|    |----CMakeLists.txt  #CMake file
+|    |----win32.cmake     #Windows cross compilation script
 ```
 
 ## Instructions
 
 ### SDK Build
 
-[SDK build refer](https://gitee.com/openharmony/build/blob/master/README_zh.md)
+[SDK build refer](https://gitee.com/openharmony/build/blob/master/README.md)
 
 ### Test
 
@@ -42,6 +42,8 @@ resource tool command e.g:
 `./restool -i main -o out -r out/ResourceTable.h -p ohos.demo`  
 
 ##  Related to the storehouse
+
+**global_resource_tool**
 
 [third_party_libxml2](https://gitee.com/openharmony/third_party_libxml2/README.md)
 
