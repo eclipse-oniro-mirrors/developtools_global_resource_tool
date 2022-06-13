@@ -123,7 +123,7 @@ bool ConfigParser::ParseModule(Json::Value &moduleNode)
     }
 
     if (!useModule_) {
-        if (moduleNode["package"].isString()) {
+        if (moduleNode.isMember("package") && moduleNode["package"].isString()) {
             packageName_ = moduleNode["package"].asString();
         }
         return ParseDistro(moduleNode["distro"]);
