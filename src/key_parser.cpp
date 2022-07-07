@@ -41,6 +41,7 @@ bool KeyParser::Parse(const string &folderName, vector<KeyParam> &keyparams)
         ParseOrientation,
         ParseDeviceType,
         ParseNightMode,
+        ParseInputDevice,
         ParseResolution,
     };
 
@@ -221,6 +222,17 @@ bool KeyParser::ParseNightMode(const string &folderName, vector<KeyParam> &keypa
     }
 
     PushValue(static_cast<uint32_t>(it->second), KeyType::NIGHTMODE, keyparams);
+    return true;
+}
+
+bool KeyParser::ParseInputDevice(const string &folderName, vector<KeyParam> &keyparams)
+{
+    auto it = g_inputDeviceMap.find(folderName);
+    if (it == g_inputDeviceMap.end()) {
+        return false;
+    }
+
+    PushValue(static_cast<uint32_t>(it->second), KeyType::INPUTDEVICE, keyparams);
     return true;
 }
 
