@@ -43,6 +43,7 @@ private:
     static bool ParseOrientation(const std::string &folderName, std::vector<KeyParam> &keyparams);
     static bool ParseDeviceType(const std::string &folderName, std::vector<KeyParam> &keyparams);
     static bool ParseNightMode(const std::string &folderName, std::vector<KeyParam> &keyparams);
+    static bool ParseInputDevice(const std::string &folderName, std::vector<KeyParam> &keyparams);
     static bool ParseResolution(const std::string &folderName, std::vector<KeyParam> &keyparams);
 
     static void PushMccMnc(const std::string &folderName, KeyType type, std::vector<KeyParam> &keyparams);

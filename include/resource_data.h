@@ -32,7 +32,7 @@ const static std::string ID_DEFINED_FILE = "id_defined.json";
 const static std::string RESOURCE_INDEX_FILE = "resources.index";
 const static std::string SEPARATOR = "/";
 const static int32_t VERSION_MAX_LEN = 128;
-static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 2.008" };
+static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 2.009" };
 const static int32_t TAG_LEN = 4;
 
 enum class KeyType {
@@ -45,6 +45,8 @@ enum class KeyType {
     NIGHTMODE = 6,
     MCC = 7,
     MNC = 8,
+    // RESERVER 9
+    INPUTDEVICE = 10,
     KEY_TYPE_MAX,
 };
 
@@ -123,6 +125,15 @@ enum class NightMode {
 const std::map<std::string, NightMode> g_nightModeMap = {
     { "dark", NightMode::DARK },
     { "light", NightMode::LIGHT },
+};
+
+enum class InputDevice {
+    INPUTDEVICE_NOT_SET = -1,
+    INPUTDEVICE_POINTINGDEVICE = 0,
+};
+
+const std::map<std::string, InputDevice> g_inputDeviceMap = {
+    { "pointingdevice", InputDevice::INPUTDEVICE_POINTINGDEVICE },
 };
 
 struct KeyParam {
