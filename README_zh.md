@@ -8,13 +8,13 @@
 ```
 /developtools
 |----global_resource_tool
-|    |----include  
-|    |----src  
-|    |----test  
-|    |----build 依赖三方库编译脚本  
-|    |----BUILD.gn  
-|    |----CMakeLists.txt  
-|    |----win32.cmake Windows交叉编译脚本  
+|    |----include         #头文件
+|    |----src             #源代码文件
+|    |----test            #测试用例
+|    |----build           #依赖三方库编译脚本  
+|    |----BUILD.gn        #编译脚本
+|    |----CMakeLists.txt  #CMake文件
+|    |----win32.cmake     #Windows交叉编译脚本  
 ```
 
 ## 使用说明
@@ -43,7 +43,12 @@ PC 上运行 `python test.py ./restool  ./out`
 
 ## 相关仓
 
-third_party_libxml2  
-third_party_jsoncpp  
-third_party_sqlite  
-third_party_bounds_checking_function
+**global_resource_tool**
+
+[third_party_libxml2](https://gitee.com/openharmony/third_party_libxml2/README_zh.md)
+
+[third_party_jsoncpp](https://gitee.com/openharmony/third_party_jsoncpp/README_zh.md)
+
+[third_party_sqlite](https://gitee.com/openharmony/third_party_sqlite/README_zh.md)
+
+[third_party_bounds_checking_function](https://gitee.com/openharmony/third_party_bounds_checking_function/README_zh.md)
