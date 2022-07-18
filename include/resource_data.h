@@ -134,9 +134,6 @@ const std::map<std::string, ResType> g_fileClusterMap = {
     { "element", ResType::ELEMENT },
     { "media", ResType::MEDIA },
     { "profile", ResType::PROF },
-    { "animation", ResType::ANIMATION },
-    { "graphic", ResType::GRAPHIC },
-    { "layout", ResType::LAYOUT }
 };
 
 const std::map<std::string, ResType> g_contentClusterMap = {
