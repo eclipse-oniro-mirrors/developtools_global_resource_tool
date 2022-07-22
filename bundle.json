@@ -1,5 +1,5 @@
 {
-    "name": "@ohos/restool",
+    "name": "@ohos/global_resource_tool",
     "description": "OpenHarmony resource compile.",
     "version": "3.1",
     "license": "Apache License 2.0",
@@ -10,7 +10,7 @@
     "dirs": {},
     "scripts": {},
     "component": {
-      "name": "restool",
+      "name": "global_resource_tool",
       "subsystem": "developtools",
       "syscap": [],
       "feature": [],

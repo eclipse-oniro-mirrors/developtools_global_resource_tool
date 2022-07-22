@@ -79,7 +79,7 @@ ohos_executable("restool") {
     ]
   }
   subsystem_name = "developtools"
-  part_name = "global_restool"
+  part_name = "global_resource_tool"
 }
 
 ohos_unittest_py("restool_test") {
@@ -93,14 +93,14 @@ ohos_copy("restool_id_defined") {
   outputs =
       [ get_label_info(
             "//developtools/global_resource_tool:restool($host_toolchain)",
-            "root_out_dir") + "/developtools/global_restool/" ]
+            "root_out_dir") + "/developtools/global_resource_tool/" ]
   deps = [ "//developtools/global_resource_tool:restool($host_toolchain)" ]
   subsystem_name = "developtools"
-  part_name = "global_restool"
+  part_name = "global_resource_tool"
 }
 
 ohos_prebuilt_etc("restool_systemres") {
   source = "${ID_DEFINED_PATH}"
   subsystem_name = "developtools"
-  part_name = "global_restool"
+  part_name = "global_resource_tool"
 }
