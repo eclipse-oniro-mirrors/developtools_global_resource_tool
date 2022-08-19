@@ -38,8 +38,17 @@ PC 上运行 `python test.py ./restool  ./out`
 -o 资源输出目录  
 -r 资源ID头文件  
 -p 应用包名  
+-f 如果输出目录中已经存在结果，强制覆盖  
+-m 编译多hap包，输入多个hap包的编译结果路径，例如：entry1,entry2,..  
+-j 编译多hap包+多har时，合并后config.json的文件路径  
+-e Id的开始标记  
 
-`./restool -i main -o out -r out/ResourceTable.h -p ohos.demo`    
+```
+entry目录结构
+|    |----resource
+|    |----config.json 或者 module.json 都兼容
+```
+`./restool -i entry1 -i entry2 -j xxx/module.json -p ohos.demo.xxx -o out -r out/ResourceTable.h `
 
 ## 相关仓
 

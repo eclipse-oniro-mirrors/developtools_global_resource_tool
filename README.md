@@ -38,8 +38,17 @@ resource tool command e.g:
 -o output resource path  
 -r resource ID header file path  
 -p package name  
+-f if output path exists,force override it  
+-m module name, can add more, split by ','(like entry1,entry2,...)  
+-j config.json path  
+-e start id mask, e.g 0x01000000, in [0x01000000, 0x06FFFFFF),[0x08000000, 0x41FFFFFF)  
 
-`./restool -i main -o out -r out/ResourceTable.h -p ohos.demo`  
+```
+entry Directory Structure
+|    |----resource
+|    |----config.json or module.json
+```
+`./restool -i entry1 -i entry2 -j xxx/module.json -p ohos.demo.xxx -o out -r out/ResourceTable.h `
 
 ##  Related to the storehouse
 
