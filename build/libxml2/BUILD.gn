@@ -132,5 +132,5 @@ ohos_static_library("restool_libxml2") {
   public_configs = [ ":restool_libxml2_config" ]
 
   subsystem_name = "developtools"
-  part_name = "global_restool"
+  part_name = "global_resource_tool"
 }

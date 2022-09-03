@@ -14,7 +14,6 @@
  */
 
 #include "task_handle.h"
-
 #include "resource_pack.h"
 
 namespace OHOS {

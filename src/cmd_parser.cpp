@@ -15,9 +15,8 @@
 
 #include "cmd_parser.h"
 #include<algorithm>
-#include "resource_util.h"
-
 #include "cmd_list.h"
+#include "resource_util.h"
 
 namespace OHOS {
 namespace Global {
@@ -37,9 +36,11 @@ const struct option PackageParser::CMD_OPTS[] = {
     { "fileList", required_argument, nullptr, 'l' },
     { "preview", no_argument, nullptr, 'a' },
     { "priority", required_argument, nullptr, 'g' },
+    { "append", required_argument, nullptr, 'x' },
+    { "combine", required_argument, nullptr, 'z' },
 };
 
-const string PackageParser::CMD_PARAMS = "i:p:o:r:m:j:e:c:l:g:afv";
+const string PackageParser::CMD_PARAMS = "i:p:o:r:m:j:e:c:l:g:x:afvz";
 
 uint32_t PackageParser::Parse(int argc, char *argv[])
 {
@@ -102,13 +103,22 @@ const string &PackageParser::GetCachePath() const
 
 uint32_t PackageParser::AddInput(const string& argValue)
 {
-    auto ret = find_if(inputs_.begin(), inputs_.end(), [argValue](auto iter) {return argValue == iter;});
+    string inputPath = ResourceUtil::RealPath(argValue);
+    if (inputPath.empty()) {
+        cerr << "Error: invalid input '" << argValue << "'" << endl;
+        return RESTOOL_ERROR;
+    }
+
+    auto ret = find_if(inputs_.begin(), inputs_.end(), [inputPath](auto iter) {return inputPath == iter;});
     if (ret != inputs_.end()) {
         cerr << "Error: repeat input '" << argValue << "'" << endl;
         return RESTOOL_ERROR;
     }
 
-    inputs_.push_back(argValue);
+    if (!IsAscii(inputPath)) {
+        return RESTOOL_ERROR;
+    }
+    inputs_.push_back(inputPath);
     return RESTOOL_SUCCESS;
 }
 
@@ -130,7 +140,14 @@ uint32_t PackageParser::AddOutput(const string& argValue)
         return RESTOOL_ERROR;
     }
 
-    output_ = argValue;
+    output_ = ResourceUtil::RealPath(argValue);
+    if (output_.empty()) {
+        cerr << "Error: invalid output '" << argValue << "'" << endl;
+        return RESTOOL_ERROR;
+    }
+    if (!IsAscii(output_)) {
+        return RESTOOL_ERROR;
+    }
     return RESTOOL_SUCCESS;
 }
 
@@ -204,7 +221,7 @@ uint32_t PackageParser::AddCachePath(const string& argValue)
 
 uint32_t PackageParser::CheckParam() const
 {
-    if (inputs_.empty()) {
+    if (inputs_.empty() && append_.empty()) {
         cerr << "Error: input path empty." << endl;
         return RESTOOL_ERROR;
     }
@@ -214,7 +231,7 @@ uint32_t PackageParser::CheckParam() const
         return RESTOOL_ERROR;
     }
 
-    if (previewMode_) {
+    if (previewMode_ || !append_.empty()) {
         return RESTOOL_SUCCESS;
     }
     if (packageName_.empty()) {
@@ -256,6 +273,59 @@ uint32_t PackageParser::SetPriority(const string& argValue)
     return RESTOOL_SUCCESS;
 }
 
+uint32_t PackageParser::AddAppend(const string& argValue)
+{
+    string appendPath = ResourceUtil::RealPath(argValue);
+    if (appendPath.empty()) {
+        cout << "Warning: invaild compress '" << argValue << "'" << endl;
+        appendPath = argValue;
+    }
+    auto ret = find_if(append_.begin(), append_.end(), [appendPath](auto iter) {return appendPath == iter;});
+    if (ret != append_.end()) {
+        cerr << "Error: repeat input '" << argValue << "'" << endl;
+        return RESTOOL_ERROR;
+    }
+    if (!IsAscii(appendPath)) {
+        return RESTOOL_ERROR;
+    }
+    append_.push_back(appendPath);
+    return RESTOOL_SUCCESS;
+}
+
+const vector<string> &PackageParser::GetAppend() const
+{
+    return append_;
+}
+
+uint32_t PackageParser::SetCombine()
+{
+    combine_ = true;
+    return RESTOOL_SUCCESS;
+}
+
+bool PackageParser::GetCombine() const
+{
+    return combine_;
+}
+
+bool PackageParser::IsAscii(const string& argValue) const
+{
+#ifdef __WIN32
+    auto result = find_if(argValue.begin(), argValue.end(), [](auto iter) {
+        if ((iter & 0x80) != 0) {
+            return true;
+        }
+        return false;
+    });
+
+    if (result != argValue.end()) {
+        cerr << "Error: '" << argValue << "' must be ASCII" << endl;
+        return false;
+    }
+#endif
+    return true;
+}
+
 void PackageParser::InitCommand()
 {
     using namespace placeholders;
@@ -271,6 +341,8 @@ void PackageParser::InitCommand()
     handles_.emplace('c', bind(&PackageParser::AddCachePath, this, _1));
     handles_.emplace('a', [this](const string &) -> uint32_t { return SetPreviewMode(); });
     handles_.emplace('g', bind(&PackageParser::SetPriority, this, _1));
+    handles_.emplace('x', bind(&PackageParser::AddAppend, this, _1));
+    handles_.emplace('z', [this](const string &) -> uint32_t { return SetCombine(); });
 }
 
 uint32_t PackageParser::HandleProcess(int c, const string& argValue)

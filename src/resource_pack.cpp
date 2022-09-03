@@ -22,7 +22,7 @@
 #include "increment_manager.h"
 #include "resource_merge.h"
 #include "resource_table.h"
-
+#include "resource_append.h"
 #include "preview_manager.h"
 
 namespace OHOS {
@@ -36,40 +36,17 @@ ResourcePack::ResourcePack(const PackageParser &packageParser):packageParser_(pa
 uint32_t ResourcePack::Package()
 {
     if (packageParser_.GetPreviewMode()) {
-        PreviewManager preview;
-        preview.SetPriority(packageParser_.GetPriority());
-        return preview.ScanModules(packageParser_.GetInputs(), packageParser_.GetOutput());
-    }
-    if (Init() != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
+        return PackPreview();
     }
 
-    ResourceMerge resourceMerge;
-    if (resourceMerge.Init() != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
+    if (!packageParser_.GetAppend().empty()) {
+        return PackAppend();
     }
 
-    if (ScanResources(resourceMerge.GetInputs(), packageParser_.GetOutput()) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
+    if (packageParser_.GetCombine()) {
+        return PackCombine();
     }
-
-    if (GenerateHeader() != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-
-    if (CopyRawFile(resourceMerge.GetInputs()) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-
-    if (GenerateConfigJson() != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-
-    ResourceTable resourceTable;
-    if (resourceTable.CreateResourceTable() != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-    return RESTOOL_SUCCESS;
+    return PackNormal();
 }
 
 // below private founction
@@ -354,6 +331,77 @@ uint32_t ResourcePack::ScanResources(const vector<string> &inputs, const string 
         return RESTOOL_ERROR;
     }
     if (fileManager.ScanIncrement(output) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t ResourcePack::PackNormal()
+{
+    if (Init() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
+    ResourceMerge resourceMerge;
+    if (resourceMerge.Init() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
+    if (ScanResources(resourceMerge.GetInputs(), packageParser_.GetOutput()) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
+    if (GenerateHeader() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
+    if (CopyRawFile(resourceMerge.GetInputs()) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
+    if (GenerateConfigJson() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
+    ResourceTable resourceTable;
+    if (resourceTable.CreateResourceTable() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t ResourcePack::PackPreview()
+{
+    PreviewManager preview;
+    preview.SetPriority(packageParser_.GetPriority());
+    return preview.ScanModules(packageParser_.GetInputs(), packageParser_.GetOutput());
+}
+
+uint32_t ResourcePack::PackAppend()
+{
+    ResourceAppend resourceAppend(packageParser_);
+    if (!packageParser_.GetAppend().empty()) {
+        return resourceAppend.Append();
+    }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t ResourcePack::PackCombine()
+{
+    if (Init() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
+    ResourceAppend resourceAppend(packageParser_);
+    if (resourceAppend.Combine() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
+    if (GenerateConfigJson() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
+    if (GenerateHeader() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;

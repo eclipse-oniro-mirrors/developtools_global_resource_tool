@@ -142,7 +142,21 @@ public:
      * @param key: string
      * @return hash string
      */
-    static std::string GenerateHash(const std::string key);
+    static std::string GenerateHash(const std::string &key);
+
+    /**
+     * @brief get an absolute pathname
+     * @param path pathname
+     * @return absolut pathname
+     */
+    static std::string RealPath(const std::string &path);
+
+    /**
+     * @brief check the directory is legal
+     * @param path pathname
+     * @return true is legal, other false;
+     */
+    static bool IslegalPath(const std::string &path);
 private:
     enum class IgnoreType {
         IGNORE_FILE,

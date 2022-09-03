@@ -58,6 +58,27 @@ uint32_t ResourceTable::CreateResourceTable()
     return RESTOOL_SUCCESS;
 }
 
+uint32_t ResourceTable::CreateResourceTable(const map<int32_t, vector<shared_ptr<ResourceItem>>> &items)
+{
+    map<string, vector<TableData>> configs;
+    for (const auto &item : items) {
+        for (const auto &resourceItemPtr : item.second) {
+            if (resourceItemPtr->GetResType() == ResType::ID) {
+                break;
+            }
+            TableData tableData;
+            tableData.id = item.first;
+            tableData.resourceItem = *resourceItemPtr;
+            configs[resourceItemPtr->GetLimitKey()].push_back(tableData);
+        }
+    }
+
+    if (SaveToResouorceIndex(configs) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
+}
+
 // below private
 uint32_t ResourceTable::SaveToResouorceIndex(const map<string, vector<TableData>> &configs) const
 {
@@ -80,14 +101,18 @@ uint32_t ResourceTable::SaveToResouorceIndex(const map<string, vector<TableData>
         return RESTOOL_ERROR;
     }
 
-    if (!SaveRecordItem(configs, out, idSets, pos)) {
+    ostringstream outStreamData;
+    if (!SaveRecordItem(configs, outStreamData, idSets, pos)) {
         return RESTOOL_ERROR;
     }
 
+    ostringstream outStreamHeader;
     indexHeader.fileSize = pos;
-    SaveHeader(indexHeader, out);
-    SaveLimitKeyConfigs(limitKeyConfigs, out);
-    SaveIdSets(idSets, out);
+    SaveHeader(indexHeader, outStreamHeader);
+    SaveLimitKeyConfigs(limitKeyConfigs, outStreamHeader);
+    SaveIdSets(idSets, outStreamHeader);
+    out << outStreamHeader.str();
+    out << outStreamData.str();
     return RESTOOL_SUCCESS;
 }
 
@@ -139,9 +164,8 @@ bool ResourceTable::Prepare(const map<string, vector<TableData>> &configs,
 }
 
 bool ResourceTable::SaveRecordItem(const map<string, vector<TableData>> &configs,
-                                   ofstream &out, map<string, IdSet> &idSets, uint32_t &pos) const
+                                   ostringstream &out, map<string, IdSet> &idSets, uint32_t &pos) const
 {
-    out.seekp(pos);
     for (const auto &config : configs) {
         auto idSet = idSets.find(config.first);
         if (idSet == idSets.end()) {
@@ -178,15 +202,14 @@ bool ResourceTable::SaveRecordItem(const map<string, vector<TableData>> &configs
     return true;
 }
 
-void ResourceTable::SaveHeader(const IndexHeader &indexHeader, std::ofstream &out) const
+void ResourceTable::SaveHeader(const IndexHeader &indexHeader, ostringstream &out) const
 {
-    out.seekp(0);
     out.write(reinterpret_cast<const char *>(&indexHeader.version), VERSION_MAX_LEN);
     out.write(reinterpret_cast<const char *>(&indexHeader.fileSize), sizeof(uint32_t));
     out.write(reinterpret_cast<const char *>(&indexHeader.limitKeyConfigSize), sizeof(uint32_t));
 }
 
-void ResourceTable::SaveLimitKeyConfigs(const map<string, LimitKeyConfig> &limitKeyConfigs, ofstream &out) const
+void ResourceTable::SaveLimitKeyConfigs(const map<string, LimitKeyConfig> &limitKeyConfigs, ostringstream &out) const
 {
     for (const auto &iter : limitKeyConfigs) {
         out.write(reinterpret_cast<const char *>(iter.second.keyTag), TAG_LEN);
@@ -198,7 +221,7 @@ void ResourceTable::SaveLimitKeyConfigs(const map<string, LimitKeyConfig> &limit
     }
 }
 
-void ResourceTable::SaveIdSets(const map<string, IdSet> &idSets, ofstream &out) const
+void ResourceTable::SaveIdSets(const map<string, IdSet> &idSets, ostringstream &out) const
 {
     for (const auto &iter : idSets) {
         out.write(reinterpret_cast<const char *>(iter.second.idTag), TAG_LEN);

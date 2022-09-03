@@ -18,10 +18,8 @@
 #include<fstream>
 #include<iostream>
 #include<regex>
+#include<stdlib.h>
 #include "file_entry.h"
-#ifdef __WIN32
-#include "windows.h"
-#endif
 
 namespace OHOS {
 namespace Global {
@@ -214,17 +212,10 @@ ResType ResourceUtil::GetResTypeFromString(const string &type)
 
 bool ResourceUtil::CopyFleInner(const string &src, const string &dst)
 {
-#ifdef __WIN32
-    if (!CopyFileA(src.c_str(), dst.c_str(), false)) {
+    if (!FileEntry::CopyFileInner(src, dst)) {
         cerr << "Error: copy file fail from '" << src << "' to '" << dst << "'" << endl;
         return false;
     }
-#else
-    if (!FileEntry::CopyFile(src, dst)) {
-        cerr << "Error: copy file fail from '" << src << "' to '" << dst << "'" << endl;
-        return false;
-    }
-#endif
     return true;
 }
 
@@ -266,10 +257,19 @@ bool ResourceUtil::NeedConverToSolidXml(ResType resType)
     return false;
 }
 
-string ResourceUtil::GenerateHash(const std::string key)
+string ResourceUtil::GenerateHash(const string &key)
 {
     hash<string> hash_function;
     return to_string(hash_function(key));
+}
+
+string ResourceUtil::RealPath(const string &path)
+{
+    return FileEntry::RealPath(path);
+}
+bool ResourceUtil::IslegalPath(const string &path)
+{
+    return path == "element" || path == "media" || path == "profile";
 }
 }
 }

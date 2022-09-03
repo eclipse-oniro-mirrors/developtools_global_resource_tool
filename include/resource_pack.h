@@ -43,6 +43,10 @@ private:
     uint32_t CopyRawFileImpl(const std::string &src, const std::string &dst) const;
     uint32_t GenerateConfigJson();
     uint32_t ScanResources(const std::vector<std::string> &inputs, const std::string &output);
+    uint32_t PackNormal();
+    uint32_t PackPreview();
+    uint32_t PackAppend();
+    uint32_t PackCombine();
     PackageParser packageParser_;
     std::string moduleName_;
     using HeaderCreater = std::function<uint32_t(const std::string&)>;

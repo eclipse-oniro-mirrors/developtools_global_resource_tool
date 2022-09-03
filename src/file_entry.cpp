@@ -19,6 +19,10 @@
 #include "dirent.h"
 #include "sys/stat.h"
 #include "unistd.h"
+#ifdef _WIN32
+#include "windows.h"
+#include "shlwapi.h"
+#endif
 
 namespace OHOS {
 namespace Global {
@@ -54,9 +58,30 @@ bool FileEntry::Init()
 const vector<unique_ptr<FileEntry>> FileEntry::GetChilds() const
 {
     vector<unique_ptr<FileEntry>> children;
-    struct dirent *entry;
     string filePath = filePath_.GetPath();
+#ifdef _WIN32
+    WIN32_FIND_DATA findData;
+    string temp(filePath + "\\*.*");
+    HANDLE handle = FindFirstFile(temp.c_str(), &findData);
+    if (handle == INVALID_HANDLE_VALUE) {
+        return children;
+    }
+
+    do {
+        string filename(findData.cFileName);
+        if (IsIgnore(filename)) {
+            continue;
+        }
+
+        filePath = filePath_.GetPath() + SEPARATE + filename;
+        unique_ptr<FileEntry> f = make_unique<FileEntry>(filePath);
+        f->Init();
+        children.push_back(move(f));
+    } while (FindNextFile(handle, &findData));
+    FindClose(handle);
+#else
     DIR *handle = opendir(filePath.c_str());
+    struct dirent *entry;
     while ((entry = readdir(handle)) != nullptr) {
         string filename(entry->d_name);
         if (IsIgnore(filename)) {
@@ -69,6 +94,7 @@ const vector<unique_ptr<FileEntry>> FileEntry::GetChilds() const
         children.push_back(move(f));
     }
     closedir(handle);
+#endif
     return children;
 }
 
@@ -84,10 +110,16 @@ const FileEntry::FilePath &FileEntry::GetFilePath() const
 
 bool FileEntry::Exist(const string &path)
 {
+#ifdef _WIN32
+    if (!PathFileExists(path.c_str())) {
+        return false;
+    }
+#else
     struct stat s;
     if (stat(path.c_str(), &s) != 0) {
         return false;
     }
+#endif
     return true;
 }
 
@@ -110,8 +142,13 @@ bool FileEntry::CreateDirs(const string &path)
     return CreateDirsInner(path, 0);
 }
 
-bool FileEntry::CopyFile(const string &src, const string &dst)
+bool FileEntry::CopyFileInner(const string &src, const string &dst)
 {
+#ifdef _WIN32
+    if (!CopyFile(src.c_str(), dst.c_str(), false)) {
+        return false;
+    }
+#else
     ifstream in(src, ios::binary);
     ofstream out(dst, ios::binary);
     if (!in || !out) {
@@ -119,14 +156,51 @@ bool FileEntry::CopyFile(const string &src, const string &dst)
         return false;
     }
     out << in.rdbuf();
+#endif
     return true;
 }
 
 bool FileEntry::IsDirectory(const string &path)
 {
+#ifdef _WIN32
+    if (!PathIsDirectory(path.c_str())) {
+        return false;
+    }
+    return true;
+#else
     struct stat s;
     stat(path.c_str(), &s);
     return S_ISDIR(s.st_mode);
+#endif
+}
+
+string FileEntry::RealPath(const string &path)
+{
+#ifdef _WIN32
+    char buffer[MAX_PATH];
+    if (!PathCanonicalize(buffer, path.c_str())) {
+        return "";
+    }
+
+    if (PathIsRelative(buffer)) {
+        char current[MAX_PATH];
+        if (!GetCurrentDirectory(MAX_PATH, current)) {
+            return "";
+        }
+
+        char temp[MAX_PATH];
+        if (!PathCombine(temp, current, buffer)) {
+            return "";
+        }
+        return string(temp);
+    }
+#else
+    char buffer[PATH_MAX];
+    if (!realpath(path.c_str(), buffer)) {
+        return "";
+    }
+#endif
+    return string(buffer);
 }
 
 FileEntry::FilePath::FilePath(const string &path) : filePath_(path)
@@ -222,7 +296,7 @@ bool FileEntry::CreateDirsInner(const string &path, string::size_type offset)
     string::size_type pos = path.find_first_of(SEPARATE.front(), offset);
     if (pos == string::npos) {
 #if _WIN32
-        return mkdir(path.c_str()) == 0;
+        return CreateDirectory(path.c_str(), nullptr) != 0;
 #else
         return mkdir(path.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == 0;
 #endif
@@ -231,7 +305,7 @@ bool FileEntry::CreateDirsInner(const string &path, string::size_type offset)
     string subPath = path.substr(0, pos + 1);
     if (!Exist(subPath)) {
 #if _WIN32
-        if (mkdir(subPath.c_str()) != 0) {
+        if (!CreateDirectory(subPath.c_str(), nullptr)) {
 #else
         if (mkdir(subPath.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0) {
 #endif
