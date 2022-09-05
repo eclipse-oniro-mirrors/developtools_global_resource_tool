@@ -18,5 +18,5 @@ ohos_static_library("restool_sqlite") {
   include_dirs = [ "//third_party/sqlite/include" ]
 
   subsystem_name = "developtools"
-  part_name = "global_restool"
+  part_name = "global_resource_tool"
 }

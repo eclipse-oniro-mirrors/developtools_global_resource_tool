@@ -109,6 +109,16 @@ uint32_t IResourceCompiler::Compile(const FileInfo &fileInfo)
     return PostCommit();
 }
 
+uint32_t IResourceCompiler::CompileForAppend(const FileInfo &fileInfo)
+{
+    return CompileSingleFile(fileInfo);
+}
+
+const map<pair<ResType, string>, vector<ResourceItem>> &IResourceCompiler::GetResourceItems() const
+{
+    return nameInfos_;
+}
+
 void IResourceCompiler::SetModuleName(const string &moduleName)
 {
     moduleName_ = moduleName;

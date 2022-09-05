@@ -31,5 +31,5 @@ ohos_static_library("restool_bounds_checking_function") {
     "-D_INC_MEMORY_S",
   ]
   subsystem_name = "developtools"
-  part_name = "global_restool"
+  part_name = "global_resource_tool"
 }

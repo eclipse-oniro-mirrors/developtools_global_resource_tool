@@ -137,16 +137,38 @@ uint32_t ReferenceParser::ParseRefInProfile(const string &output) const
 
 uint32_t ReferenceParser::ParseRefInJson(const string &filePath) const
 {
+    return ParseRefInJson(filePath, filePath);
+}
+
+uint32_t ReferenceParser::ParseRefInJson(const string &from, const string &to) const
+{
     Json::Value root;
-    if (!ResourceUtil::OpenJsonFile(filePath, root)) {
+    if (!ResourceUtil::OpenJsonFile(from, root)) {
         return RESTOOL_ERROR;
     }
 
-    if (!ParseRefJsonImpl(root)) {
+    bool needSave = false;
+    if (!ParseRefJsonImpl(root, needSave)) {
         return RESTOOL_ERROR;
     }
 
-    if (!ResourceUtil::SaveToJsonFile(filePath, root)) {
+    if (!needSave) {
+        return RESTOOL_SUCCESS;
+    }
+
+    if (!ResourceUtil::CreateDirs(FileEntry::FilePath(to).GetParent().GetPath())) {
+        return RESTOOL_ERROR;
+    }
+
+    if (!ResourceUtil::SaveToJsonFile(to, root)) {
+        return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t ReferenceParser::ParseRefInResourceItem(ResourceItem &resourceItem) const
+{
+    if (!ParseRefResourceItem(resourceItem)) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
@@ -295,24 +317,28 @@ bool ReferenceParser::ParseRefImpl(string &key, const map<string, ResType> &refs
     return false;
 }
 
-bool ReferenceParser::ParseRefJsonImpl(Json::Value &node) const
+bool ReferenceParser::ParseRefJsonImpl(Json::Value &node, bool &needSave) const
 {
     if (node.isObject()) {
         for (const auto &member : node.getMemberNames()) {
-            if (!ParseRefJsonImpl(node[member])) {
+            if (!ParseRefJsonImpl(node[member], needSave)) {
                 return false;
             }
         }
     } else if (node.isArray()) {
         for (Json::ArrayIndex i = 0; i < node.size(); i++) {
-            if (!ParseRefJsonImpl(node[i])) {
+            if (!ParseRefJsonImpl(node[i], needSave)) {
                 return false;
             }
         }
     } else if (node.isString()) {
         string value = node.asString();
-        if (!ParseRefString(value)) {
+        bool update = false;
+        if (!ParseRefString(value, update)) {
             return false;
+        }
+        if (update) {
+            needSave = update;
         }
         node = value;
     }

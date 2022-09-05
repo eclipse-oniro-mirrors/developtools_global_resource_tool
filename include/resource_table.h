@@ -17,6 +17,7 @@
 #define OHOS_RESTOOL_RESOURCE_TABLE_H
 
 #include <fstream>
+#include <memory>
 #include "resource_item.h"
 #include "restool_errors.h"
 
@@ -28,6 +29,7 @@ public:
     ResourceTable();
     virtual ~ResourceTable();
     uint32_t CreateResourceTable();
+    uint32_t CreateResourceTable(const std::map<int32_t, std::vector<std::shared_ptr<ResourceItem>>> &items);
 private:
     struct TableData {
         int32_t id;
@@ -63,11 +65,12 @@ private:
     bool Prepare(const std::map<std::string, std::vector<TableData>> &configs,
                  std::map<std::string, LimitKeyConfig> &limitKeyConfigs,
                  std::map<std::string, IdSet> &idSets, uint32_t &pos) const;
-    bool SaveRecordItem(const std::map<std::string, std::vector<TableData>> &configs, std::ofstream &out,
+    bool SaveRecordItem(const std::map<std::string, std::vector<TableData>> &configs, std::ostringstream &out,
                         std::map<std::string, IdSet> &idSets, uint32_t &pos) const;
-    void SaveHeader(const IndexHeader &indexHeader, std::ofstream &out) const;
-    void SaveLimitKeyConfigs(const std::map<std::string, LimitKeyConfig> &limitKeyConfigs, std::ofstream &out) const;
-    void SaveIdSets(const std::map<std::string, IdSet> &idSets, std::ofstream &out) const;
+    void SaveHeader(const IndexHeader &indexHeader, std::ostringstream &out) const;
+    void SaveLimitKeyConfigs(const std::map<std::string, LimitKeyConfig> &limitKeyConfigs,
+                             std::ostringstream &out) const;
+    void SaveIdSets(const std::map<std::string, IdSet> &idSets, std::ostringstream &out) const;
     std::string indexFilePath_;
 };
 }

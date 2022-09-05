@@ -54,8 +54,9 @@ public:
     static bool Exist(const std::string &path);
     static bool RemoveAllDir(const std::string &path);
     static bool CreateDirs(const std::string &path);
-    static bool CopyFile(const std::string &src, const std::string &dst);
+    static bool CopyFileInner(const std::string &src, const std::string &dst);
     static bool IsDirectory(const std::string &path);
+    static std::string RealPath(const std::string &path);
 
 private:
     bool IsIgnore(const std::string &filename) const;

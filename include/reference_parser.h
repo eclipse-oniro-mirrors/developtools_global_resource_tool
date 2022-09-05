@@ -31,6 +31,8 @@ public:
     uint32_t ParseRefInString(std::string &value, bool &update) const;
     uint32_t ParseRefInProfile(const std::string &output) const;
     uint32_t ParseRefInJson(const std::string &filePath) const;
+    uint32_t ParseRefInJson(const std::string &from, const std::string &to) const;
+    uint32_t ParseRefInResourceItem(ResourceItem &resourceItem) const;
 private:
     bool ParseRefResourceItem(ResourceItem &resourceItem) const;
     bool ParseRefResourceItemData(const ResourceItem &resourceItem, std::string &data, bool &update) const;
@@ -40,7 +42,7 @@ private:
     bool ParseRefString(std::string &key) const;
     bool ParseRefString(std::string &key, bool &update) const;
     bool ParseRefImpl(std::string &key, const std::map<std::string, ResType> &refs, bool isSystem) const;
-    bool ParseRefJsonImpl(Json::Value &root) const;
+    bool ParseRefJsonImpl(Json::Value &root, bool &needSave) const;
     const IdWorker &idWorker_;
     static const std::map<std::string, ResType> ID_REFS;
     static const std::map<std::string, ResType> ID_OHOS_REFS;

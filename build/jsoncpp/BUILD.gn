@@ -24,5 +24,5 @@ ohos_static_library("restool_jsoncpp") {
   cflags = [ "-std=c++17" ]
   use_exceptions = true
   subsystem_name = "developtools"
-  part_name = "global_restool"
+  part_name = "global_resource_tool"
 }
