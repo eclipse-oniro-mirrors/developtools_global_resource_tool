@@ -28,8 +28,12 @@ namespace Restool {
 class FileManager : public Singleton<FileManager> {
 public:
     uint32_t ScanModules(const std::vector<std::string> &inputs, const std::string &output);
-    const std::map<int32_t, std::vector<ResourceItem>> &GetResources() const { return items_; };
-    void SetModuleName(const std::string &moduleName) { moduleName_ = moduleName; };
+    const std::map<int32_t, std::vector<ResourceItem>> &GetResources() const {
+        return items_;
+    };
+    void SetModuleName(const std::string &moduleName) {
+        moduleName_ = moduleName;
+    };
     uint32_t ScanIncrement(const std::string &output);
 
 private:

@@ -205,7 +205,7 @@ uint32_t PackageParser::AddConfig(const string& argValue)
 
 uint32_t PackageParser::AddStartId(const string& argValue)
 {
-    startId_ = strtol(argValue.c_str(), nullptr, 16);
+    startId_ = strtol(argValue.c_str(), nullptr, 16); // 16 is hexadecimal number
     if ((startId_ >= 0x01000000 && startId_ < 0x06ffffff) || (startId_ >= 0x08000000 && startId_ < 0x41ffffff)) {
         return RESTOOL_SUCCESS;
     }
@@ -317,7 +317,6 @@ bool PackageParser::IsAscii(const string& argValue) const
         }
         return false;
     });
-
     if (result != argValue.end()) {
         cerr << "Error: '" << argValue << "' must be ASCII" << endl;
         return false;

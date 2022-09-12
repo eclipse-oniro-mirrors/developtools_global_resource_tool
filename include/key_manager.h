@@ -28,7 +28,9 @@ public:
     virtual ~KeyManager() {};
     bool LoadKey(const std::string &keysPath);
     bool SaveKey(const std::string &keysPath);
-    std::map<XmlKeyNode::KeyType, std::shared_ptr<XmlKeyNode>> &GetKeys() { return keys_; };
+    std::map<XmlKeyNode::KeyType, std::shared_ptr<XmlKeyNode>> &GetKeys() {
+        return keys_;
+    };
 private:
     std::map<XmlKeyNode::KeyType, std::shared_ptr<XmlKeyNode>> keys_;
 };
