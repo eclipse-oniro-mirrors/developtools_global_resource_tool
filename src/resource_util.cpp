@@ -18,7 +18,7 @@
 #include<fstream>
 #include<iostream>
 #include<regex>
-#include<stdlib.h>
+#include<cstdlib>
 #include "file_entry.h"
 
 namespace OHOS {

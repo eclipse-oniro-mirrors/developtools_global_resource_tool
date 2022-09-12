@@ -70,14 +70,14 @@ uint32_t ResourceAppend::Combine()
 }
 
 // private
- bool ResourceAppend::Combine(const string &folderPath)
- {
+bool ResourceAppend::Combine(const string &folderPath)
+{
     FileEntry entry(folderPath);
     if (!entry.Init()) {
         return false;
     }
 
-     itemsForModule_.clear();
+    itemsForModule_.clear();
     for (const auto &child : entry.GetChilds()) {
         if (!child->IsFile()) {
             cerr << "Error:" << child->GetFilePath().GetPath()  << " not file" << endl;
@@ -89,7 +89,7 @@ uint32_t ResourceAppend::Combine()
         }
     }
     return true;
- }
+}
 
 bool ResourceAppend::ParseRef()
 {
@@ -138,17 +138,17 @@ bool ResourceAppend::ScanResources(const string &resourcePath, const string &out
     vector<KeyParam> keyParams;
     if (KeyParser::Parse(entry.GetFilePath().GetFilename(), keyParams)) {
         for (const auto &child : entry.GetChilds()) {
-            if(!ResourceUtil::IslegalPath(child->GetFilePath().GetFilename())){
+            if (!ResourceUtil::IslegalPath(child->GetFilePath().GetFilename())) {
                 continue;
             }
-            if(!ScanIegalResources(child->GetFilePath().GetPath(), outputPath)){
+            if (!ScanIegalResources(child->GetFilePath().GetPath(), outputPath)) {
                 return false;
             }
         }
         return true;
     }
 
-    if (ResourceUtil::IslegalPath(entry.GetFilePath().GetFilename())){
+    if (ResourceUtil::IslegalPath(entry.GetFilePath().GetFilename())) {
         return ScanIegalResources(resourcePath, outputPath);
     }
 
@@ -184,7 +184,7 @@ bool ResourceAppend::ScanIegalResources(const string &resourcePath, const string
         return false;
     }
     for (const auto &child : entry.GetChilds()) {
-        if(!ScanSingleFile(child->GetFilePath().GetPath(), outputPath)){
+        if (!ScanSingleFile(child->GetFilePath().GetPath(), outputPath)) {
             return false;
         }
     }
@@ -202,7 +202,7 @@ bool ResourceAppend::ScanLimitKey(const unique_ptr<FileEntry> &entry,
     for (const auto &child : entry->GetChilds()) {
         string fileCuster = child->GetFilePath().GetFilename();
         if (ResourceUtil::IsIgnoreFile(fileCuster, child->IsFile())) {
-             continue;
+            continue;
         }
 
         if (child->IsFile()) {
@@ -277,8 +277,8 @@ bool ResourceAppend::ScanFile(const FileInfo &fileInfo, const string &outputPath
     return true;
 }
 
- bool ResourceAppend::ScanSingleFile(const string &filePath, const string &outputPath)
- {
+bool ResourceAppend::ScanSingleFile(const string &filePath, const string &outputPath)
+{
     if (filePath.find(RAW_FILE_DIR) != string::npos) {
         return WriteRawFile(filePath, outputPath);
     }
@@ -304,7 +304,7 @@ bool ResourceAppend::ScanFile(const FileInfo &fileInfo, const string &outputPath
         return false;
     }
     return true;
- }
+}
 
 bool ResourceAppend::WriteFileInner(ostringstream &outStream, const string &outputPath) const
 {
@@ -341,11 +341,11 @@ bool ResourceAppend::WriteResourceItem(const ResourceItem &resourceItem, ostring
     out.write(reinterpret_cast<const char *>(resourceItem.GetName().c_str()), size);
 
     size = resourceItem.GetLimitKey().length();
-    out.write(reinterpret_cast<const char *>(&size), sizeof(int32_t));  
-    out.write(reinterpret_cast<const char *>(resourceItem.GetLimitKey().c_str()),size);
+    out.write(reinterpret_cast<const char *>(&size), sizeof(int32_t));
+    out.write(reinterpret_cast<const char *>(resourceItem.GetLimitKey().c_str()), size);
 
     size = resourceItem.GetFilePath().length();
-    out.write(reinterpret_cast<const char *>(&size), sizeof(int32_t));  
+    out.write(reinterpret_cast<const char *>(&size), sizeof(int32_t));
     out.write(reinterpret_cast<const char *>(resourceItem.GetFilePath().c_str()), size);
 
     int32_t type = static_cast<int32_t>(resourceItem.GetResType());
@@ -505,7 +505,7 @@ bool ResourceAppend::LoadResourceItemFromMem(const char buffer[], int32_t length
         // limit key
         string limitKeyStr = ParseString(buffer, length, offset);
         // file path
-        string filePathStr = ParseString(buffer, length, offset);;
+        string filePathStr = ParseString(buffer, length, offset);
         // ResType
         int32_t type = ParseInt32(buffer, length, offset);
         ResType resType = static_cast<ResType>(type);
@@ -535,7 +535,7 @@ bool ResourceAppend::LoadResourceItemFromMem(const char buffer[], int32_t length
         shared_ptr<ResourceItem> resourceItem = make_shared<ResourceItem>(nameStr, keyParams, resType);
         resourceItem->SetData(reinterpret_cast<const int8_t *>(data.c_str()), data.length());
         resourceItem->SetLimitKey(limitKeyStr);
-        resourceItem->SetFilePath(filePathStr);   
+        resourceItem->SetFilePath(filePathStr);
         if (!Push(resourceItem)) {
             return false;
         }
@@ -618,14 +618,14 @@ bool ResourceAppend::LoadResourceItemWin(const string &filePath)
         return result;
     }
 
-    void * pBuffer = MapViewOfFile(hFileMap, FILE_MAP_READ, 0, 0, 0);
+    void* pBuffer = MapViewOfFile(hFileMap, FILE_MAP_READ, 0, 0, 0);
     if (pBuffer == nullptr) {
         cerr << "Error: map view of file " << GetLastError() << endl;
         CloseHandle(hReadFile);
         return result;
     }
 
-    char * buffer = reinterpret_cast<char *>(pBuffer);
+    char* buffer = reinterpret_cast<char *>(pBuffer);
     result = LoadResourceItemFromMem(buffer, fileSize);
     UnmapViewOfFile(hFileMap);
     CloseHandle(hReadFile);

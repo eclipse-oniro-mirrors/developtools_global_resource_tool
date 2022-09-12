@@ -32,7 +32,9 @@ public:
     const std::map<int32_t, std::vector<ResourceItem>> &GetResult() const;
     uint32_t Compile(const FileInfo &fileInfo);
     void SetModuleName(const std::string &moduleName);
-    void SetPreviewMode(bool enable) { previewMode_ = enable; };
+    void SetPreviewMode(bool enable) {
+        previewMode_ = enable;
+    };
     uint32_t CompileForAppend(const FileInfo &fileInfo);
     const std::map<std::pair<ResType, std::string>, std::vector<ResourceItem>> &GetResourceItems() const;
 

@@ -44,10 +44,18 @@ public:
     virtual ~IncrementManager();
     uint32_t Init(const std::string &cachePath, const std::vector<std::string> &folder,
         const std::string &outputPath, const std::string &moduleName);
-    const std::map<int32_t, std::vector<ResourceItem>> &GetResourceItems() const { return items_; };
-    const std::map<ResType, std::vector<DirectoryInfo>> &GetScanDirs() const { return scanDirs_; };
-    bool FirstIncrement() const { return firstIncrement_; };
-    bool Enable() const { return enalbe_; };
+    const std::map<int32_t, std::vector<ResourceItem>> &GetResourceItems() const {
+        return items_;
+    };
+    const std::map<ResType, std::vector<DirectoryInfo>> &GetScanDirs() const {
+        return scanDirs_;
+    };
+    bool FirstIncrement() const {
+        return firstIncrement_;
+    };
+    bool Enable() const {
+        return enalbe_;
+    };
 
     static const std::string ID_JSON_FILE;
 private:

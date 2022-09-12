@@ -35,8 +35,10 @@ private:
     bool Combine(const std::string &folderPath);
     bool ScanResources(const std::string &resourcePath, const std::string &outputPath);
     bool ScanIegalResources(const std::string &resourcePath, const std::string &outputPath);
-    bool ScanLimitKey(const std::unique_ptr<FileEntry> &entry, const std::string &limitKey, const std::string outputPath);
-    bool ScanFiles(const std::unique_ptr<FileEntry> &entry, const DirectoryInfo &directoryInfo, const std::string &outputPath);
+    bool ScanLimitKey(const std::unique_ptr<FileEntry> &entry, const std::string &limitKey,
+                    const std::string outputPath);
+    bool ScanFiles(const std::unique_ptr<FileEntry> &entry, const DirectoryInfo &directoryInfo,
+                    const std::string &outputPath);
     bool ScanFile(const FileInfo &fileInfo, const std::string &outputPath);
     bool ScanSingleFile(const std::string &filePath, const std::string &outputPath);
     bool WriteFileInner(std::ostringstream &outStream, const std::string &outputPath) const;

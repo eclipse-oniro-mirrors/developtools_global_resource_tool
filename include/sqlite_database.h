@@ -30,7 +30,9 @@ public:
     bool OpenDatabase();
     void CloseDatabase();
     bool Insert(const ResourceItem &resourceItem);
-    void SetPriority(int32_t priority) { priority_ = priority; };
+    void SetPriority(int32_t priority) {
+        priority_ = priority;
+    };
 private:
     bool Query(const ResourceItem &resourceItem, int32_t &id);
     bool FindMaxId();
