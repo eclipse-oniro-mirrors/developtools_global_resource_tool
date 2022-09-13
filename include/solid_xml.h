@@ -42,13 +42,16 @@ private:
         virtual bool LoadFrom(std::ifstream &in);
         virtual bool FlushIndex(const std::map<XmlKeyNode::KeyType, std::shared_ptr<XmlKeyNode>> &oldKeys,
             std::map<XmlKeyNode::KeyType, std::shared_ptr<XmlKeyNode>> &newKeys);
-        void SetName(int32_t index) {
+        void SetName(int32_t index)
+        {
             name_ = index;
         };
-        void SetValue(int32_t index) {
+        void SetValue(int32_t index)
+        {
             value_ = index;
         };
-        void SetNameSpace(int32_t index) {
+        void SetNameSpace(int32_t index)
+        {
             nameSpace_ = index;
         };
     protected:
@@ -65,13 +68,16 @@ private:
         bool LoadFrom(std::ifstream &in) override;
         bool FlushIndex(const std::map<XmlKeyNode::KeyType, std::shared_ptr<XmlKeyNode>> &oldKeys,
             std::map<XmlKeyNode::KeyType, std::shared_ptr<XmlKeyNode>> &newKeys) override;
-        void SetChild(int32_t index) {
+        void SetChild(int32_t index)
+        {
             child_ = index;
         };
-        void SetBrother(int32_t index) {
+        void SetBrother(int32_t index)
+        {
             brother_ = index;
         };
-        void AddAttribute(int32_t index) {
+        void AddAttribute(int32_t index)
+        {
             attributes_.push_back(index);
         };
     private:

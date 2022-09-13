@@ -28,7 +28,8 @@ public:
     PreviewManager() {};
     virtual ~PreviewManager();
     uint32_t ScanModules(const std::vector<std::string> &modulePaths, const std::string &output);
-    void SetPriority(int32_t priority) {
+    void SetPriority(int32_t priority)
+    {
         priority_ = priority;
     };
 private:

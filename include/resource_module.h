@@ -31,7 +31,8 @@ public:
     const std::map<ResType, std::vector<DirectoryInfo>> &GetScanDirectorys() const;
     static uint32_t MergeResourceItem(std::map<int32_t, std::vector<ResourceItem>> &alls,
         const std::map<int32_t, std::vector<ResourceItem>> &other, bool tipError = false);
-    void SetPreviewMode(bool enable) {
+    void SetPreviewMode(bool enable)
+    {
         previewMode_ = enable;
     };
 
