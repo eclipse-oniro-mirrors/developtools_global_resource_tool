@@ -40,10 +40,12 @@ public:
     ModuleType GetModuleType() const;
     uint32_t ParseRefence();
     uint32_t Save(const std::string &filePath) const;
-    static void SetUseModule() {
+    static void SetUseModule()
+    {
         useModule_ = true;
     };
-    static std::string GetConfigName() {
+    static std::string GetConfigName()
+    {
         return useModule_ ? MODULE_JSON : CONFIG_JSON;
     };
 private:

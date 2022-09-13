@@ -30,7 +30,8 @@ public:
     bool OpenDatabase();
     void CloseDatabase();
     bool Insert(const ResourceItem &resourceItem);
-    void SetPriority(int32_t priority) {
+    void SetPriority(int32_t priority)
+    {
         priority_ = priority;
     };
 private:
