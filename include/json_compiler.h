@@ -57,6 +57,7 @@ private:
     bool ParseAttribute(const Json::Value &arrayItem, const ResourceItem &resourceItem,
                         std::vector<std::string> &values) const;
     bool CheckPluralValue(const Json::Value &arrayItem, const ResourceItem &resourceItem) const;
+    bool CheckColorValue(const char *s) const;
     std::map<ResType, HandleResource> handles_;
     static const std::string TAG_NAME;
     static const std::string TAG_VALUE;

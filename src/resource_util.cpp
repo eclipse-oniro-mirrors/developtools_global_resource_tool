@@ -267,6 +267,7 @@ string ResourceUtil::RealPath(const string &path)
 {
     return FileEntry::RealPath(path);
 }
+
 bool ResourceUtil::IslegalPath(const string &path)
 {
     return path == "element" || path == "media" || path == "profile";
