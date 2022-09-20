@@ -298,6 +298,11 @@ bool JsonCompiler::CheckJsonStringValue(const Json::Value &valueNode, const Reso
 
     string value = valueNode.asString();
     ResType type = resourceItem.GetResType();
+    if (type ==  ResType::COLOR && !CheckColorValue(value.c_str())) {
+        string error = "invaild color '" + value + "', in " + resourceItem.GetFilePath();
+        cerr << "Error: " << error << endl;
+        return false;
+    }
     regex ref("^\\$.+:");
     smatch result;
     if (regex_search(value, result, ref) && !regex_match(result[0].str(), regex(REFS.at(type)))) {
@@ -463,6 +468,19 @@ bool JsonCompiler::CheckPluralValue(const Json::Value &arrayItem, const Resource
         return false;
     }
     return true;
+}
+
+bool JsonCompiler::CheckColorValue(const char *s) const
+{
+    if (s == nullptr) {
+        return false;
+    }
+    // color regex
+    string regColor = "^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$";
+    if (regex_match(s, regex("^\\$.*")) || regex_match(s, regex(regColor))) {
+        return true;
+    }
+    return false;
 }
 }
 }
