@@ -280,7 +280,12 @@ bool FileEntry::IsIgnore(const string &filename) const
 bool FileEntry::RemoveAllDirInner(const FileEntry &entry)
 {
     if (entry.IsFile()) {
-        return remove(entry.GetFilePath().GetPath().c_str()) == 0;
+        bool result = remove(entry.GetFilePath().GetPath().c_str()) == 0;
+        if (!result) {
+            cerr << "Error: " << entry.GetFilePath().GetPath() << "remove fail !" << endl;
+            return false;
+        }
+        return true;
     }
 
     for (const auto &iter : entry.GetChilds()) {
