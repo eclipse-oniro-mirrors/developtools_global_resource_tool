@@ -101,9 +101,8 @@ int32_t IncrementList::GetPriority(const string &filePath) const
 
 bool IncrementList::ParseSegment(const string &filePath, vector<string> &segments) const
 {
-    for (const auto &it : FileEntry::FilePath(filePath).GetSegments()) {
-        segments.push_back(it);
-    }
+    vector<string> segs = FileEntry::FilePath(filePath).GetSegments();
+    copy(segs.begin(), segs.end(), back_inserter(segments));
 
     if (segments.size() >= (SEG_RESOURCE + 1) && segments[SEG_RESOURCE] != RESOURCES_DIR) {
         cerr << "Error: '" << filePath << "' don't contain '" << RESOURCES_DIR << "'" << endl;
