@@ -298,8 +298,6 @@ bool ReferenceParser::ParseRefImpl(string &key, const map<string, ResType> &refs
             int32_t id = idWorker_.GetId(ref.second, name);
             if (isSystem) {
                 id = idWorker_.GetSystemId(ref.second, name);
-            } else {
-                id = idWorker_.GetId(ref.second, name);
             }
             if (id < 0) {
                 cerr << "Error: ref '" << key << "' don't be defined." << endl;

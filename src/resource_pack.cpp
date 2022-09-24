@@ -92,14 +92,14 @@ uint32_t ResourcePack::InitModule()
             });
         if (it == moduleNames.end()) {
             string buffer(" ");
-            for_each(moduleNames.begin(), moduleNames.end(), [&buffer](auto &iter) {
+            for_each(moduleNames.begin(), moduleNames.end(), [&buffer](const auto &iter) {
                     buffer.append(" " + iter + " ");
                 });
             cerr << "Error: module name '" << moduleName_ << "' not in [" << buffer << "]" << endl;
             return RESTOOL_ERROR;
         }
 
-        int32_t startId = ((it - moduleNames.begin()) + 1) * 0x01000000;
+        startId = ((it - moduleNames.begin()) + 1) * 0x01000000;
         if (startId >= 0x07000000) {
             startId = startId + 0x01000000;
         }

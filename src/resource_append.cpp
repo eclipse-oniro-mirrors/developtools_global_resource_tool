@@ -135,6 +135,11 @@ bool ResourceAppend::ScanResources(const string &resourcePath, const string &out
         return ScanSingleFile(resourcePath, outputPath);
     }
 
+    return ScanSubResources(entry, resourcePath, outputPath);
+}
+
+bool ResourceAppend::ScanSubResources(const FileEntry entry, const string &resourcePath, const string &outputPath)
+{
     vector<KeyParam> keyParams;
     if (KeyParser::Parse(entry.GetFilePath().GetFilename(), keyParams)) {
         for (const auto &child : entry.GetChilds()) {
@@ -152,6 +157,12 @@ bool ResourceAppend::ScanResources(const string &resourcePath, const string &out
         return ScanIegalResources(resourcePath, outputPath);
     }
 
+    return ScanSubLimitkeyResources(entry, resourcePath, outputPath);
+}
+
+bool ResourceAppend::ScanSubLimitkeyResources(const FileEntry entry, const string &resourcePath,
+    const string &outputPath)
+{
     for (const auto &child : entry.GetChilds()) {
         string limitKey = child->GetFilePath().GetFilename();
         if (ResourceUtil::IsIgnoreFile(limitKey, child->IsFile())) {
@@ -524,6 +535,10 @@ bool ResourceAppend::LoadResourceItemFromMem(const char buffer[], int32_t length
             FileEntry::FilePath outPath(packageParser_.GetOutput());
             if (!ResourceUtil::CreateDirs(outPath.Append(data).GetParent().GetPath())) {
                 return false;
+            }
+
+            if (!ResourceUtil::FileExist(filePathStr)) {
+                continue;
             }
 
             if (!ResourceUtil::CopyFleInner(filePathStr, outPath.Append(data).GetPath())) {
