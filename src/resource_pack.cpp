@@ -125,6 +125,7 @@ uint32_t ResourcePack::InitOutput() const
     }
 
     bool forceWrite = packageParser_.GetForceWrite();
+    bool combine = packageParser_.GetCombine();
     string output = packageParser_.GetOutput();
     string resourcesPath = FileEntry::FilePath(output).Append(RESOURCES_DIR).GetPath();
     if (ResourceUtil::FileExist(resourcesPath)) {
@@ -134,7 +135,7 @@ uint32_t ResourcePack::InitOutput() const
         }
 
         if (!ResourceUtil::RmoveAllDir(resourcesPath)) {
-            return RESTOOL_ERROR;
+            return combine ? RESTOOL_SUCCESS : RESTOOL_ERROR;
         }
     }
     return RESTOOL_SUCCESS;
