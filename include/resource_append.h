@@ -34,6 +34,10 @@ public:
 private:
     bool Combine(const std::string &folderPath);
     bool ScanResources(const std::string &resourcePath, const std::string &outputPath);
+    bool ScanSubResources(const FileEntry entry, const std::string &resourcePath,
+                            const std::string &outputPath);
+    bool ScanSubLimitkeyResources(const FileEntry entry, const std::string &resourcePath,
+                            const std::string &outputPath);
     bool ScanIegalResources(const std::string &resourcePath, const std::string &outputPath);
     bool ScanLimitKey(const std::unique_ptr<FileEntry> &entry, const std::string &limitKey,
                     const std::string outputPath);
