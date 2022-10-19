@@ -103,22 +103,16 @@ const string &PackageParser::GetCachePath() const
 
 uint32_t PackageParser::AddInput(const string& argValue)
 {
-    string inputPath = ResourceUtil::RealPath(argValue);
-    if (inputPath.empty()) {
-        cerr << "Error: invalid input '" << argValue << "'" << endl;
-        return RESTOOL_ERROR;
-    }
-
-    auto ret = find_if(inputs_.begin(), inputs_.end(), [inputPath](auto iter) {return inputPath == iter;});
+    auto ret = find_if(inputs_.begin(), inputs_.end(), [argValue](auto iter) {return argValue == iter;});
     if (ret != inputs_.end()) {
         cerr << "Error: repeat input '" << argValue << "'" << endl;
         return RESTOOL_ERROR;
     }
 
-    if (!IsAscii(inputPath)) {
+    if (!IsAscii(argValue)) {
         return RESTOOL_ERROR;
     }
-    inputs_.push_back(inputPath);
+    inputs_.push_back(argValue);
     return RESTOOL_SUCCESS;
 }
 
