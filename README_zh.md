@@ -41,14 +41,27 @@ PC 上运行 `python test.py ./restool  ./out`
 -f 如果输出目录中已经存在结果，强制覆盖  
 -m 编译多hap包，输入多个hap包的编译结果路径，例如：entry1,entry2,..  
 -j 编译多hap包+多har时，合并后config.json的文件路径  
--e Id的开始标记  
+-e 设置资源的起始ID。例如，设置资源ID从0x01000000开始  
+-x 资源输入目录，增量编译生成中间文件  
+-z 开启增量编译  
 
 ```
 entry目录结构
 |    |----resource
 |    |----config.json 或者 module.json 都兼容
 ```
-`./restool -i entry1 -i entry2 -j xxx/module.json -p ohos.demo.xxx -o out -r out/ResourceTable.h `
+全量编译命令：
+
+`./restool -i entry/src/main  -j xxx/module.json -p ohos.demo.xxx -o out -r out/ResourceTable.h `
+
+增量编译命令：(仅预览模式可用)
+
+`(1)生成中间文件：./restool -x entry/src/main/resource -o out` 
+
+`(2)编译中间文件：./restool -i out1 -i out2 -o out -p ohos.demo.xxx -r out/ResourceTable.h -j xxx/module.json -f -z`
+
+### 资源类型介绍
+[资源类型介绍](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/quick-start/resource-categories-and-access.md)
 
 ## 相关仓
 
