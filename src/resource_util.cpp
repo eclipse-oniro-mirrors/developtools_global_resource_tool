@@ -161,7 +161,7 @@ string ResourceUtil::ComposeStrings(const vector<string> &contents, bool addNull
             size += sizeof(char);
         }
         result.append(sizeof(char), (size & 0xff));
-        result.append(sizeof(char), (size >> 8));
+        result.append(sizeof(char), (size >> 8)); // Move 8 bits to the right
         result.append(iter);
         result.append(sizeof(char), '\0');
         if (result.length() > UINT16_MAX) {
