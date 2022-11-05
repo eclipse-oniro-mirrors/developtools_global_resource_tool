@@ -218,7 +218,7 @@ uint32_t ResourcePack::GenerateCplusHeader(const string &headerPath) const
         transform(name.begin(), name.end(), name.begin(), ::toupper);
         buffer << "const int32_t " << name << " = ";
         buffer << "0x" << hex << setw(8)  << setfill('0') << resourceId.id << ";\n";
-    }, [](stringstream &buffer){
+    }, [](stringstream &buffer) {
         buffer << "}\n";
         buffer << "#endif";
     });
@@ -243,7 +243,7 @@ uint32_t ResourcePack::GenerateJsHeader(const std::string &headerPath) const
             buffer << ",\n";
         }
         buffer << "        " << resourceId.name << " : " << resourceId.id;
-    }, [](stringstream &buffer){
+    }, [](stringstream &buffer) {
         buffer << "\n" << "    " << "}\n";
         buffer << "}\n";
     });

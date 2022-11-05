@@ -261,7 +261,7 @@ void KeyParser::PushLSR(const string &folderName, KeyType type, vector<KeyParam>
     keyParam.keyType = type;
     keyParam.value = 0;
     for (size_t i = 0; i < folderName.size(); i++) {
-        keyParam.value = (keyParam.value << 8) | (folderName[i] & 0xff);
+        keyParam.value = (keyParam.value << 8) | (folderName[i] & 0xff); // Move 8 bits to the left
     }
     keyparams.push_back(keyParam);
 }
