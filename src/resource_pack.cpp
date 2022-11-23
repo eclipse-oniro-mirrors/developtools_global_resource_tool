@@ -130,7 +130,7 @@ uint32_t ResourcePack::InitOutput() const
     string resourcesPath = FileEntry::FilePath(output).Append(RESOURCES_DIR).GetPath();
     if (ResourceUtil::FileExist(resourcesPath)) {
         if (!forceWrite) {
-            cerr << "Error: output path '" << resourcesPath << "' exists." << endl;
+            cerr << "Error: output path exists." << NEW_LINE_PATH << resourcesPath << endl;
             return RESTOOL_ERROR;
         }
 

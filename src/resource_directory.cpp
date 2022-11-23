@@ -57,7 +57,7 @@ bool ResourceDirectory::ScanResourceLimitKeyDir(const string &resourceTypeDir, c
 {
     vector<KeyParam> keyParams;
     if (!KeyParser::Parse(limitKey, keyParams)) {
-        cerr << "Error: " << resourceTypeDir << ",invalid limit key '" << limitKey << "'" << endl;
+        cerr << "Error: invalid limit key '" << limitKey << "'." << NEW_LINE_PATH << resourceTypeDir << endl;
         return false;
     }
 
@@ -84,7 +84,7 @@ bool ResourceDirectory::ScanResourceLimitKeyDir(const string &resourceTypeDir, c
                 array.append("'" + item.first + "' ");
             }
             array.append("]");
-            cerr << "Error: " << dirPath << " ,invalid directory name '";
+            cerr << "Error: '" << dirPath << "', invalid directory name '";
             cerr << fileCluster << "', must in " << array << endl;
             return false;
         }

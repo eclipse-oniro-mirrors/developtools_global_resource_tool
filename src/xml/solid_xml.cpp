@@ -14,9 +14,10 @@
  */
 
 #include "solid_xml.h"
-#include<iostream>
-#include<regex>
+#include <iostream>
+#include <regex>
 #include "securec.h"
+#include "resource_util.h"
 
 namespace OHOS {
 namespace Global {
@@ -243,7 +244,7 @@ bool SolidXml::SaveToFile(const std::string &filePath) const
 {
     ofstream out(filePath, ofstream::out | ofstream::binary);
     if (!out.is_open()) {
-        cerr << "Error: open fail," << filePath << endl;
+        cerr << "Error: open failed '" << filePath << "', reason: " << strerror(errno) << endl;
         return false;
     }
 
@@ -299,7 +300,7 @@ bool SolidXml::LoadFromFile(const string &sxmlPath)
 {
     ifstream in(sxmlPath, ifstream::in | ifstream::binary);
     if (!in.is_open()) {
-        cerr << "Error: open fail," << sxmlPath << endl;
+        cerr << "Error: open failed '" << sxmlPath << "', reason: " << strerror(errno) << endl;
         return false;
     }
 

@@ -174,7 +174,7 @@ bool IncrementManager::LoadIdJson()
     }
 
     if (!root.isObject()) {
-        cerr << "Error: '" << idJsonPath << "' invalid, not object." << endl;
+        cerr << "Error: invalid, not object." << NEW_LINE_PATH << idJsonPath << endl;
         return false;
     }
 
@@ -182,28 +182,29 @@ bool IncrementManager::LoadIdJson()
     for (const auto &member : root.getMemberNames()) {
         int32_t id = strtol(member.c_str(), nullptr, 10);
         if (id < 0) {
-            cerr << "Error: '" << idJsonPath << "' invalid '" << member << "'" << endl;
+            cerr << "Error: invalid '" << member << "'." << NEW_LINE_PATH << idJsonPath  << endl;
             return false;
         }
 
         const auto &node = root[member];
         if (!node.isObject()) {
-            cerr << "Error: '" << idJsonPath << "' '" << member << "' not object." << endl;
+            cerr << "Error: '" << member << "' not object." << NEW_LINE_PATH << idJsonPath  << endl;
             return false;
         }
         if (!node["name"].isString()) {
-            cerr << "Error: '" << idJsonPath << "' '" << member << "' name not string." << endl;
+            cerr << "Error: '" << member << "' name not string." << NEW_LINE_PATH << idJsonPath << endl;
             return false;
         }
         string name = node["name"].asString();
 
         if (!node["type"].isString()) {
-            cerr << "Error: '" << idJsonPath << "' '" << member << "' type not string." << endl;
+            cerr << "Error: '" << member << "' type not string." << NEW_LINE_PATH << idJsonPath << endl;
             return false;
         }
         ResType resType = ResourceUtil::GetResTypeFromString(node["type"].asString());
         if (resType == ResType::INVALID_RES_TYPE) {
-            cerr << "Error: '" << idJsonPath << "'  '" << member << "' '" << node["type"] << "' invalid." << endl;
+            cerr << "Error: '" << member << "' '" << node["type"] << "' invalid.";
+            cerr << NEW_LINE_PATH << idJsonPath << endl;
             return false;
         }
         if (!idWorker.PushCache(resType, name, id)) {
@@ -267,7 +268,8 @@ bool IncrementManager::ClearSolidXml() const
             }
 
             if (remove(entry->GetFilePath().GetPath().c_str()) != 0) {
-                cerr << "Error: remove '" << entry->GetFilePath().GetPath() << "' fail." << endl;
+                cerr << "Error: remove failed '" << entry->GetFilePath().GetPath();
+                cerr << "', reason: " << strerror(errno) << endl;
                 return false;
             }
         }

@@ -31,6 +31,7 @@ const static std::string RAW_FILE_DIR = "rawfile";
 const static std::string ID_DEFINED_FILE = "id_defined.json";
 const static std::string RESOURCE_INDEX_FILE = "resources.index";
 const static std::string SEPARATOR = "/";
+const static std::string NEW_LINE_PATH = "\r\nat ";
 const static int32_t VERSION_MAX_LEN = 128;
 static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 2.010" };
 const static int32_t TAG_LEN = 4;
