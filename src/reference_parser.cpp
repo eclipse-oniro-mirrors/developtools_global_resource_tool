@@ -182,7 +182,7 @@ bool ReferenceParser::ParseRefResourceItem(ResourceItem &resourceItem) const
     if (IsStringOfResourceItem(resType)) {
         data = string(reinterpret_cast<const char *>(resourceItem.GetData()), resourceItem.GetDataLength());
         if (!ParseRefString(data, update)) {
-            cerr << "Error: in " << resourceItem.GetFilePath() << endl;
+            cerr << "Error: " << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
             return false;
         }
         if (!update) {
@@ -197,7 +197,8 @@ bool ReferenceParser::ParseRefResourceItem(ResourceItem &resourceItem) const
         }
     }
     if (update && !resourceItem.SetData(reinterpret_cast<const int8_t *>(data.c_str()), data.length())) {
-        cerr << "Error: set data fail '" << resourceItem.GetName() << "' in " << resourceItem.GetFilePath() << endl;
+        cerr << "Error: set data fail. name = '" << resourceItem.GetName() << "' data = '" << data << "'.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     return true;
@@ -208,15 +209,15 @@ bool ReferenceParser::ParseRefResourceItemData(const ResourceItem &resourceItem,
     data = string(reinterpret_cast<const char *>(resourceItem.GetData()), resourceItem.GetDataLength());
     vector<string> contents = ResourceUtil::DecomposeStrings(data);
     if (contents.empty()) {
-        cerr << "Error: DecomposeStrings fail '" << resourceItem.GetName() << "' in ";
-        cerr << resourceItem.GetFilePath() << endl;
+        cerr << "Error: DecomposeStrings fail. name = '" << resourceItem.GetName() << "' data = '" << data << "'.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
 
     for (auto &content : contents) {
         bool flag = false;
         if (!ParseRefString(content, flag)) {
-            cerr << "Error: in " << resourceItem.GetFilePath() << endl;
+            cerr << "Error: " << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
             return false;
         }
         update = (update || flag);
@@ -228,8 +229,8 @@ bool ReferenceParser::ParseRefResourceItemData(const ResourceItem &resourceItem,
 
     data = ResourceUtil::ComposeStrings(contents);
     if (data.empty()) {
-        cerr << "Error: ComposeStrings fail '" << resourceItem.GetName() << "' in ";
-        cerr << resourceItem.GetFilePath() << endl;
+        cerr << "Error: ComposeStrings fail. name = '" << resourceItem.GetName();
+        cerr << "'  contents size is " << contents.size() << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     return true;

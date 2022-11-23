@@ -14,11 +14,12 @@
  */
 
 #include "file_entry.h"
-#include<fstream>
-#include<iostream>
+#include <fstream>
+#include <iostream>
 #include "dirent.h"
 #include "sys/stat.h"
 #include "unistd.h"
+#include <cstring>
 #ifdef _WIN32
 #include "windows.h"
 #include "shlwapi.h"
@@ -146,13 +147,14 @@ bool FileEntry::CopyFileInner(const string &src, const string &dst)
 {
 #ifdef _WIN32
     if (!CopyFile(src.c_str(), dst.c_str(), false)) {
+        cerr << "Error: CopyFile '" << src << "' to '" << dst << "' failed." << endl;
         return false;
     }
 #else
     ifstream in(src, ios::binary);
     ofstream out(dst, ios::binary);
     if (!in || !out) {
-        cerr << "Error: CopyFile '" << src << "' or '" << dst << "' open fail." << endl;
+        cerr << "Error: open failed '" << src << "' or '" << dst << "'." << endl;
         return false;
     }
     out << in.rdbuf();
@@ -282,7 +284,8 @@ bool FileEntry::RemoveAllDirInner(const FileEntry &entry)
     if (entry.IsFile()) {
         bool result = remove(entry.GetFilePath().GetPath().c_str()) == 0;
         if (!result) {
-            cerr << "Error: " << entry.GetFilePath().GetPath() << "remove fail !" << endl;
+            cerr << "Error: remove failed '" << entry.GetFilePath().GetPath();
+            cerr << "', reason: " << strerror(errno) << endl;
             return false;
         }
         return true;

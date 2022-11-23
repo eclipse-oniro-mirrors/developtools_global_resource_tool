@@ -72,8 +72,8 @@ bool ResourceUtil::RmoveAllDir(const string &path)
 bool ResourceUtil::OpenJsonFile(const string &path, Json::Value &root)
 {
     ifstream ifs(path, ios::binary);
-    if (!ifs) {
-        cerr << "Error: open json failed '" << path << "'" << endl;
+    if (!ifs.is_open()) {
+        cerr << "Error: open json failed '" << path << "', reason: " << strerror(errno) << endl;
         return false;
     }
 
@@ -82,7 +82,7 @@ bool ResourceUtil::OpenJsonFile(const string &path, Json::Value &root)
     readBuilder["failIfExtra"] = true;
     JSONCPP_STRING errs;
     if (!parseFromStream(readBuilder, ifs, &root, &errs)) {
-        cerr << "Error: parseFromStream '" << path;
+        cerr << "Error: parseFromStream failed." << NEW_LINE_PATH << path;
         cerr << "\n" << errs << endl;
         ifs.close();
         return false;
@@ -99,7 +99,7 @@ bool ResourceUtil::SaveToJsonFile(const string &path, const Json::Value &root)
     unique_ptr<Json::StreamWriter> writer(writerBuilder.newStreamWriter());
     ofstream out(path, ofstream::out | ofstream::binary);
     if (!out.is_open()) {
-        cerr << "Error: open fail " << path << endl;
+        cerr << "Error: open failed '" << path <<"', reason: " << strerror(errno) << endl;
         return false;
     }
     writer->write(root, &out);
@@ -213,7 +213,7 @@ ResType ResourceUtil::GetResTypeFromString(const string &type)
 bool ResourceUtil::CopyFleInner(const string &src, const string &dst)
 {
     if (!FileEntry::CopyFileInner(src, dst)) {
-        cerr << "Error: copy file fail from '" << src << "' to '" << dst << "'" << endl;
+        cerr << "Error: copy file fail from '" << src << "' to '" << dst << "'." << endl;
         return false;
     }
     return true;
@@ -226,7 +226,7 @@ bool ResourceUtil::CreateDirs(const string &filePath)
     }
     
     if (!FileEntry::CreateDirs(filePath)) {
-        cerr << "Error: create dir fail '" << filePath << "'" << endl;
+        cerr << "Error: create dir fail '" << filePath << "'." << endl;
         return false;
     }
     return true;
