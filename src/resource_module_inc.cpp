@@ -45,7 +45,7 @@ uint32_t ResourceModuleInc::ScanResource(const vector<IncrementList::FileIncreme
             filePathDel = FileEntry::FilePath(filePathDel).ReplaceExtension(".sxml").GetPath();
         }
         if (remove(filePathDel.c_str()) != 0) {
-            cerr << "Error: delete '" << filePathDel << "' fail" << endl;
+            cerr << "Error: remove failed '" << filePathDel << "', reason: " << strerror(errno) << endl;
             return RESTOOL_ERROR;
         }
     }

@@ -48,7 +48,7 @@ bool IncrementList::GetFromPath(const string &filePath, FileIncrement &info) con
 {
     int32_t priority = GetPriority(filePath);
     if (priority  < 0) {
-        cerr << "Error: " << RESTOOL_LIST_FILE << " '" << filePath << "' invalid." << endl;
+        cerr << "Error: '" << RESTOOL_LIST_FILE << "' invalid." << NEW_LINE_PATH << filePath << endl;
         return false;
     }
     info.rootPath = folder_[priority];
@@ -67,14 +67,14 @@ bool IncrementList::GetFromPath(const string &filePath, FileIncrement &info) con
         return true;
     }
     if (!KeyParser::Parse(info.limitKey, info.keyParams)) {
-        cerr << "Error: '" << filePath << "' '" << info.limitKey << "' invalid limit key." << endl;
+        cerr << "Error: '" << info.limitKey << "' invalid limit key." << NEW_LINE_PATH << filePath << endl;
         return false;
     }
 
     info.fileCluster = segments[SEG_FILE_CLUSTER];
     info.dirType = ResourceUtil::GetResTypeByDir(info.fileCluster);
     if (info.dirType == ResType::INVALID_RES_TYPE) {
-        cerr << "Error: '" << filePath << "' '" << info.fileCluster << "' invalid ResType." << endl;
+        cerr << "Error: '" << info.fileCluster << "' invalid ResType." << NEW_LINE_PATH << filePath << endl;
         return false;
     }
     info.filename = segments[SEG_FILE_NAME];
@@ -105,7 +105,7 @@ bool IncrementList::ParseSegment(const string &filePath, vector<string> &segment
     copy(segs.begin(), segs.end(), back_inserter(segments));
 
     if (segments.size() >= (SEG_RESOURCE + 1) && segments[SEG_RESOURCE] != RESOURCES_DIR) {
-        cerr << "Error: '" << filePath << "' don't contain '" << RESOURCES_DIR << "'" << endl;
+        cerr << "Error: don't contain '" << RESOURCES_DIR << "'." << NEW_LINE_PATH << filePath << endl;
         return false;
     }
 
@@ -114,7 +114,7 @@ bool IncrementList::ParseSegment(const string &filePath, vector<string> &segment
     }
 
     if (segments.size() != SEG_MAX) {
-        cerr << "Error: '" << filePath << "' segments != " << SEG_MAX << endl;
+        cerr << "Error: segments != " << SEG_MAX << NEW_LINE_PATH << filePath << endl;
         return false;
     }
     return true;

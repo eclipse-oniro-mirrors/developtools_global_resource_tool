@@ -97,7 +97,7 @@ uint32_t ResourceTable::SaveToResouorceIndex(const map<string, vector<TableData>
 
     ofstream out(indexFilePath_, ofstream::out | ofstream::binary);
     if (!out.is_open()) {
-        cerr << "Error: open fail " << indexFilePath_ << endl;
+        cerr << "Error: open failed '" << indexFilePath_ << ", reason: " << strerror(errno) << endl;
         return RESTOOL_ERROR;
     }
 

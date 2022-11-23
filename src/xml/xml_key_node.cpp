@@ -14,10 +14,11 @@
  */
 
 #include "xml_key_node.h"
-#include<algorithm>
-#include<fstream>
-#include<iostream>
-#include<vector>
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <vector>
+#include "resource_util.h"
 
 namespace OHOS {
 namespace Global {
@@ -51,7 +52,7 @@ bool XmlKeyNode::SaveToFile(const string &filePath) const
 {
     ofstream out(filePath, ofstream::out | ofstream::binary);
     if (!out.is_open()) {
-        cerr << "Error: open fail," << filePath << endl;
+        cerr << "Error: open failed '" << filePath << "', reason: " << strerror(errno) << endl;
         return false;
     }
 
@@ -77,7 +78,7 @@ bool XmlKeyNode::LoadFromFile(const std::string &filePath, RefParser parser)
 {
     ifstream in(filePath, ifstream::in | ifstream::binary);
     if (!in.is_open()) {
-        cerr << "Error: open fail," << filePath << endl;
+        cerr << "Error: open failed '" << filePath << "', reason: " << strerror(errno) << endl;
         return false;
     }
 
