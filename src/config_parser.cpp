@@ -69,7 +69,7 @@ uint32_t ConfigParser::Init()
     }
 
     if (!rootNode_.isObject()) {
-        cerr << "Error: root node not obeject in " << filePath_ << endl;
+        cerr << "Error: root node not obeject." << NEW_LINE_PATH << filePath_ << endl;
         return RESTOOL_ERROR;
     }
 
@@ -114,11 +114,11 @@ uint32_t ConfigParser::Save(const string &filePath) const
 bool ConfigParser::ParseModule(Json::Value &moduleNode)
 {
     if (!moduleNode.isObject()) {
-        cerr << "Error: 'module' not object in " << filePath_ << endl;
+        cerr << "Error: 'module' not object." << NEW_LINE_PATH << filePath_ << endl;
         return false;
     }
     if (moduleNode.empty()) {
-        cerr << "Error: 'module' empty in " << filePath_ << endl;
+        cerr << "Error: 'module' empty." << NEW_LINE_PATH << filePath_ << endl;
         return false;
     }
 
@@ -134,7 +134,7 @@ bool ConfigParser::ParseModule(Json::Value &moduleNode)
     }
 
     if (moduleName_.empty()) {
-        cerr << "Error: 'name' don't found in 'module', " << filePath_ << endl;
+        cerr << "Error: 'name' don't found in 'module'." << NEW_LINE_PATH << filePath_ << endl;
         return false;
     }
 
@@ -147,11 +147,11 @@ bool ConfigParser::ParseModule(Json::Value &moduleNode)
 bool ConfigParser::ParseDistro(Json::Value &distroNode)
 {
     if (!distroNode.isObject()) {
-        cerr << "Error: 'distro' not object in " << filePath_ << endl;
+        cerr << "Error: 'distro' not object." << NEW_LINE_PATH << filePath_ << endl;
         return false;
     }
     if (distroNode.empty()) {
-        cerr << "Error: 'distro' empty in " << filePath_ << endl;
+        cerr << "Error: 'distro' empty." << NEW_LINE_PATH << filePath_ << endl;
         return false;
     }
 
@@ -160,7 +160,7 @@ bool ConfigParser::ParseDistro(Json::Value &distroNode)
     }
 
     if (moduleName_.empty()) {
-        cerr << "Error: 'moduleName' don't found in 'distro', " << filePath_ << endl;
+        cerr << "Error: 'moduleName' don't found in 'distro'." << NEW_LINE_PATH << filePath_ << endl;
         return false;
     }
 
@@ -201,13 +201,13 @@ bool ConfigParser::ParseJsonArrayRef(Json::Value &parent, const string &key, Jso
     Json::Value array(Json::arrayValue);
     for (Json::ArrayIndex index = 0; index < size; index++) {
         if (!node[index].isString()) {
-            cerr << "Error: '" << key << "' invalid value. " << filePath_ << endl;
+            cerr << "Error: '" << key << "' invalid value." << NEW_LINE_PATH << filePath_ << endl;
             return false;
         }
         string value = node[index].asString();
         bool update = false;
         if (!GetRefIdFromString(value, update, JSON_ARRAY_IDS.at(key))) {
-            cerr << "Error: '" << key << "' value " << node[index] << " invalid. " << filePath_ << endl;
+            cerr << "Error: '" << key << "' value " << node[index] << " invalid." << NEW_LINE_PATH << filePath_ << endl;
             return false;
         }
         if (update) {
@@ -227,7 +227,7 @@ bool ConfigParser::ParseJsonStringRef(Json::Value &parent, const string &key, Js
     string value = node.asString();
     bool update = false;
     if (!GetRefIdFromString(value, update, JSON_STRING_IDS.at(key))) {
-        cerr << "Error: '" << key << "' value " << node << " invalid value. " << filePath_ << endl;
+        cerr << "Error: '" << key << "' value " << node << " invalid value." << NEW_LINE_PATH << filePath_ << endl;
         return false;
     }
     if (update) {
@@ -259,7 +259,7 @@ bool ConfigParser::ParseModuleType(const string &type)
 {
     const auto &result = MODULE_TYPES.find(type);
     if (result == MODULE_TYPES.end()) {
-        cerr << "Error: moduleType='" << type << "' invalid value in " << filePath_ << endl;
+        cerr << "Error: moduleType='" << type << "' invalid value." << NEW_LINE_PATH << filePath_ << endl;
         return false;
     }
     moduleType_ = result->second;

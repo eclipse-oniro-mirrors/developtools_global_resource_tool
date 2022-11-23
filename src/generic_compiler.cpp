@@ -60,7 +60,7 @@ bool GenericCompiler::PostFile(const FileInfo &fileInfo)
     data = moduleName_ + SEPARATOR + RESOURCES_DIR + SEPARATOR + \
         fileInfo.limitKey + SEPARATOR + fileInfo.fileCluster + SEPARATOR + data;
     if (!resourceItem.SetData(reinterpret_cast<const int8_t *>(data.c_str()), data.length())) {
-        cerr << "Error: resource item set data fail, " << fileInfo.filePath << endl;
+        cerr << "Error: resource item set data fail, data: " << data << NEW_LINE_PATH << fileInfo.filePath << endl;
         return false;
     }
     return MergeResourceItem(resourceItem);

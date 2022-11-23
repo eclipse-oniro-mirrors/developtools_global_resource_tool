@@ -178,7 +178,7 @@ bool IResourceCompiler::MergeResourceItem(const ResourceItem &resourceItem)
     }
     string idName = ResourceUtil::GetIdName(resourceItem.GetName(), resourceItem.GetResType());
     if (!IdWorker::GetInstance().IsValidName(idName)) {
-        cerr << "Error: in " << resourceItem.GetFilePath() << endl;
+        cerr << "Error: invalid idName '" << idName << "'."<< NEW_LINE_PATH <<  resourceItem.GetFilePath() << endl;
         return false;
     }
     auto item = nameInfos_.find(make_pair(resourceItem.GetResType(), idName));
@@ -191,8 +191,8 @@ bool IResourceCompiler::MergeResourceItem(const ResourceItem &resourceItem)
         return resourceItem.GetLimitKey() == iter.GetLimitKey();
     });
     if (ret != item->second.end()) {
-        cerr << "Error: resource '" << idName << "' first declared in " << ret->GetFilePath();
-        cerr << ", but declare again in " << resourceItem.GetFilePath() << endl;
+        cerr << "Error: resource '" << idName << "' first declared." << NEW_LINE_PATH << ret->GetFilePath() << endl;
+        cerr << "but declare again." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
 

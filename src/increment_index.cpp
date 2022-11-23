@@ -67,12 +67,12 @@ bool IncrementIndex::Load(map<int32_t, vector<ResourceItem>> &items) const
 
     auto headerInfo = indexJson["header"];
     if (headerInfo.empty() || !headerInfo.isObject()) {
-        cerr << "Error: " << indexPath_ << " header info." << endl;
+        cerr << "Error: header info." << NEW_LINE_PATH << indexPath_ << endl;
         return true;
     }
     auto folderInfo = headerInfo["folder"];
     if (folderInfo.empty() || !folderInfo.isArray()) {
-        cerr << "Error: " << indexPath_ << " folder info." << endl;
+        cerr << "Error: folder info." << NEW_LINE_PATH << indexPath_ << endl;
         return false;
     }
     if (folder_.size() != folderInfo.size()) {
@@ -102,22 +102,22 @@ void IncrementIndex::SetSkipPaths(const vector<string> &skipPaths)
 bool IncrementIndex::LoadIndex(const Json::Value &indexInfo, map<int32_t, vector<ResourceItem>> &items) const
 {
     if (indexInfo.empty() || !indexInfo.isObject()) {
-        cerr << "Error: " << indexPath_ << " index info." << endl;
+        cerr << "Error: index info." << NEW_LINE_PATH << indexPath_ << endl;
         return false;
     }
 
     for (const auto &idMember : indexInfo.getMemberNames()) {
         int32_t id = strtol(idMember.c_str(), nullptr, 10);
         if (id < 0) {
-            cerr << "Error: " << indexPath_ << " '" << idMember << "' not integer string." << endl;
+            cerr << "Error: '" << idMember << "' not integer string." << NEW_LINE_PATH << indexPath_ << endl;
             return false;
         }
         if (items.count(id) != 0) {
-            cerr << "Error: " << indexPath_ << " '" << idMember << "' duplicated." << endl;
+            cerr << "Error: '" << idMember << "' duplicated." << NEW_LINE_PATH << indexPath_ << endl;
             return false;
         }
         if (!indexInfo[idMember].isObject()) {
-            cerr << "Error: " << indexPath_ << " '" << idMember << "' not object." << endl;
+            cerr << "Error: '" << idMember << "' not object." << NEW_LINE_PATH << indexPath_ << endl;
             return false;
         }
         for (const auto &pathMember : indexInfo[idMember].getMemberNames()) {
@@ -126,12 +126,13 @@ bool IncrementIndex::LoadIndex(const Json::Value &indexInfo, map<int32_t, vector
             }
             auto item = indexInfo[idMember][pathMember];
             if (!item.isObject()) {
-                cerr << "Error: " << indexPath_ << " [" << idMember << "][" << pathMember<<"] not object." << endl;
+                cerr << "Error: [" << idMember << "][" << pathMember<<"] not object.";
+                cerr << NEW_LINE_PATH << indexPath_ << endl;
                 return false;
             }
             ResourceItem resourceItem;
             if (!ParseResourceItem(item, pathMember, resourceItem)) {
-                cerr << "Error: " << indexPath_ << " [" << idMember << "][" << pathMember<<"]." << endl;
+                cerr << "Error: [" << idMember << "][" << pathMember<<"]." << NEW_LINE_PATH << indexPath_ << endl;
                 return false;
             }
             if (!PushResourceItem(resourceItem, id, items)) {
@@ -156,7 +157,7 @@ bool IncrementIndex::ParseResourceItem(const Json::Value &item, const string &fi
     }
     ResType resType = ResourceUtil::GetResTypeFromString(type);
     if (resType == ResType::INVALID_RES_TYPE) {
-        cerr << "Error: " << indexPath_ << " invaid ResType '" << type << "'" << endl;
+        cerr << "Error: invaid ResType '" << type << "'." << NEW_LINE_PATH << indexPath_ << endl;
         return false;
     }
     vector<KeyParam> keyParams;
@@ -193,20 +194,21 @@ bool IncrementIndex::PushResourceItem(const ResourceItem &resourceItem, int32_t 
 
     const auto &first = items[id].begin();
     if (resourceItem.GetName() != first->GetName()) {
-        cerr << "Error: " << indexPath_ << " '" << resourceItem.GetName();
-        cerr << "', expect '" << first->GetName() << "'"<< endl;
+        cerr << "Error: '" << resourceItem.GetName() << "', expect '" << first->GetName() << "'.";
+        cerr << NEW_LINE_PATH << indexPath_ <<endl;
         return false;
     }
     if (resourceItem.GetResType() != first->GetResType()) {
-        cerr << "Error: " << indexPath_ << " '" << ResourceUtil::ResTypeToString(resourceItem.GetResType());
-        cerr << "', expect '" << ResourceUtil::ResTypeToString(first->GetResType()) << "'"<< endl;
+        cerr << "Error: '" << ResourceUtil::ResTypeToString(resourceItem.GetResType());
+        cerr << "', expect '" << ResourceUtil::ResTypeToString(first->GetResType()) << "'.";
+        cerr << NEW_LINE_PATH << indexPath_ << endl;
         return false;
     }
     auto result = find_if(items[id].begin(), items[id].end(), [&resourceItem](const auto &iter) {
         return resourceItem.GetLimitKey() == iter.GetLimitKey();
     });
     if (result != items[id].end()) {
-        cerr << "Error: " << indexPath_ << " '" << resourceItem.GetLimitKey() << "' conflict." << endl;
+        cerr << "Error: '" << resourceItem.GetLimitKey() << "' conflict." << NEW_LINE_PATH << indexPath_ << endl;
         return false;
     }
     items[id].push_back(resourceItem);

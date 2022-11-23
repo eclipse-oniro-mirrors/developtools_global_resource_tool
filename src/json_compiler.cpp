@@ -52,19 +52,19 @@ uint32_t JsonCompiler::CompileSingleFile(const FileInfo &fileInfo)
     }
 
     if (!root.isObject()) {
-        cerr << "Error: root node must object," << fileInfo.filePath << endl;
+        cerr << "Error: root node must object." << NEW_LINE_PATH << fileInfo.filePath << endl;
         return RESTOOL_ERROR;
     }
 
     if (root.getMemberNames().size() != 1) {
-        cerr << "Error: root node must only one member," << fileInfo.filePath << endl;
+        cerr << "Error: root node must only one member." << NEW_LINE_PATH << fileInfo.filePath << endl;
         return RESTOOL_ERROR;
     }
 
     string tag = root.getMemberNames()[0];
     auto ret = g_contentClusterMap.find(tag);
     if (ret == g_contentClusterMap.end()) {
-        cerr << "Error: invalid tag name '" << tag << "'," << fileInfo.filePath << endl;
+        cerr << "Error: invalid tag name '" << tag << "'." << NEW_LINE_PATH << fileInfo.filePath << endl;
         return RESTOOL_ERROR;
     }
     
@@ -95,20 +95,20 @@ void JsonCompiler::InitParser()
 bool JsonCompiler::ParseJsonArrayLevel(const Json::Value &arrayNode, const FileInfo &fileInfo)
 {
     if (!arrayNode.isArray()) {
-        cerr << "Error: '" << ResourceUtil::ResTypeToString(fileInfo.fileType) << "' must be array,";
-        cerr << fileInfo.filePath << endl;
+        cerr << "Error: '" << ResourceUtil::ResTypeToString(fileInfo.fileType) << "' must be array.";
+        cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
         return false;
     }
 
     if (arrayNode.empty()) {
-        cerr << "Error: '" << ResourceUtil::ResTypeToString(fileInfo.fileType) << "' empty,";
-        cerr << fileInfo.filePath << endl;
+        cerr << "Error: '" << ResourceUtil::ResTypeToString(fileInfo.fileType) << "' empty.";
+        cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
         return false;
     }
 
     for (Json::ArrayIndex index = 0; index < arrayNode.size(); index++) {
         if (!arrayNode[index].isObject()) {
-            cerr << "Error: the seq=" << index << " item must be object," << fileInfo.filePath << endl;
+            cerr << "Error: the seq=" << index << " item must be object." << NEW_LINE_PATH << fileInfo.filePath << endl;
             return false;
         }
         if (!ParseJsonObjectLevel(arrayNode[index], fileInfo)) {
@@ -122,12 +122,12 @@ bool JsonCompiler::ParseJsonObjectLevel(const Json::Value &objectNode, const Fil
 {
     auto nameNode = objectNode[TAG_NAME];
     if (nameNode.empty()) {
-        cerr << "Error: name empty," << fileInfo.filePath << endl;
+        cerr << "Error: name empty." << NEW_LINE_PATH << fileInfo.filePath << endl;
         return false;
     }
 
     if (!nameNode.isString()) {
-        cerr << "Error: name must string," << fileInfo.filePath << endl;
+        cerr << "Error: name must string." << NEW_LINE_PATH << fileInfo.filePath << endl;
         return false;
     }
 
@@ -171,12 +171,13 @@ bool JsonCompiler::HandleBoolean(const Json::Value &objectNode, ResourceItem &re
     if (valueNode.isString()) {
         regex ref("^\\$(ohos:)?boolean:.*");
         if (!regex_match(valueNode.asString(), ref)) {
-            cerr << "Error: '" << valueNode.asString() << "' only refer '$boolean:xxx',";
-            cerr << resourceItem.GetFilePath() << endl;
+            cerr << "Error: '" << valueNode.asString() << "' only refer '$boolean:xxx'.";
+            cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
             return false;
         }
     } else if (!valueNode.isBool()) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value not boolean," << resourceItem.GetFilePath() << endl;
+        cerr << "Error: '" << resourceItem.GetName() << "' value not boolean.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     return PushString(valueNode.asString(), resourceItem);
@@ -198,8 +199,8 @@ bool JsonCompiler::HandleStringArray(const Json::Value &objectNode, ResourceItem
     return ParseValueArray(objectNode, resourceItem, extra,
         [this](const Json::Value &arrayItem, const ResourceItem &resourceItem, vector<string> &values) -> bool {
             if (!arrayItem.isObject()) {
-                cerr << "Error: '" << resourceItem.GetName() << "' value array item not object,";
-                cerr << resourceItem.GetFilePath() << endl;
+                cerr << "Error: '" << resourceItem.GetName() << "' value array item not object.";
+                cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
                 return false;
             }
             auto value = arrayItem[TAG_VALUE];
@@ -253,7 +254,7 @@ bool JsonCompiler::HandlePlural(const Json::Value &objectNode, ResourceItem &res
             string quantityValue = arrayItem[TAG_QUANTITY].asString();
             if (find(attrs.begin(), attrs.end(), quantityValue) != attrs.end()) {
                 cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity '" << quantityValue;
-                cerr << "' duplicated," << resourceItem.GetFilePath() << endl;
+                cerr << "' duplicated." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
                 return false;
             }
             attrs.push_back(quantityValue);
@@ -265,8 +266,8 @@ bool JsonCompiler::HandlePlural(const Json::Value &objectNode, ResourceItem &res
         return false;
     }
     if (find(attrs.begin(), attrs.end(), "other") == attrs.end()) {
-        cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity must contains 'other',";
-        cerr << resourceItem.GetFilePath() << endl;
+        cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity must contains 'other'.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     return true;
@@ -275,8 +276,8 @@ bool JsonCompiler::HandlePlural(const Json::Value &objectNode, ResourceItem &res
 bool JsonCompiler::PushString(const string &value, ResourceItem &resourceItem) const
 {
     if (!resourceItem.SetData(reinterpret_cast<const int8_t *>(value.c_str()), value.length())) {
-        cerr << "Error: resourceItem setdata fail,'" << resourceItem.GetName() << "',";
-        cerr << resourceItem.GetFilePath() << endl;
+        cerr << "Error: resourceItem setdata fail,'" << resourceItem.GetName() << "'.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     return true;
@@ -285,7 +286,8 @@ bool JsonCompiler::PushString(const string &value, ResourceItem &resourceItem) c
 bool JsonCompiler::CheckJsonStringValue(const Json::Value &valueNode, const ResourceItem &resourceItem) const
 {
     if (!valueNode.isString()) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value not string," << resourceItem.GetFilePath() << endl;
+        cerr << "Error: '" << resourceItem.GetName() << "' value not string.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
 
@@ -299,15 +301,16 @@ bool JsonCompiler::CheckJsonStringValue(const Json::Value &valueNode, const Reso
     string value = valueNode.asString();
     ResType type = resourceItem.GetResType();
     if (type ==  ResType::COLOR && !CheckColorValue(value.c_str())) {
-        string error = "invaild color '" + value + "', in " + resourceItem.GetFilePath();
-        cerr << "Error: " << error << endl;
+        string error = "invaild color value '" + value + \
+                        "', only support refer '$color:xxx' or '#rgb','#argb','#rrggbb','aarrggbb'.";
+        cerr << "Error: " << error << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     regex ref("^\\$.+:");
     smatch result;
     if (regex_search(value, result, ref) && !regex_match(result[0].str(), regex(REFS.at(type)))) {
-        cerr << "Error: '" << value << "' only refer '"<< REFS.at(type) << "xxx',";
-        cerr << resourceItem.GetFilePath() << endl;
+        cerr << "Error: '" << value << "', only refer '"<< REFS.at(type) << "xxx'.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     return true;
@@ -318,12 +321,13 @@ bool JsonCompiler::CheckJsonIntegerValue(const Json::Value &valueNode, const Res
     if (valueNode.isString()) {
         regex ref("^\\$(ohos:)?integer:.*");
         if (!regex_match(valueNode.asString(), ref)) {
-            cerr << "Error: '" << valueNode.asString() << "' only refer '$integer:xxx',";
-            cerr << resourceItem.GetFilePath() << endl;
+            cerr << "Error: '" << valueNode.asString() << "', only refer '$integer:xxx'.";
+            cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
             return false;
         }
     } else if (!valueNode.isInt()) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value not integer," << resourceItem.GetFilePath() << endl;
+        cerr << "Error: '" << resourceItem.GetName() << "' value not integer.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     return true;
@@ -334,12 +338,14 @@ bool JsonCompiler::ParseValueArray(const Json::Value &objectNode, ResourceItem &
 {
     Json::Value arrayNode = objectNode[TAG_VALUE];
     if (!arrayNode.isArray()) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value not array," << resourceItem.GetFilePath() << endl;
+        cerr << "Error: '" << resourceItem.GetName() << "' value not array.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
 
     if (arrayNode.empty()) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value empty," << resourceItem.GetFilePath() << endl;
+        cerr << "Error: '" << resourceItem.GetName() << "' value empty.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
 
@@ -357,7 +363,8 @@ bool JsonCompiler::ParseValueArray(const Json::Value &objectNode, ResourceItem &
 
     string data = ResourceUtil::ComposeStrings(contents);
     if (data.empty()) {
-        cerr << "Error: '" << resourceItem.GetName() << "' array too large,"<< resourceItem.GetFilePath() << endl;
+        cerr << "Error: '" << resourceItem.GetName() << "' array too large.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     return PushString(data, resourceItem);
@@ -370,13 +377,13 @@ bool JsonCompiler::ParseParent(const Json::Value &objectNode, const ResourceItem
     string type = ResourceUtil::ResTypeToString(resourceItem.GetResType());
     if (!parent.isNull()) {
         if (!parent.isString()) {
-            cerr << "Error: " << type << " '" << resourceItem.GetName() << "' parent not string,";
-            cerr << resourceItem.GetFilePath() << endl;
+            cerr << "Error: " << type << " '" << resourceItem.GetName() << "' parent not string.";
+            cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
             return false;
         }
         if (parent.empty()) {
-            cerr << "Error: " << type << " '"<< resourceItem.GetName() << "' parent empty,";
-            cerr << resourceItem.GetFilePath() << endl;
+            cerr << "Error: " << type << " '"<< resourceItem.GetName() << "' parent empty.";
+            cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
             return false;
         }
         string parentValue = parent.asString();
@@ -395,19 +402,19 @@ bool JsonCompiler::ParseAttribute(const Json::Value &arrayItem, const ResourceIt
 {
     string type = ResourceUtil::ResTypeToString(resourceItem.GetResType());
     if (!arrayItem.isObject()) {
-        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute not object,";
-        cerr << resourceItem.GetFilePath() << endl;
+        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute not object.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     auto name = arrayItem[TAG_NAME];
     if (name.empty()) {
-        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute name empty,";
-        cerr << resourceItem.GetFilePath() << endl;
+        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute name empty.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     if (!name.isString()) {
-        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute name not string,";
-        cerr << resourceItem.GetFilePath() << endl;
+        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute name not string.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     values.push_back(name.asString());
@@ -415,12 +422,12 @@ bool JsonCompiler::ParseAttribute(const Json::Value &arrayItem, const ResourceIt
     auto value = arrayItem[TAG_VALUE];
     if (value.isNull()) {
         cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute '" << name.asString();
-        cerr << "' value empty," << resourceItem.GetFilePath() << endl;
+        cerr << "' value empty." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     if (!value.isString()) {
         cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute '" << name.asString();
-        cerr << "' value not string," << resourceItem.GetFilePath() << endl;
+        cerr << "' value not string." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     values.push_back(value.asString());
@@ -430,19 +437,19 @@ bool JsonCompiler::ParseAttribute(const Json::Value &arrayItem, const ResourceIt
 bool JsonCompiler::CheckPluralValue(const Json::Value &arrayItem, const ResourceItem &resourceItem) const
 {
     if (!arrayItem.isObject()) {
-        cerr << "Error: Plural '" << resourceItem.GetName() << "' array item not object,";
-        cerr << resourceItem.GetFilePath() << endl;
+        cerr << "Error: Plural '" << resourceItem.GetName() << "' array item not object.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     auto quantity = arrayItem[TAG_QUANTITY];
     if (quantity.empty()) {
-        cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity empty,";
-        cerr << resourceItem.GetFilePath() << endl;
+        cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity empty.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     if (!quantity.isString()) {
-        cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity not string,";
-        cerr << resourceItem.GetFilePath() << endl;
+        cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity not string.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     string quantityValue = quantity.asString();
@@ -452,19 +459,19 @@ bool JsonCompiler::CheckPluralValue(const Json::Value &arrayItem, const Resource
                 buffer.append(iter).append(" ");
             });
         cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity '" << quantityValue;
-        cerr << "' not in [" << buffer << "]," << resourceItem.GetFilePath() << endl;
+        cerr << "' not in [" << buffer << "]." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
 
     auto value = arrayItem[TAG_VALUE];
     if (value.isNull()) {
         cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity '" << quantityValue;
-        cerr << "' value empty" << resourceItem.GetFilePath() << endl;
+        cerr << "' value empty." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     if (!value.isString()) {
         cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity '" << quantityValue;
-        cerr << "' value not string" << resourceItem.GetFilePath() << endl;
+        cerr << "' value not string." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     return true;
