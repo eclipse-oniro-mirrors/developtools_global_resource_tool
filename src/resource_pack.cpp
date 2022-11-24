@@ -14,8 +14,8 @@
  */
 
 #include "resource_pack.h"
-#include<algorithm>
-#include<iomanip>
+#include <algorithm>
+#include <iomanip>
 #include "file_entry.h"
 #include "file_manager.h"
 #include "header.h"
@@ -365,10 +365,196 @@ uint32_t ResourcePack::PackNormal()
     }
 
     ResourceTable resourceTable;
+    if (!packageParser_.GetDependEntry().empty()) {
+        if (HandleFeature() != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
+        }
+        if (GenerateHeader() != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
+        }
+    }
+
     if (resourceTable.CreateResourceTable() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
+}
+
+uint32_t ResourcePack::HandleFeature()
+{
+    string output = packageParser_.GetOutput();
+    string featureDependEntry = packageParser_.GetDependEntry();
+    if (featureDependEntry.empty()) {
+        return RESTOOL_SUCCESS;
+    }
+    string jsonFile = FileEntry::FilePath(featureDependEntry).Append(CONFIG_JSON).GetPath();
+    ConfigParser entryJson(jsonFile);
+    entryJson.SetDependEntry(true);
+    if (entryJson.Init() != RESTOOL_SUCCESS) {
+        cerr << "Error: config json invalid." << NEW_LINE_PATH << jsonFile << endl;
+        return RESTOOL_ERROR;
+    }
+
+    int32_t labelId = entryJson.GetAbilityLabelId();
+    int32_t iconId = entryJson.GetAbilityIconId();
+    if (labelId <= 0 || iconId <= 0) {
+        cerr << "Error: Entry MainAbility must have 'icon' and 'label'." << endl;
+        return RESTOOL_ERROR;
+    }
+    string path = FileEntry::FilePath(featureDependEntry).Append(RESOURCE_INDEX_FILE).GetPath();
+    map<int32_t, vector<ResourceItem>> resInfoLocal;
+    ResourceTable resourceTable;
+    if (resourceTable.LoadResTable(path, resInfoLocal) != RESTOOL_SUCCESS) {
+        cerr << "Error: LoadResTable fail." << endl;
+        return RESTOOL_ERROR;
+    }
+    jsonFile = FileEntry::FilePath(output).Append(CONFIG_JSON).GetPath();
+    ConfigParser config(jsonFile);
+    if (config.Init() != RESTOOL_SUCCESS) {
+        cerr << "Error: config json invalid." << NEW_LINE_PATH << jsonFile << endl;
+        return RESTOOL_ERROR;
+    }
+    vector<ResourceItem> items;
+    if (FindResourceItems(resInfoLocal, items, labelId) != RESTOOL_SUCCESS ||
+        HandleLabel(items, config) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    items.clear();
+    if (FindResourceItems(resInfoLocal, items, iconId) != RESTOOL_SUCCESS ||
+        HandleIcon(items, config) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    string outputPath = FileEntry::FilePath(output).Append(ConfigParser::GetConfigName()).GetPath();
+    if (config.Save(outputPath) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    entryJson.SetDependEntry(false);
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t ResourcePack::FindResourceItems(const map<int32_t, vector<ResourceItem>> &resInfoLocal,
+                                         vector<ResourceItem> &items, int32_t id) const
+{
+    auto ret = resInfoLocal.find(id);
+    if (ret == resInfoLocal.end()) {
+        cerr << "Error: FindResourceItems don't found '" << id << "'." << endl;
+        return RESTOOL_ERROR;
+    }
+    ResType type = ResType::INVALID_RES_TYPE;
+    items = ret->second;
+    if (items.empty()) {
+        cerr << "Error: FindResourceItems resource item empty '" << id << "'." << endl;
+        return RESTOOL_ERROR;
+    }
+    for (auto &it : items) {
+        if (type == ResType::INVALID_RES_TYPE) {
+            type = it.GetResType();
+        }
+        if (type != it.GetResType()) {
+            cerr << "Error: FindResourceItems invalid restype '" << ResourceUtil::ResTypeToString(type);
+            cerr << "' vs '"  << ResourceUtil::ResTypeToString(it.GetResType()) << "'." << endl;
+            return RESTOOL_ERROR;
+        }
+    }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t ResourcePack::HandleLabel(vector<ResourceItem> &items, ConfigParser &config) const
+{
+    int32_t nextId = 0;
+    string idName;
+    for (auto it : items) {
+        if (it.GetResType() != ResType::STRING) {
+            cerr << "Error: HandleLabel invalid restype '";
+            cerr << ResourceUtil::ResTypeToString(it.GetResType()) << "'." << endl;
+            return RESTOOL_ERROR;
+        }
+        idName = it.GetName() + "_entry";
+        it.SetName(idName);
+        string data(reinterpret_cast<const char *>(it.GetData()));
+        if (!it.SetData(reinterpret_cast<const int8_t *>(data.c_str()), it.GetDataLength()-1)) {
+            return RESTOOL_ERROR;
+        }
+        if (nextId <= 0) {
+            nextId = IdWorker::GetInstance().GenerateId(ResType::STRING, idName);
+        }
+        SaveResourceItem(it, nextId);
+    }
+    string label = "$string:" +idName;
+    config.SetAppLabel(label, nextId);
+    return RESTOOL_SUCCESS;
+}
+
+bool ResourcePack::CopyIcon(string &dataPath, const string &idName, string &fileName) const
+{
+    string featureDependEntry = packageParser_.GetDependEntry();
+    string source = FileEntry::FilePath(featureDependEntry).Append(dataPath).GetPath();
+    string suffix = FileEntry::FilePath(source).GetExtension();
+    fileName = idName + suffix;
+    string output = packageParser_.GetOutput();
+#ifdef _WIN32
+    ResourceUtil::StringReplace(dataPath, SEPARATOR, WIN_SEPARATOR);
+#endif
+    string dstDir = FileEntry::FilePath(output).Append(dataPath).GetParent().GetPath();
+    string dst = FileEntry::FilePath(dstDir).Append(fileName).GetPath();
+    if (!ResourceUtil::CreateDirs(dstDir)) {
+        cerr << "Error: Create Dirs fail '" << dstDir << "'."<< endl;
+        return false;
+    }
+    if (!ResourceUtil::CopyFleInner(source, dst)) {
+        cerr << "Error: copy file fail from '" << source << "' to '" << dst << "'." << endl;
+        return false;
+    }
+    return true;
+}
+
+uint32_t ResourcePack::HandleIcon(vector<ResourceItem> &items, ConfigParser &config) const
+{
+    int32_t nextId = 0;
+    string idName;
+    for (auto it : items) {
+        if (it.GetResType() != ResType::MEDIA) {
+            cerr << "Error: HandleLabel invalid restype '";
+            cerr << ResourceUtil::ResTypeToString(it.GetResType()) << "'." << endl;
+            return RESTOOL_ERROR;
+        }
+        string dataPath(reinterpret_cast<const char *>(it.GetData()));
+        string::size_type pos = dataPath.find_first_of(SEPARATOR);
+        if (pos == string::npos) {
+            cerr << "Error: HandleIcon invalid '" << dataPath << "'."<< endl;
+            return RESTOOL_ERROR;
+        }
+        dataPath = dataPath.substr(pos + 1);
+        idName = it.GetName() + "_entry";
+        string fileName;
+        if (!CopyIcon(dataPath, idName, fileName)) {
+            return RESTOOL_ERROR;
+        }
+        string data = FileEntry::FilePath(moduleName_).Append(dataPath).GetParent().Append(fileName).GetPath();
+        ResourceUtil::StringReplace(data, WIN_SEPARATOR, SEPARATOR);
+        ResourceItem resourceItem(fileName, it.GetKeyParam(), ResType::MEDIA);
+        resourceItem.SetLimitKey(it.GetLimitKey());
+        if (!resourceItem.SetData(reinterpret_cast<const int8_t *>(data.c_str()), data.length())) {
+            return RESTOOL_ERROR;
+        }
+        if (nextId <= 0) {
+            nextId = IdWorker::GetInstance().GenerateId(ResType::MEDIA, idName);
+        }
+        SaveResourceItem(resourceItem, nextId);
+    }
+    string icon = "$media:" + idName;
+    config.SetAppIcon(icon, nextId);
+    return RESTOOL_SUCCESS;
+}
+
+void ResourcePack::SaveResourceItem(const ResourceItem &resourceItem, int32_t nextId) const
+{
+    map<int32_t, vector<ResourceItem>> resInfo;
+    vector<ResourceItem> vet;
+    vet.push_back(resourceItem);
+    resInfo.insert(make_pair(nextId, vet));
+    FileManager &fileManager = FileManager::GetInstance();
+    fileManager.MergeResourceItem(resInfo);
 }
 
 uint32_t ResourcePack::PackPreview()
