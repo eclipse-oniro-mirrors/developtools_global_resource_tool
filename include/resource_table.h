@@ -30,6 +30,7 @@ public:
     virtual ~ResourceTable();
     uint32_t CreateResourceTable();
     uint32_t CreateResourceTable(const std::map<int32_t, std::vector<std::shared_ptr<ResourceItem>>> &items);
+    uint32_t LoadResTable(const std::string path, std::map<int32_t, std::vector<ResourceItem>> &resInfos);
 private:
     struct TableData {
         int32_t id;
@@ -71,6 +72,16 @@ private:
     void SaveLimitKeyConfigs(const std::map<std::string, LimitKeyConfig> &limitKeyConfigs,
                              std::ostringstream &out) const;
     void SaveIdSets(const std::map<std::string, IdSet> &idSets, std::ostringstream &out) const;
+    bool ReadFileHeader(std::ifstream &in, IndexHeader &indexHeader, int32_t &pos, int32_t length) const;
+    bool ReadLimitKeys(std::ifstream &in, std::map<int32_t, std::vector<KeyParam>> &limitKeys,
+                       uint32_t count, int32_t &pos, int32_t length) const;
+    bool ReadIdTables(std::ifstream &in, std::map<int32_t, std::pair<int32_t, int32_t>> &datas,
+                      uint32_t count, int32_t &pos, int32_t length) const;
+    bool ReadDataRecordPrepare(std::ifstream &in, RecordItem &record, int32_t &pos, int32_t length) const;
+    bool ReadDataRecordStart(std::ifstream &in, RecordItem &record,
+                             const std::map<int32_t, std::vector<KeyParam>> &limitKeys,
+                             const std::map<int32_t, std::pair<int32_t, int32_t>> &datas,
+                             std::map<int32_t, std::vector<ResourceItem>> &resInfos) const;
     std::string indexFilePath_;
 };
 }
