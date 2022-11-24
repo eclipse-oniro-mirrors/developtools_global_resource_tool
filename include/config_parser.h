@@ -37,9 +37,21 @@ public:
     uint32_t Init();
     const std::string &GetPackageName() const;
     const std::string &GetModuleName() const;
+    int32_t GetAbilityIconId() const;
+    int32_t GetAbilityLabelId() const;
+    bool SetAppIcon(std::string &icon, int32_t id);
+    bool SetAppLabel(std::string &label, int32_t id);
     ModuleType GetModuleType() const;
     uint32_t ParseRefence();
     uint32_t Save(const std::string &filePath) const;
+    void SetDependEntry(const bool isDenpend)
+    {
+        dependEntry = isDenpend;
+    }
+    bool IsDependEntry()
+    {
+        return dependEntry;
+    }
     static void SetUseModule()
     {
         useModule_ = true;
@@ -51,16 +63,25 @@ public:
 private:
     bool ParseModule(Json::Value &moduleNode);
     bool ParseDistro(Json::Value &distroNode);
+    bool ParseAbilities(const Json::Value &abilites);
+    bool ParseAbilitiy(const Json::Value &ability, bool &isMainAbility);
+    bool IsMainAbility(const Json::Value &skills);
+    bool IsHomeAction(const Json::Value &actions);
+    bool dependEntry = false;
     bool ParseRefImpl(Json::Value &parent, const std::string &key, Json::Value &node);
     bool ParseJsonArrayRef(Json::Value &parent, const std::string &key, Json::Value &node);
     bool ParseJsonStringRef(Json::Value &parent, const std::string &key, Json::Value &node);
     bool GetRefIdFromString(std::string &value, bool &update, const std::string &match) const;
     bool ParseModuleType(const std::string &type);
+    bool ParseAbilitiesForDepend(Json::Value &moduleNode);
     std::string filePath_;
     std::string packageName_;
     std::string moduleName_;
     ModuleType moduleType_;
     Json::Value rootNode_;
+    std::string mainAbility_;
+    int32_t abilityIconId_;
+    int32_t abilityLabelId_;
     static const std::map<std::string, ModuleType> MODULE_TYPES;
     static const std::map<std::string, std::string> JSON_STRING_IDS;
     static const std::map<std::string, std::string> JSON_ARRAY_IDS;

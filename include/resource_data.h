@@ -31,8 +31,10 @@ const static std::string RAW_FILE_DIR = "rawfile";
 const static std::string ID_DEFINED_FILE = "id_defined.json";
 const static std::string RESOURCE_INDEX_FILE = "resources.index";
 const static std::string SEPARATOR = "/";
+const static std::string WIN_SEPARATOR = "\\";
 const static std::string NEW_LINE_PATH = "\r\nat ";
 const static int32_t VERSION_MAX_LEN = 128;
+const static int32_t INT_TO_BYTES = sizeof(uint32_t);
 static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 2.010" };
 const static int32_t TAG_LEN = 4;
 
@@ -142,6 +144,11 @@ struct KeyParam {
     uint32_t value;
 };
 
+struct IdData {
+    uint32_t id;
+    uint32_t dataOffset;
+};
+
 const std::map<std::string, ResType> g_fileClusterMap = {
     { "element", ResType::ELEMENT },
     { "media", ResType::MEDIA },
@@ -160,6 +167,28 @@ const std::map<std::string, ResType> g_contentClusterMap = {
     { "pattern", ResType::PATTERN },
     { "theme", ResType::THEME },
     { "float", ResType::FLOAT }
+};
+
+const std::map<int32_t, ResType> g_resTypeMap = {
+    { static_cast<int32_t>(ResType::ELEMENT), ResType::ELEMENT},
+    { static_cast<int32_t>(ResType::ANIMATION), ResType::ANIMATION},
+    { static_cast<int32_t>(ResType::LAYOUT), ResType::LAYOUT},
+    { static_cast<int32_t>(ResType::RAW), ResType::RAW},
+    { static_cast<int32_t>(ResType::INTEGER), ResType::INTEGER},
+    { static_cast<int32_t>(ResType::STRING), ResType::STRING},
+    { static_cast<int32_t>(ResType::STRARRAY), ResType::STRARRAY},
+    { static_cast<int32_t>(ResType::INTARRAY), ResType::INTARRAY},
+    { static_cast<int32_t>(ResType::BOOLEAN), ResType::BOOLEAN},
+    { static_cast<int32_t>(ResType::COLOR), ResType::COLOR},
+    { static_cast<int32_t>(ResType::ID), ResType::ID},
+    { static_cast<int32_t>(ResType::THEME), ResType::THEME},
+    { static_cast<int32_t>(ResType::PLURAL), ResType::PLURAL},
+    { static_cast<int32_t>(ResType::FLOAT), ResType::FLOAT},
+    { static_cast<int32_t>(ResType::MEDIA), ResType::MEDIA},
+    { static_cast<int32_t>(ResType::PROF), ResType::PROF},
+    { static_cast<int32_t>(ResType::GRAPHIC), ResType::GRAPHIC},
+    { static_cast<int32_t>(ResType::PATTERN), ResType::PATTERN},
+    { static_cast<int32_t>(ResType::INVALID_RES_TYPE), ResType::INVALID_RES_TYPE},
 };
 
 struct DirectoryInfo {

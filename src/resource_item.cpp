@@ -74,6 +74,11 @@ void ResourceItem::SetLimitKey(const string &limitKey)
     limitKey_ = limitKey;
 }
 
+void ResourceItem::SetName(const string &name)
+{
+    name_ = name;
+}
+
 const int8_t *ResourceItem::GetData() const
 {
     return data_;

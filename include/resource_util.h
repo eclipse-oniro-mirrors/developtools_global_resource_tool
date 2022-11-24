@@ -34,6 +34,14 @@ public:
     static void Split(const std::string &str, std::vector<std::string> &out, const std::string &splitter);
 
     /**
+     * @brief Replace sub-string in string
+     * @param sourceStr: The original string to operate on
+     * @param oldStr: The string to be replaced
+     * @param newStr: The new string used
+     */
+    static void StringReplace(std::string &sourceStr, const std::string &oldStr, const std::string &newStr);
+
+    /**
      * @brief check file exist.
      * @param path: file path.
      * @return true if exist, other false.
@@ -157,6 +165,13 @@ public:
      * @return true is legal, other false;
      */
     static bool IslegalPath(const std::string &path);
+
+    /**
+     * @brief get an keyParams for limitkey
+     * @param keyParams
+     * @return limitkey
+     */
+    static std::string PaserKeyParam(const std::vector<KeyParam> &keyParams);
 private:
     enum class IgnoreType {
         IGNORE_FILE,
@@ -164,6 +179,10 @@ private:
         IGNORE_ALL
     };
     static const std::map<std::string, IgnoreType> IGNORE_FILE_REGEX;
+    static std::string GetLocaleLimitkey(const KeyParam &KeyParam);
+    static std::string GetDeviceTypeLimitkey(const KeyParam &KeyParam);
+    static std::string GetResolutionLimitkey(const KeyParam &KeyParam);
+    static std::string GetKeyParamValue(const KeyParam &KeyParam);
 };
 }
 }

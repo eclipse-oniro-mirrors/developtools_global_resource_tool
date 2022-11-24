@@ -89,6 +89,16 @@ const string &ConfigParser::GetModuleName() const
     return moduleName_;
 }
 
+int32_t ConfigParser::GetAbilityIconId() const
+{
+    return abilityIconId_;
+}
+
+int32_t ConfigParser::GetAbilityLabelId() const
+{
+    return abilityLabelId_;
+}
+
 ConfigParser::ModuleType ConfigParser::GetModuleType() const
 {
     return moduleType_;
@@ -110,6 +120,28 @@ uint32_t ConfigParser::Save(const string &filePath) const
     return RESTOOL_ERROR;
 }
 
+bool ConfigParser::SetAppIcon(string &icon, int32_t id)
+{
+    if (!rootNode_["app"].isObject()) {
+        cerr << "Error: 'app' not object" << endl;
+        return false;
+    }
+    rootNode_["app"]["icon"] = icon;
+    rootNode_["app"]["iconId"] = id;
+    return true;
+}
+
+bool ConfigParser::SetAppLabel(string &label, int32_t id)
+{
+    if (!rootNode_["app"].isObject()) {
+        cerr << "Error: 'app' not object" << endl;
+        return false;
+    }
+    rootNode_["app"]["label"] = label;
+    rootNode_["app"]["labelId"] = id;
+    return true;
+}
+
 // below private
 bool ConfigParser::ParseModule(Json::Value &moduleNode)
 {
@@ -126,7 +158,10 @@ bool ConfigParser::ParseModule(Json::Value &moduleNode)
         if (moduleNode.isMember("package") && moduleNode["package"].isString()) {
             packageName_ = moduleNode["package"].asString();
         }
-        return ParseDistro(moduleNode["distro"]);
+        if (!ParseDistro(moduleNode["distro"])) {
+            return false;
+        }
+        return ParseAbilitiesForDepend(moduleNode);
     }
 
     if (moduleNode["name"].isString()) {
@@ -140,6 +175,21 @@ bool ConfigParser::ParseModule(Json::Value &moduleNode)
 
     if (moduleNode["type"].isString() && !ParseModuleType(moduleNode["type"].asString())) {
         return false;
+    }
+    return true;
+}
+
+bool ConfigParser::ParseAbilitiesForDepend(Json::Value &moduleNode)
+{
+    if (!IsDependEntry()) {
+        return true;
+    }
+    if (moduleNode["mainAbility"].isString()) {
+        mainAbility_ = moduleNode["mainAbility"].asString();
+        if (mainAbility_[0] == '.') {
+            mainAbility_ = packageName_ + mainAbility_;
+        }
+        return ParseAbilities(moduleNode["abilities"]);
     }
     return true;
 }
@@ -168,6 +218,93 @@ bool ConfigParser::ParseDistro(Json::Value &distroNode)
         return false;
     }
     return true;
+}
+
+bool ConfigParser::ParseAbilities(const Json::Value &abilites)
+{
+    if (abilites.empty()) {
+        return true;
+    }
+    if (!abilites.isArray()) {
+        cerr << "Error: abilites not array." << NEW_LINE_PATH << filePath_ << endl;
+        return false;
+    }
+    bool isMainAbility = false;
+    for (Json::ArrayIndex i = 0; i < abilites.size(); i++) {
+        if (!ParseAbilitiy(abilites[i], isMainAbility)) {
+            cerr << "Error: ParseAbilitiy fail." << endl;
+            return false;
+        }
+        if (isMainAbility) {
+            break;
+        }
+    }
+    return true;
+}
+
+bool ConfigParser::ParseAbilitiy(const Json::Value &ability, bool &isMainAbility)
+{
+    if (ability.empty()) {
+        return true;
+    }
+    if (!ability["name"].isString()) {
+        return false;
+    }
+    string name = ability["name"].asString();
+    if (name[0] == '.') {
+        name = packageName_ + name;
+    }
+    if (mainAbility_ != name && !IsMainAbility(ability["skills"])) {
+        return true;
+    }
+    if (ability["iconId"].isInt()) {
+        abilityIconId_ = ability["iconId"].asInt();
+    }
+    if (abilityIconId_ <= 0) {
+        cerr << "Error: iconId don't found in 'ability'." << NEW_LINE_PATH << filePath_ << endl;
+        return false;
+    }
+    if (ability["labelId"].isInt()) {
+        abilityLabelId_ = ability["labelId"].asInt();
+    }
+    if (abilityLabelId_ <= 0) {
+        cerr << "Error: labelId don't found in 'ability'." << NEW_LINE_PATH << filePath_ << endl;
+        return false;
+    }
+    isMainAbility = true;
+    return true;
+}
+
+bool ConfigParser::IsMainAbility(const Json::Value &skills)
+{
+    if (!skills.isArray()) {
+        return false;
+    }
+    for (Json::ArrayIndex i = 0; i < skills.size(); i++) {
+        if (!skills[i].isObject()) {
+            return false;
+        }
+        if (IsHomeAction(skills[i]["actions"])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ConfigParser::IsHomeAction(const Json::Value &actions)
+{
+    if (!actions.isArray()) {
+        return false;
+    }
+    for (Json::ArrayIndex i = 0; i < actions.size(); i++) {
+        if (!actions[i].isObject()) {
+            return false;
+        }
+        if (actions[i].asString() == "action.system.home") {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool ConfigParser::ParseRefImpl(Json::Value &parent, const std::string &key, Json::Value &node)
