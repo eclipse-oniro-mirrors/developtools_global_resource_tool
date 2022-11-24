@@ -38,9 +38,10 @@ const struct option PackageParser::CMD_OPTS[] = {
     { "priority", required_argument, nullptr, 'g' },
     { "append", required_argument, nullptr, 'x' },
     { "combine", required_argument, nullptr, 'z' },
+    { "dependEntry", required_argument, nullptr, 'd' },
 };
 
-const string PackageParser::CMD_PARAMS = "i:p:o:r:m:j:e:c:l:g:x:afvz";
+const string PackageParser::CMD_PARAMS = "i:p:o:r:m:j:e:c:l:g:x:d:afvz";
 
 uint32_t PackageParser::Parse(int argc, char *argv[])
 {
@@ -99,6 +100,11 @@ int32_t PackageParser::GetStartId() const
 const string &PackageParser::GetCachePath() const
 {
     return cachePath_;
+}
+
+const string &PackageParser::GetDependEntry() const
+{
+    return dependEntry_;
 }
 
 uint32_t PackageParser::AddInput(const string& argValue)
@@ -308,6 +314,12 @@ bool PackageParser::GetCombine() const
     return combine_;
 }
 
+uint32_t PackageParser::AddDependEntry(const string& argValue)
+{
+    dependEntry_ = argValue;
+    return RESTOOL_SUCCESS;
+}
+
 bool PackageParser::IsAscii(const string& argValue) const
 {
 #ifdef __WIN32
@@ -342,6 +354,7 @@ void PackageParser::InitCommand()
     handles_.emplace('g', bind(&PackageParser::SetPriority, this, _1));
     handles_.emplace('x', bind(&PackageParser::AddAppend, this, _1));
     handles_.emplace('z', [this](const string &) -> uint32_t { return SetCombine(); });
+    handles_.emplace('d', bind(&PackageParser::AddDependEntry, this, _1));
 }
 
 uint32_t PackageParser::HandleProcess(int c, const string& argValue)

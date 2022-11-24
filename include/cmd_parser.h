@@ -52,6 +52,7 @@ public:
     int32_t GetPriority() const;
     const std::vector<std::string> &GetAppend() const;
     bool GetCombine() const;
+    const std::string &GetDependEntry() const;
 
 private:
     void InitCommand();
@@ -73,6 +74,7 @@ private:
     uint32_t SetPriority(const std::string& argValue);
     uint32_t AddAppend(const std::string& argValue);
     uint32_t SetCombine();
+    uint32_t AddDependEntry(const std::string& argValue);
     bool IsAscii(const std::string& argValue) const;
 
     static const struct option CMD_OPTS[];
@@ -94,6 +96,7 @@ private:
     int32_t priority_ = -1;
     std::vector<std::string> append_;
     bool combine_ = false;
+    std::string dependEntry_;
 };
 
 template<class T>
