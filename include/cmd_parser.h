@@ -75,6 +75,7 @@ private:
     uint32_t AddAppend(const std::string& argValue);
     uint32_t SetCombine();
     uint32_t AddDependEntry(const std::string& argValue);
+    uint32_t ShowHelp() const;
     bool IsAscii(const std::string& argValue) const;
 
     static const struct option CMD_OPTS[];
@@ -128,6 +129,7 @@ void CmdParser<T>::ShowUseage()
     std::cout << "    -e    start id mask, e.g 0x01000000, in [0x01000000, 0x06FFFFFF),[0x08000000, 0x41FFFFFF)\n";
     std::cout << "    -x    resources folder path\n";
     std::cout << "    -z    flag for incremental compilation\n";
+    std::cout << "    -h    Displays this help menu\n";
 }
 
 template<class T>

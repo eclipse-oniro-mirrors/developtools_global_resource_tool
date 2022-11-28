@@ -39,9 +39,10 @@ const struct option PackageParser::CMD_OPTS[] = {
     { "append", required_argument, nullptr, 'x' },
     { "combine", required_argument, nullptr, 'z' },
     { "dependEntry", required_argument, nullptr, 'd' },
+    { "help", no_argument, nullptr, 'h'},
 };
 
-const string PackageParser::CMD_PARAMS = "i:p:o:r:m:j:e:c:l:g:x:d:afvz";
+const string PackageParser::CMD_PARAMS = "i:p:o:r:m:j:e:c:l:g:x:d:afhvz";
 
 uint32_t PackageParser::Parse(int argc, char *argv[])
 {
@@ -314,6 +315,14 @@ uint32_t PackageParser::AddDependEntry(const string& argValue)
     return RESTOOL_SUCCESS;
 }
 
+uint32_t PackageParser::ShowHelp() const
+{
+    auto &parser = CmdParser<PackageParser>::GetInstance();
+    parser.ShowUseage();
+    exit(RESTOOL_SUCCESS);
+    return RESTOOL_SUCCESS;
+}
+
 bool PackageParser::IsAscii(const string& argValue) const
 {
 #ifdef __WIN32
@@ -349,6 +358,7 @@ void PackageParser::InitCommand()
     handles_.emplace('x', bind(&PackageParser::AddAppend, this, _1));
     handles_.emplace('z', [this](const string &) -> uint32_t { return SetCombine(); });
     handles_.emplace('d', bind(&PackageParser::AddDependEntry, this, _1));
+    handles_.emplace('h', [this](const string &) -> uint32_t { return ShowHelp(); });
 }
 
 uint32_t PackageParser::HandleProcess(int c, const string& argValue)
