@@ -302,7 +302,7 @@ bool JsonCompiler::CheckJsonStringValue(const Json::Value &valueNode, const Reso
     ResType type = resourceItem.GetResType();
     if (type ==  ResType::COLOR && !CheckColorValue(value.c_str())) {
         string error = "invaild color value '" + value + \
-                        "', only support refer '$color:xxx' or '#rgb','#argb','#rrggbb','aarrggbb'.";
+                        "', only support refer '$color:xxx' or '#rgb','#argb','#rrggbb','#aarrggbb'.";
         cerr << "Error: " << error << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
