@@ -37,9 +37,10 @@ const struct option PackageParser::CMD_OPTS[] = {
     { "fileList", required_argument, nullptr, 'l' },
     { "preview", no_argument, nullptr, 'a' },
     { "priority", required_argument, nullptr, 'g' },
+    { "dependEntry", required_argument, nullptr, 'd' },
 };
 
-const string PackageParser::CMD_PARAMS = "i:p:o:r:m:j:e:c:l:g:afv";
+const string PackageParser::CMD_PARAMS = "i:p:o:r:m:j:e:c:l:g:d:afv";
 
 uint32_t PackageParser::Parse(int argc, char *argv[])
 {
@@ -98,6 +99,11 @@ int32_t PackageParser::GetStartId() const
 const string &PackageParser::GetCachePath() const
 {
     return cachePath_;
+}
+
+const string &PackageParser::GetDependEntry() const
+{
+    return dependEntry_;
 }
 
 uint32_t PackageParser::AddInput(const string& argValue)
@@ -256,6 +262,11 @@ uint32_t PackageParser::SetPriority(const string& argValue)
     return RESTOOL_SUCCESS;
 }
 
+uint32_t PackageParser::AddDependEntry(const string& argValue)
+{
+    dependEntry_ = argValue;
+    return RESTOOL_SUCCESS;
+}
 void PackageParser::InitCommand()
 {
     using namespace placeholders;
@@ -271,6 +282,7 @@ void PackageParser::InitCommand()
     handles_.emplace('c', bind(&PackageParser::AddCachePath, this, _1));
     handles_.emplace('a', [this](const string &) -> uint32_t { return SetPreviewMode(); });
     handles_.emplace('g', bind(&PackageParser::SetPriority, this, _1));
+    handles_.emplace('d', bind(&PackageParser::AddDependEntry, this, _1));
 }
 
 uint32_t PackageParser::HandleProcess(int c, const string& argValue)

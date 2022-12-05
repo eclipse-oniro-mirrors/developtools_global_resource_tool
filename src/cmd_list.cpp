@@ -34,7 +34,8 @@ uint32_t CmdList::Init(const string &filePath, function<uint32_t(int c, const st
     if (GetString(root["configPath"], 'j', callback) != RESTOOL_SUCCESS ||
         GetString(root["packageName"], 'p', callback) != RESTOOL_SUCCESS ||
         GetString(root["output"], 'o', callback) != RESTOOL_SUCCESS ||
-        GetString(root["startId"], 'e', callback) != RESTOOL_SUCCESS) {
+        GetString(root["startId"], 'e', callback) != RESTOOL_SUCCESS ||
+        GetString(root["entryCompiledResource"], 'd', callback) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
 

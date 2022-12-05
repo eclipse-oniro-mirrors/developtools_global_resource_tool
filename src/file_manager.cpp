@@ -52,6 +52,11 @@ uint32_t FileManager::ScanIncrement(const string &output)
     return ParseReference(output, sxmlFolders);
 }
 
+uint32_t FileManager::MergeResourceItem(const map<int32_t, vector<ResourceItem>> &resourceInfos)
+{
+    return ResourceModule::MergeResourceItem(items_, resourceInfos);
+}
+
 // below private founction
 uint32_t FileManager::ScanModule(const string &input, const string &output,
     map<ResType, vector<DirectoryInfo>> &resTypeOfDirs)
@@ -63,11 +68,6 @@ uint32_t FileManager::ScanModule(const string &input, const string &output,
     resTypeOfDirs = resourceModule.GetScanDirectorys();
     MergeResourceItem(resourceModule.GetOwner());
     return RESTOOL_SUCCESS;
-}
-
-uint32_t FileManager::MergeResourceItem(const map<int32_t, vector<ResourceItem>> &resourceInfos)
-{
-    return ResourceModule::MergeResourceItem(items_, resourceInfos);
 }
 
 uint32_t FileManager::ParseReference(const string &output, const vector<string> &sxmlFolders)
