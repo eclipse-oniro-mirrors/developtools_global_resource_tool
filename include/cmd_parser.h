@@ -50,6 +50,7 @@ public:
     bool IsFileList() const;
     bool GetPreviewMode() const;
     int32_t GetPriority() const;
+    const std::string &GetDependEntry() const;
 
 private:
     void InitCommand();
@@ -69,6 +70,7 @@ private:
     uint32_t ParseFileList(const std::string& fileListPath);
     uint32_t SetPreviewMode();
     uint32_t SetPriority(const std::string& argValue);
+    uint32_t AddDependEntry(const std::string& argValue);
 
     static const struct option CMD_OPTS[];
     static const std::string CMD_PARAMS;
@@ -87,6 +89,7 @@ private:
     bool isFileList_ = false;
     bool previewMode_ = false;
     int32_t priority_ = -1;
+    std::string dependEntry_;
 };
 
 template<class T>

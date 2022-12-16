@@ -31,11 +31,11 @@ public:
     const std::map<int32_t, std::vector<ResourceItem>> &GetResources() const { return items_; };
     void SetModuleName(const std::string &moduleName) { moduleName_ = moduleName; };
     uint32_t ScanIncrement(const std::string &output);
+    uint32_t MergeResourceItem(const std::map<int32_t, std::vector<ResourceItem>> &resourceInfos);
 
 private:
     uint32_t ScanModule(const std::string &input, const std::string &output,
         std::map<ResType, std::vector<DirectoryInfo>> &resTypeOfDirs);
-    uint32_t MergeResourceItem(const std::map<int32_t, std::vector<ResourceItem>> &resourceInfos);
     uint32_t ParseReference(const std::string &output, const std::vector<std::string> &sxmlFolders);
     bool NeedParseReferenceInSolidXml(ResType resType) const;
     void FilterRefSolidXml(const std::string &output, std::vector<std::string> &outputPaths,

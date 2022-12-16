@@ -33,6 +33,7 @@ public:
     bool SetData(const int8_t *data, uint32_t length);
     void SetFilePath(const std::string &filePath);
     void SetLimitKey(const std::string &limitKey);
+    void SetName(const std::string &name);
 
     const int8_t *GetData() const;
     uint32_t GetDataLength() const;

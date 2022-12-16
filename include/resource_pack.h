@@ -19,6 +19,8 @@
 #include "cmd_parser.h"
 #include "config_parser.h"
 #include "resource_util.h"
+#include "resource_item.h"
+#include "resource_data.h"
 
 namespace OHOS {
 namespace Global {
@@ -43,6 +45,13 @@ private:
     uint32_t CopyRawFileImpl(const std::string &src, const std::string &dst) const;
     uint32_t GenerateConfigJson();
     uint32_t ScanResources(const std::vector<std::string> &inputs, const std::string &output);
+    uint32_t HandleFeature();
+    uint32_t FindResourceItems(const std::map<int32_t, std::vector<ResourceItem>> &resInfoLocal,
+                               std::vector<ResourceItem> &items, int32_t id) const;
+    uint32_t HandleLabel(std::vector<ResourceItem> &items, ConfigParser &config) const;
+    uint32_t HandleIcon(std::vector<ResourceItem> &items, ConfigParser &config) const;
+    void SaveResourceItem(const ResourceItem &resourceItem, int32_t nextId) const;
+    bool CopyIcon(std::string &dataPath, const std::string &idName, std::string &fileName) const;
     PackageParser packageParser_;
     std::string moduleName_;
     using HeaderCreater = std::function<uint32_t(const std::string&)>;

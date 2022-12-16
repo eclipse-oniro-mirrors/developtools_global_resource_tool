@@ -271,6 +271,103 @@ string ResourceUtil::GenerateHash(const std::string key)
     hash<string> hash_function;
     return to_string(hash_function(key));
 }
+
+void ResourceUtil::StringReplace(string &sourceStr, const string &oldStr, const string &newStr)
+{
+    string::size_type pos = 0;
+    string::size_type oldSize = oldStr.size();
+    string::size_type newSize = newStr.size();
+    while ((pos = sourceStr.find(oldStr, pos)) != string::npos) {
+        sourceStr.replace(pos, oldSize, newStr.c_str());
+        pos += newSize;
+    }
+}
+
+string ResourceUtil::GetLocaleLimitkey(const KeyParam &KeyParam)
+{
+    string str(reinterpret_cast<const char *>(&KeyParam.value));
+    reverse(str.begin(), str.end());
+    return str;
+}
+
+string ResourceUtil::GetDeviceTypeLimitkey(const KeyParam &KeyParam)
+{
+    auto ret = find_if(g_deviceMap.begin(), g_deviceMap.end(), [KeyParam](const auto &iter) {
+        return KeyParam.value == static_cast<const int32_t>(iter.second);
+    });
+    if (ret == g_deviceMap.end()) {
+        return string();
+    }
+    return ret->first;
+}
+
+string ResourceUtil::GetResolutionLimitkey(const KeyParam &KeyParam)
+{
+    auto ret = find_if(g_resolutionMap.begin(), g_resolutionMap.end(), [KeyParam](const auto &iter) {
+        return KeyParam.value == static_cast<const int32_t>(iter.second);
+    });
+    if (ret == g_resolutionMap.end()) {
+        return string();
+    }
+    return ret->first;
+}
+
+string ResourceUtil::GetKeyParamValue(const KeyParam &KeyParam)
+{
+    string val;
+    switch (KeyParam.keyType) {
+        case KeyType::ORIENTATION:
+            val = KeyParam.value == static_cast<const int32_t>(OrientationType::VERTICAL) ? "vertical" : "horizontal";
+            break;
+        case KeyType::NIGHTMODE:
+            val = KeyParam.value == static_cast<const int32_t>(NightMode::DARK) ? "dark" : "light";
+            break;
+        case KeyType::DEVICETYPE:
+            val = GetDeviceTypeLimitkey(KeyParam);
+            break;
+        case KeyType::RESOLUTION:
+            val = GetResolutionLimitkey(KeyParam);
+            break;
+        case KeyType::LANGUAGE:
+        case KeyType::REGION:
+            val = GetLocaleLimitkey(KeyParam);
+            break;
+        default:
+            val = to_string(KeyParam.value);
+            break;
+    }
+    return val;
+}
+
+string ResourceUtil::PaserKeyParam(const vector<KeyParam> &keyParams)
+{
+    if (keyParams.size() == 0) {
+        return "base";
+    }
+    string result;
+    for (const auto &keyparam : keyParams) {
+        string limitKey = GetKeyParamValue(keyparam);
+        if (limitKey.empty()) {
+            continue;
+        }
+        if (keyparam.keyType == KeyType::MCC) {
+            limitKey = "mcc" + limitKey;
+        }
+        if (keyparam.keyType == KeyType::MNC) {
+            limitKey = "mnc" + limitKey;
+        }
+        if (keyparam.keyType == KeyType::REGION || keyparam.keyType == KeyType::MNC) {
+            result = result + "_" + limitKey;
+        } else {
+            result = result + "-" + limitKey;
+        }
+    }
+    if (!result.empty()) {
+        result = result.substr(1);
+    }
+    return result;
+}
+
 }
 }
 }
