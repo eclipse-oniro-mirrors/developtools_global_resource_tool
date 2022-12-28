@@ -24,9 +24,10 @@ namespace Global {
 namespace Restool {
 using namespace std;
 const map<string, ConfigParser::ModuleType> ConfigParser::MODULE_TYPES = {
-    { "har", ModuleType::HAR, },
+    { "har", ModuleType::HAR },
     { "entry", ModuleType::ENTRY },
-    { "feature", ModuleType::FEATURE }
+    { "feature", ModuleType::FEATURE },
+    { "shared", ModuleType::SHARED }
 };
 
 const map<string, string> ConfigParser::JSON_STRING_IDS = {
