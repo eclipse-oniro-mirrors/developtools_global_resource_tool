@@ -25,6 +25,7 @@ const vector<ConfigParser::ModuleType> ResourceMerge::ORDERS = {
     ConfigParser::ModuleType::NONE,
     ConfigParser::ModuleType::ENTRY,
     ConfigParser::ModuleType::FEATURE,
+    ConfigParser::ModuleType::SHARED,
     ConfigParser::ModuleType::HAR
 };
 
