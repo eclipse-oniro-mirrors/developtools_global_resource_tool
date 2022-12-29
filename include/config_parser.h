@@ -29,6 +29,7 @@ public:
         HAR = 1,
         ENTRY = 2,
         FEATURE = 3,
+        SHARED = 4,
     };
 
     ConfigParser();
