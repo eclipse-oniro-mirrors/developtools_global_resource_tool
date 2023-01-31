@@ -61,14 +61,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
 #define LIBXML_TEST_VERSION xmlCheckVersion(209010);
 
 #ifndef VMS
-#if 0
-/**
- * WITH_TRIO:
- *
- * defined if the trio support need to be configured in
- */
-#define WITH_TRIO
-#else
+#if 1
 /**
  * WITHOUT_TRIO:
  *
@@ -92,15 +85,6 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  */
 #if 1
 #define LIBXML_THREAD_ENABLED
-#endif
-
-/**
- * LIBXML_THREAD_ALLOC_ENABLED:
- *
- * Whether the allocation hooks are per-thread
- */
-#if 0
-#define LIBXML_THREAD_ALLOC_ENABLED
 #endif
 
 /**
@@ -266,24 +250,6 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
 #endif
 
 /**
- * LIBXML_ICONV_ENABLED:
- *
- * Whether iconv support is available
- */
-#if 0
-#define LIBXML_ICONV_ENABLED
-#endif
-
-/**
- * LIBXML_ICU_ENABLED:
- *
- * Whether icu support is available
- */
-#if 0
-#define LIBXML_ICU_ENABLED
-#endif
-
-/**
  * LIBXML_ISO8859X_ENABLED:
  *
  * Whether ISO-8859-* support is made available in case iconv is not
@@ -299,24 +265,6 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  */
 #if 1
 #define LIBXML_DEBUG_ENABLED
-#endif
-
-/**
- * DEBUG_MEMORY_LOCATION:
- *
- * Whether the memory debugging is configured in
- */
-#if 0
-#define DEBUG_MEMORY_LOCATION
-#endif
-
-/**
- * LIBXML_DEBUG_RUNTIME:
- *
- * Whether the runtime debugging is configured in
- */
-#if 0
-#define LIBXML_DEBUG_RUNTIME
 #endif
 
 /**
@@ -344,17 +292,6 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  */
 #if 1
 #define LIBXML_AUTOMATA_ENABLED
-#endif
-
-/**
- * LIBXML_EXPR_ENABLED:
- *
- * Whether the formal expressions interfaces are compiled in
- *
- * This code is unused and disabled unconditionally for now.
- */
-#if 0
-#define LIBXML_EXPR_ENABLED
 #endif
 
 /**
@@ -388,24 +325,6 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  * the string suffix used by dynamic modules (usually shared libraries)
  */
 #define LIBXML_MODULE_EXTENSION "" 
-#endif
-
-/**
- * LIBXML_ZLIB_ENABLED:
- *
- * Whether the Zlib support is compiled in
- */
-#if 0
-#define LIBXML_ZLIB_ENABLED
-#endif
-
-/**
- * LIBXML_LZMA_ENABLED:
- *
- * Whether the Lzma support is compiled in
- */
-#if 0
-#define LIBXML_LZMA_ENABLED
 #endif
 
 #ifdef __GNUC__
