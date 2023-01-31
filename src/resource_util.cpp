@@ -294,7 +294,7 @@ string ResourceUtil::GetLocaleLimitkey(const KeyParam &KeyParam)
 string ResourceUtil::GetDeviceTypeLimitkey(const KeyParam &KeyParam)
 {
     auto ret = find_if(g_deviceMap.begin(), g_deviceMap.end(), [KeyParam](const auto &iter) {
-        return KeyParam.value == static_cast<const int32_t>(iter.second);
+        return KeyParam.value == static_cast<const uint32_t>(iter.second);
     });
     if (ret == g_deviceMap.end()) {
         return string();
@@ -305,7 +305,7 @@ string ResourceUtil::GetDeviceTypeLimitkey(const KeyParam &KeyParam)
 string ResourceUtil::GetResolutionLimitkey(const KeyParam &KeyParam)
 {
     auto ret = find_if(g_resolutionMap.begin(), g_resolutionMap.end(), [KeyParam](const auto &iter) {
-        return KeyParam.value == static_cast<const int32_t>(iter.second);
+        return KeyParam.value == static_cast<const uint32_t>(iter.second);
     });
     if (ret == g_resolutionMap.end()) {
         return string();
@@ -318,10 +318,10 @@ string ResourceUtil::GetKeyParamValue(const KeyParam &KeyParam)
     string val;
     switch (KeyParam.keyType) {
         case KeyType::ORIENTATION:
-            val = KeyParam.value == static_cast<const int32_t>(OrientationType::VERTICAL) ? "vertical" : "horizontal";
+            val = KeyParam.value == static_cast<const uint32_t>(OrientationType::VERTICAL) ? "vertical" : "horizontal";
             break;
         case KeyType::NIGHTMODE:
-            val = KeyParam.value == static_cast<const int32_t>(NightMode::DARK) ? "dark" : "light";
+            val = KeyParam.value == static_cast<const uint32_t>(NightMode::DARK) ? "dark" : "light";
             break;
         case KeyType::DEVICETYPE:
             val = GetDeviceTypeLimitkey(KeyParam);
