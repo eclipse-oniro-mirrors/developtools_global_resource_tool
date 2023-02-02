@@ -83,7 +83,9 @@ bool ResourceAppend::Combine(const string &folderPath)
             cerr << "Error:" << child->GetFilePath().GetPath()  << " not file" << endl;
             return false;
         }
-
+        if (child->GetFilePath().GetFilename() == ID_DEFINED_FILE) {
+            continue;
+        }
         if (!LoadResourceItem(child->GetFilePath().GetPath())) {
             return false;
         }
@@ -261,6 +263,12 @@ bool ResourceAppend::ScanFiles(const unique_ptr<FileEntry> &entry,
 
 bool ResourceAppend::ScanFile(const FileInfo &fileInfo, const string &outputPath)
 {
+    if (ResourceAppend::IsBaseIdDefined(fileInfo)) {
+        cout << "Warning: id_defined.json does not compile to generate intermediate files" << endl;
+        FileEntry::FilePath outPath(outputPath);
+        return ResourceUtil::CopyFleInner(fileInfo.filePath, outPath.Append(ID_DEFINED_FILE).GetPath());
+    }
+
     unique_ptr<IResourceCompiler> resourceCompiler =
         FactoryResourceCompiler::CreateCompilerForAppend(fileInfo.dirType, outputPath);
     if (resourceCompiler == nullptr) {
@@ -648,6 +656,14 @@ bool ResourceAppend::LoadResourceItemWin(const string &filePath)
     return result;
 }
 #endif
+
+bool ResourceAppend::IsBaseIdDefined(const FileInfo &fileInfo)
+{
+    FileEntry::FilePath filePath(fileInfo.filePath);
+    return filePath.GetParent().GetParent().GetFilename() == "base" &&
+        filePath.GetParent().GetFilename() == "element" &&
+        fileInfo.filename == ID_DEFINED_FILE;
+}
 }
 }
 }

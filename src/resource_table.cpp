@@ -28,6 +28,9 @@ ResourceTable::ResourceTable()
 {
     auto &parser = CmdParser<PackageParser>::GetInstance();
     auto &packageParser = parser.GetCmdParser();
+    if (!packageParser.GetIdDefinedOutput().empty()) {
+        idDefinedPath_ = FileEntry::FilePath(packageParser.GetIdDefinedOutput()).Append(ID_DEFINED_FILE).GetPath();
+    }
     indexFilePath_ = FileEntry::FilePath(packageParser.GetOutput()).Append(RESOURCE_INDEX_FILE).GetPath();
 }
 
@@ -55,13 +58,21 @@ uint32_t ResourceTable::CreateResourceTable()
     if (SaveToResouorceIndex(configs) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
+
+    if (!idDefinedPath_.empty()) {
+        if (CreateIdDefined(allResource) != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
+        }
+    }
     return RESTOOL_SUCCESS;
 }
 
 uint32_t ResourceTable::CreateResourceTable(const map<int32_t, vector<shared_ptr<ResourceItem>>> &items)
 {
     map<string, vector<TableData>> configs;
+    map<int32_t, vector<ResourceItem>> allResource;
     for (const auto &item : items) {
+        vector<ResourceItem> resourceItems;
         for (const auto &resourceItemPtr : item.second) {
             if (resourceItemPtr->GetResType() == ResType::ID) {
                 break;
@@ -69,12 +80,20 @@ uint32_t ResourceTable::CreateResourceTable(const map<int32_t, vector<shared_ptr
             TableData tableData;
             tableData.id = item.first;
             tableData.resourceItem = *resourceItemPtr;
+            resourceItems.push_back(*resourceItemPtr);
             configs[resourceItemPtr->GetLimitKey()].push_back(tableData);
         }
+        allResource.emplace(item.first, resourceItems);
     }
 
     if (SaveToResouorceIndex(configs) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
+    }
+
+    if (!idDefinedPath_.empty()) {
+        if (CreateIdDefined(allResource) != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
+        }
     }
     return RESTOOL_SUCCESS;
 }
@@ -125,6 +144,41 @@ uint32_t ResourceTable::LoadResTable(const string path, map<int32_t, vector<Reso
     in.close();
     return RESTOOL_SUCCESS;
 }
+
+uint32_t ResourceTable::CreateIdDefined(const map<int32_t, vector<ResourceItem>> &allResource) const
+{
+    Json::Value root;
+    for (const auto &pairPtr : allResource) {
+        Json::Value jsonItem;
+        ResourceItem item = pairPtr.second.front();
+        ResType resType = item.GetResType();
+        string type = ResourceUtil::ResTypeToString(resType);
+        string name = item.GetName();
+        int32_t id = pairPtr.first;
+        if (type.empty()) {
+            cerr << "Error : name = " << name << " ,ResType must is";
+            cerr << ResourceUtil::GetAllRestypeString() << endl;
+            return RESTOOL_ERROR;
+        }
+        jsonItem["type"] = type;
+        jsonItem["name"] = ResourceUtil::GetIdName(name, resType);
+        jsonItem["id"] = ResourceUtil::DecToHexStr(id);
+        root["record"].append(jsonItem);
+    }
+
+    ofstream out(idDefinedPath_, ofstream::out | ofstream::binary);
+    if (!out.is_open()) {
+        cerr << "Error: open failed '" << idDefinedPath_ << "',reason: " << strerror(errno) << endl;
+        return RESTOOL_ERROR;
+    }
+    Json::StreamWriterBuilder jswBuilder;
+    jswBuilder["indentation"] = ID_DEFINED_INDENTATION;
+    unique_ptr<Json::StreamWriter> writer(jswBuilder.newStreamWriter());
+    writer->write(root, &out);
+    out.close();
+    return RESTOOL_SUCCESS;
+}
+
 // below private
 uint32_t ResourceTable::SaveToResouorceIndex(const map<string, vector<TableData>> &configs) const
 {
@@ -196,7 +250,7 @@ bool ResourceTable::Prepare(const map<string, vector<TableData>> &configs,
             return false;
         }
         limitKeyConfig->second.offset = pos;
-    
+
         IdSet idSet;
         idSet.idCount = config.second.size();
         pos += sizeof(idSet.idTag) + sizeof(idSet.idCount);

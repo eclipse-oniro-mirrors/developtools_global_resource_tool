@@ -307,7 +307,7 @@ bool ReferenceParser::ParseRefImpl(string &key, const map<string, ResType> &refs
 
             key = to_string(id);
             if (ref.second != ResType::ID) {
-                key = key = "$" + ResourceUtil::ResTypeToString(ref.second) + ":" + to_string(id);
+                key = "$" + ResourceUtil::ResTypeToString(ref.second) + ":" + to_string(id);
             }
             return true;
         }

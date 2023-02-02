@@ -14,11 +14,12 @@
  */
 
 #include "resource_util.h"
-#include<algorithm>
-#include<fstream>
-#include<iostream>
-#include<regex>
-#include<cstdlib>
+#include <algorithm>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <iomanip>
+#include <regex>
 #include "file_entry.h"
 
 namespace OHOS {
@@ -365,6 +366,32 @@ string ResourceUtil::PaserKeyParam(const vector<KeyParam> &keyParams)
     }
     if (!result.empty()) {
         result = result.substr(1);
+    }
+    return result;
+}
+
+string ResourceUtil::DecToHexStr(const int32_t i)
+{
+    stringstream ot;
+    string result;
+    ot << setiosflags(ios::uppercase) << "0x" << hex << setw(8) << setfill('0') << i;// 0x expadding 8 bit
+    ot >> result;
+    return result;
+}
+
+bool ResourceUtil::CheckHexStr(const string &hex)
+{
+    if (regex_match(hex, regex("^0[xX][0-9a-fA-F]{8}"))) {
+        return true;
+    }
+    return false;
+}
+
+string ResourceUtil::GetAllRestypeString()
+{
+    string result;
+    for (auto iter = g_contentClusterMap.begin(); iter != g_contentClusterMap.end(); ++iter) {
+        result = result + "," + iter->first;
     }
     return result;
 }
