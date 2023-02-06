@@ -62,6 +62,7 @@ private:
         int32_t id;
     };
     uint32_t SaveToResouorceIndex(const std::map<std::string, std::vector<TableData>> &configs) const;
+    uint32_t CreateIdDefined(const std::map<int32_t, std::vector<ResourceItem>> &allResource) const;
     bool InitIndexHeader(IndexHeader &indexHeader, uint32_t count) const;
     bool Prepare(const std::map<std::string, std::vector<TableData>> &configs,
                  std::map<std::string, LimitKeyConfig> &limitKeyConfigs,
@@ -83,6 +84,7 @@ private:
                              const std::map<int32_t, std::pair<int32_t, int32_t>> &datas,
                              std::map<int32_t, std::vector<ResourceItem>> &resInfos) const;
     std::string indexFilePath_;
+    std::string idDefinedPath_;
 };
 }
 }

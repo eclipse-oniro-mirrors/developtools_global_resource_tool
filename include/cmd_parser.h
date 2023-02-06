@@ -53,6 +53,8 @@ public:
     const std::vector<std::string> &GetAppend() const;
     bool GetCombine() const;
     const std::string &GetDependEntry() const;
+    const std::string &GetIdDefinedOutput() const;
+    const std::string &GetIdDefinedInputPath() const;
 
 private:
     void InitCommand();
@@ -76,6 +78,8 @@ private:
     uint32_t SetCombine();
     uint32_t AddDependEntry(const std::string& argValue);
     uint32_t ShowHelp() const;
+    uint32_t SetIdDefinedOutput(const std::string& argValue);
+    uint32_t SetIdDefinedInputPath(const std::string& argValue);
     bool IsAscii(const std::string& argValue) const;
 
     static const struct option CMD_OPTS[];
@@ -98,6 +102,8 @@ private:
     std::vector<std::string> append_;
     bool combine_ = false;
     std::string dependEntry_;
+    std::string idDefinedOutput_;
+    std::string idDefinedInputPath_;
 };
 
 template<class T>
@@ -130,6 +136,8 @@ void CmdParser<T>::ShowUseage()
     std::cout << "    -x    resources folder path\n";
     std::cout << "    -z    flag for incremental compilation\n";
     std::cout << "    -h    Displays this help menu\n";
+    std::cout << "    --ids            save id_defined.json direcory\n";
+    std::cout << "    --defined-ids    input id_defined.json path\n";
 }
 
 template<class T>

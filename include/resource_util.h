@@ -172,6 +172,26 @@ public:
      * @return limitkey
      */
     static std::string PaserKeyParam(const std::vector<KeyParam> &keyParams);
+
+    /**
+     * @brief Decimal to hexadecimal string
+     * @param int32_t Decimal
+     * @return Hexadecimal string
+     */
+    static std::string DecToHexStr(const int32_t id);
+
+    /**
+     * @brief Check hexadecimal string
+     * @param string Hexadecimal string
+     * @return ture Hexadecimal string is legal, other false;
+     */
+    static bool CheckHexStr(const std::string &hex);
+
+    /**
+     * @brief get g_contentClusterMap key string
+     * @return All restype string
+     */
+    static std::string GetAllRestypeString();
 private:
     enum class IgnoreType {
         IGNORE_FILE,

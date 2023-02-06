@@ -40,9 +40,11 @@ const struct option PackageParser::CMD_OPTS[] = {
     { "combine", required_argument, nullptr, 'z' },
     { "dependEntry", required_argument, nullptr, 'd' },
     { "help", no_argument, nullptr, 'h'},
+    { "ids", required_argument, nullptr, 's'},
+    { "defined-ids", required_argument, nullptr, 't'},
 };
 
-const string PackageParser::CMD_PARAMS = "i:p:o:r:m:j:e:c:l:g:x:d:afhvz";
+const string PackageParser::CMD_PARAMS = "i:p:o:r:m:j:e:c:l:g:x:d:s:t:afhvz";
 
 uint32_t PackageParser::Parse(int argc, char *argv[])
 {
@@ -244,6 +246,12 @@ uint32_t PackageParser::CheckParam() const
         cerr << "Error: resource header path empty." << endl;
         return RESTOOL_ERROR;
     }
+
+    if (startId_ != 0 && !idDefinedInputPath_.empty()) {
+        cerr << "Error: set -e and --defined-ids cannot be used together." << endl;
+        return RESTOOL_ERROR;
+    }
+
     return RESTOOL_SUCCESS;
 }
 
@@ -323,6 +331,28 @@ uint32_t PackageParser::ShowHelp() const
     return RESTOOL_SUCCESS;
 }
 
+uint32_t PackageParser::SetIdDefinedOutput(const string& argValue)
+{
+    idDefinedOutput_ = argValue;
+    return RESTOOL_SUCCESS;
+}
+
+const string &PackageParser::GetIdDefinedOutput() const
+{
+    return idDefinedOutput_;
+}
+
+uint32_t PackageParser::SetIdDefinedInputPath(const string& argValue)
+{
+    idDefinedInputPath_ = argValue;
+    return RESTOOL_SUCCESS;
+}
+
+const string &PackageParser::GetIdDefinedInputPath() const
+{
+    return idDefinedInputPath_;
+}
+
 bool PackageParser::IsAscii(const string& argValue) const
 {
 #ifdef __WIN32
@@ -359,6 +389,8 @@ void PackageParser::InitCommand()
     handles_.emplace('z', [this](const string &) -> uint32_t { return SetCombine(); });
     handles_.emplace('d', bind(&PackageParser::AddDependEntry, this, _1));
     handles_.emplace('h', [this](const string &) -> uint32_t { return ShowHelp(); });
+    handles_.emplace('s', bind(&PackageParser::SetIdDefinedOutput, this, _1));
+    handles_.emplace('t', bind(&PackageParser::SetIdDefinedInputPath, this, _1));
 }
 
 uint32_t PackageParser::HandleProcess(int c, const string& argValue)
