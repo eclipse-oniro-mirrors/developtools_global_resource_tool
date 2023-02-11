@@ -243,7 +243,8 @@ endif()
 file(COPY ${libxml2_dir} DESTINATION ./)
 set(libxml2_original ${CMAKE_CURRENT_BINARY_DIR}/libxml2)
 include_directories(${libxml2_original}/include)
-configure_file(config.h.cmake.in ${libxml2_original}/config.h)
+set(third_party_libxml2 ${CMAKE_CURRENT_BINARY_DIR}/../../../../third_party/libxml2)
+configure_file(${third_party_libxml2}/config.h.cmake.in ${third_party_libxml2}/include/config.h)
 set(libxml2_original_header
     ${libxml2_original}/include/libxml/c14n.h
     ${libxml2_original}/include/libxml/catalog.h

@@ -54,13 +54,8 @@ ohos_executable("restool") {
   ]
 
   include_dirs = []
-  if (is_mingw) {
-    include_dirs +=
-        [ "//developtools/global_resource_tool/build/libxml2/win32/include" ]
-  }
   include_dirs += [
     "include",
-    "//third_party/libxml2/include",
     "//third_party/jsoncpp/include",
     "//third_party/sqlite/include",
     "//third_party/bounds_checking_function/include",
@@ -69,8 +64,8 @@ ohos_executable("restool") {
   deps = [
     "//developtools/global_resource_tool/build/bounds_checking_function:restool_bounds_checking_function",
     "//developtools/global_resource_tool/build/jsoncpp:restool_jsoncpp",
-    "//developtools/global_resource_tool/build/libxml2:restool_libxml2",
     "//developtools/global_resource_tool/build/sqlite3:restool_sqlite",
+    "//third_party/libxml2:static_libxml2",
   ]
 
   cflags = [ "-std=c++17" ]
