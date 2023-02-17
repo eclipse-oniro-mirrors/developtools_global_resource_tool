@@ -87,6 +87,9 @@ uint32_t CmdList::GetArray(const Json::Value &node, int c, HandleBack callback)
 uint32_t CmdList::GetModuleNames(const Json::Value &node, HandleBack callback)
 {
     string moduleNames;
+    if (node.isString()) {
+        return GetString(node, 'm', callback);
+    }
     if (GetArray(node, 'm', [&moduleNames](int c, const string &argValue) {
         if (!moduleNames.empty()) {
             moduleNames.append(",");
