@@ -213,11 +213,7 @@ ResType ResourceUtil::GetResTypeFromString(const string &type)
 
 bool ResourceUtil::CopyFleInner(const string &src, const string &dst)
 {
-    if (!FileEntry::CopyFileInner(src, dst)) {
-        cerr << "Error: copy file fail from '" << src << "' to '" << dst << "'." << endl;
-        return false;
-    }
-    return true;
+    return FileEntry::CopyFileInner(src, dst);
 }
 
 bool ResourceUtil::CreateDirs(const string &filePath)
@@ -227,7 +223,7 @@ bool ResourceUtil::CreateDirs(const string &filePath)
     }
     
     if (!FileEntry::CreateDirs(filePath)) {
-        cerr << "Error: create dir fail '" << filePath << "'." << endl;
+        cerr << "Error: create dir '" << filePath << "' failed, reason:" << strerror(errno) << endl;
         return false;
     }
     return true;
