@@ -97,20 +97,11 @@ bool ResourceAppend::ParseRef()
 {
     for (auto &iter : refs_) {
         ReferenceParser ref;
-        if (iter->GetResType() == ResType::PROF) {
-            string dst = FileEntry::FilePath(packageParser_.GetOutput()).Append(RESOURCES_DIR)
-                .Append("base").Append("profile").Append(iter->GetName()).GetPath();
-            if (ref.ParseRefInJson(iter->GetFilePath(), dst) != RESTOOL_SUCCESS) {
+        if (iter->GetResType() == ResType::PROF || iter->GetResType() == ResType::MEDIA) {
+            if (ref.ParseRefInJsonFile(*iter, packageParser_.GetOutput(), true) != RESTOOL_SUCCESS) {
                 return false;
             }
-
-            if (ResourceUtil::FileExist(dst)) {
-                iter->SetData(reinterpret_cast<const int8_t *>(dst.c_str()), dst.length());
-            }
-            continue;
-        }
-
-        if (ref.ParseRefInResourceItem(*iter) != RESTOOL_SUCCESS) {
+        } else if (ref.ParseRefInResourceItem(*iter) != RESTOOL_SUCCESS) {
             return false;
         }
     }
@@ -499,12 +490,15 @@ void ResourceAppend::AddRef(const shared_ptr<ResourceItem> &resourceItem)
     string data(reinterpret_cast<const char *>(resourceItem->GetData()), resourceItem->GetDataLength());
     ResType resType = resourceItem->GetResType();
     if (resType == ResType::MEDIA) {
+        if (FileEntry::FilePath(resourceItem->GetFilePath()).GetExtension() == JSON_EXTENSION) {
+            refs_.push_back(resourceItem);
+        }
         return;
     }
 
     if (resType == ResType::PROF) {
         if (resourceItem->GetLimitKey() != "base" ||
-            FileEntry::FilePath(resourceItem->GetFilePath()).GetExtension() != ".json") {
+            FileEntry::FilePath(resourceItem->GetFilePath()).GetExtension() != JSON_EXTENSION) {
             return;
         }
         refs_.push_back(resourceItem);
