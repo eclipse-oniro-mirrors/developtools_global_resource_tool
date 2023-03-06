@@ -87,17 +87,68 @@ uint32_t ReferenceParser::ParseRefInSolidXml(const vector<string> &solidXmlFolde
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ReferenceParser::ParseRefInElement(map<int32_t, vector<ResourceItem>> &items) const
+uint32_t ReferenceParser::ParseRefInResources(map<int32_t, vector<ResourceItem>> &items, const string &output)
 {
     for (auto &iter : items) {
         for (auto &resourceItem : iter.second) {
-            if (IsNotElement(resourceItem.GetResType())) {
-                break;
+            if (IsElementRef(resourceItem) && ParseRefInResourceItem(resourceItem) != RESTOOL_SUCCESS) {
+                return RESTOOL_ERROR;
             }
-            if (!ParseRefResourceItem(resourceItem)) {
+            if ((IsMediaRef(resourceItem) || IsProfileRef(resourceItem)) &&
+                ParseRefInJsonFile(resourceItem, output) != RESTOOL_SUCCESS) {
                 return RESTOOL_ERROR;
             }
         }
+    }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t ReferenceParser::ParseRefInResourceItem(ResourceItem &resourceItem) const
+{
+    ResType resType = resourceItem.GetResType();
+    string data;
+    bool update = false;
+    if (IsStringOfResourceItem(resType)) {
+        data = string(reinterpret_cast<const char *>(resourceItem.GetData()), resourceItem.GetDataLength());
+        if (!ParseRefString(data, update)) {
+            cerr << "Error: " << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+            return RESTOOL_ERROR;
+        }
+        if (!update) {
+            return RESTOOL_SUCCESS;
+        }
+    } else if (IsArrayOfResourceItem(resType)) {
+        if (!ParseRefResourceItemData(resourceItem, data, update)) {
+            return RESTOOL_ERROR;
+        }
+        if (!update) {
+            return RESTOOL_SUCCESS;
+        }
+    }
+    if (update && !resourceItem.SetData(reinterpret_cast<const int8_t *>(data.c_str()), data.length())) {
+        cerr << "Error: set data fail. name = '" << resourceItem.GetName() << "' data = '" << data << "'.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t ReferenceParser::ParseRefInJsonFile(ResourceItem &resourceItem, const string &output, const bool isIncrement)
+{
+    string jsonPath;
+    if (resourceItem.GetResType() == ResType::MEDIA) {
+        jsonPath = FileEntry::FilePath(output).Append(RESOURCES_DIR)
+            .Append(resourceItem.GetLimitKey()).Append("media").Append(resourceItem.GetName()).GetPath();
+    } else {
+        jsonPath = FileEntry::FilePath(output).Append(RESOURCES_DIR)
+            .Append("base").Append("profile").Append(resourceItem.GetName()).GetPath();
+    }
+    if (!ParseRefJson(resourceItem.GetFilePath(), jsonPath)) {
+        return RESTOOL_ERROR;
+    }
+
+    if (isIncrement && ResourceUtil::FileExist(jsonPath)) {
+        resourceItem.SetData(reinterpret_cast<const int8_t *>(jsonPath.c_str()), jsonPath.length());
     }
     return RESTOOL_SUCCESS;
 }
@@ -110,95 +161,27 @@ uint32_t ReferenceParser::ParseRefInString(string &value, bool &update) const
     return RESTOOL_ERROR;
 }
 
-uint32_t ReferenceParser::ParseRefInProfile(const string &output) const
-{
-    string profileFolder = FileEntry::FilePath(output).Append(RESOURCES_DIR).Append("base").Append("profile").GetPath();
-    if (!ResourceUtil::FileExist(profileFolder)) {
-        return RESTOOL_SUCCESS;
-    }
-
-    FileEntry f(profileFolder);
-    for (const auto &entry : f.GetChilds()) {
-        if (!entry->IsFile()) {
-            cerr << "Error: '" << entry->GetFilePath().GetPath() << "' is directory." << endl;
-            return false;
-        }
-
-        if (entry->GetFilePath().GetExtension() != ".json") {
-            continue;
-        }
-
-        if (ParseRefInJson(entry->GetFilePath().GetPath()) != RESTOOL_SUCCESS) {
-            return RESTOOL_ERROR;
-        }
-    }
-    return RESTOOL_SUCCESS;
-}
-
-uint32_t ReferenceParser::ParseRefInJson(const string &filePath) const
-{
-    return ParseRefInJson(filePath, filePath);
-}
-
-uint32_t ReferenceParser::ParseRefInJson(const string &from, const string &to) const
+bool ReferenceParser::ParseRefJson(const string &from, const string &to) const
 {
     Json::Value root;
     if (!ResourceUtil::OpenJsonFile(from, root)) {
-        return RESTOOL_ERROR;
+        return false;
     }
 
     bool needSave = false;
     if (!ParseRefJsonImpl(root, needSave)) {
-        return RESTOOL_ERROR;
+        return false;
     }
 
     if (!needSave) {
-        return RESTOOL_SUCCESS;
+        return true;
     }
 
     if (!ResourceUtil::CreateDirs(FileEntry::FilePath(to).GetParent().GetPath())) {
-        return RESTOOL_ERROR;
+        return false;
     }
 
     if (!ResourceUtil::SaveToJsonFile(to, root)) {
-        return RESTOOL_ERROR;
-    }
-    return RESTOOL_SUCCESS;
-}
-
-uint32_t ReferenceParser::ParseRefInResourceItem(ResourceItem &resourceItem) const
-{
-    if (!ParseRefResourceItem(resourceItem)) {
-        return RESTOOL_ERROR;
-    }
-    return RESTOOL_SUCCESS;
-}
-
-bool ReferenceParser::ParseRefResourceItem(ResourceItem &resourceItem) const
-{
-    ResType resType = resourceItem.GetResType();
-    string data;
-    bool update = false;
-    if (IsStringOfResourceItem(resType)) {
-        data = string(reinterpret_cast<const char *>(resourceItem.GetData()), resourceItem.GetDataLength());
-        if (!ParseRefString(data, update)) {
-            cerr << "Error: " << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
-            return false;
-        }
-        if (!update) {
-            return true;
-        }
-    } else if (IsArrayOfResourceItem(resType)) {
-        if (!ParseRefResourceItemData(resourceItem, data, update)) {
-            return false;
-        }
-        if (!update) {
-            return true;
-        }
-    }
-    if (update && !resourceItem.SetData(reinterpret_cast<const int8_t *>(data.c_str()), data.length())) {
-        cerr << "Error: set data fail. name = '" << resourceItem.GetName() << "' data = '" << data << "'.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
     return true;
@@ -260,15 +243,28 @@ bool ReferenceParser::IsArrayOfResourceItem(ResType resType) const
     return false;
 }
 
-bool ReferenceParser::IsNotElement(ResType resType) const
+bool ReferenceParser::IsElementRef(const ResourceItem &resourceItem) const
 {
+    ResType resType = resourceItem.GetResType();
     auto result = find_if(g_contentClusterMap.begin(), g_contentClusterMap.end(), [resType](const auto &iter) {
         return resType == iter.second;
     });
     if (result == g_contentClusterMap.end()) {
-        return true;
+        return false;
     }
-    return false;
+    return true;
+}
+
+bool ReferenceParser::IsMediaRef(const ResourceItem &resourceItem) const
+{
+    return resourceItem.GetResType() == ResType::MEDIA &&
+                FileEntry::FilePath(resourceItem.GetFilePath()).GetExtension() == JSON_EXTENSION;
+}
+
+bool ReferenceParser::IsProfileRef(const ResourceItem &resourceItem) const
+{
+    return resourceItem.GetResType() == ResType::PROF && resourceItem.GetLimitKey() == "base" &&
+                FileEntry::FilePath(resourceItem.GetFilePath()).GetExtension() == JSON_EXTENSION;
 }
 
 bool ReferenceParser::ParseRefString(string &key) const

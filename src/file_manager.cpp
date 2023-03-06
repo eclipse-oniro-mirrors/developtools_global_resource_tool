@@ -74,8 +74,7 @@ uint32_t FileManager::ParseReference(const string &output, const vector<string> 
 {
     ReferenceParser referenceParser;
     if (referenceParser.ParseRefInSolidXml(sxmlFolders) != RESTOOL_SUCCESS ||
-        referenceParser.ParseRefInElement(items_) != RESTOOL_SUCCESS ||
-        referenceParser.ParseRefInProfile(output) != RESTOOL_SUCCESS) {
+        referenceParser.ParseRefInResources(items_, output) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;

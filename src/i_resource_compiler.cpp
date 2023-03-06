@@ -54,7 +54,7 @@ uint32_t IResourceCompiler::Compile(const vector<DirectoryInfo> &directoryInfos)
             }
 
             if (!it->IsFile()) {
-                cout << "Error: '" << it->GetFilePath().GetPath() << "' not regular." << endl;
+                cout << "Error: '" << it->GetFilePath().GetPath() << "' must be a file." << endl;
                 return RESTOOL_ERROR;
             }
 

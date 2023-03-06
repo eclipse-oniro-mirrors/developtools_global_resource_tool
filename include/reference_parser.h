@@ -27,18 +27,18 @@ public:
     ReferenceParser();
     virtual ~ReferenceParser();
     uint32_t ParseRefInSolidXml(const std::vector<std::string> &solidXmlFolders) const;
-    uint32_t ParseRefInElement(std::map<int32_t, std::vector<ResourceItem>> &items) const;
-    uint32_t ParseRefInString(std::string &value, bool &update) const;
-    uint32_t ParseRefInProfile(const std::string &output) const;
-    uint32_t ParseRefInJson(const std::string &filePath) const;
-    uint32_t ParseRefInJson(const std::string &from, const std::string &to) const;
+    uint32_t ParseRefInResources(std::map<int32_t, std::vector<ResourceItem>> &items, const std::string &output);
     uint32_t ParseRefInResourceItem(ResourceItem &resourceItem) const;
+    uint32_t ParseRefInJsonFile(ResourceItem &resourceItem, const std::string &output, const bool isIncrement = false);
+    uint32_t ParseRefInString(std::string &value, bool &update) const;
 private:
-    bool ParseRefResourceItem(ResourceItem &resourceItem) const;
+    bool ParseRefJson(const std::string &from, const std::string &to) const;
     bool ParseRefResourceItemData(const ResourceItem &resourceItem, std::string &data, bool &update) const;
     bool IsStringOfResourceItem(ResType resType) const;
     bool IsArrayOfResourceItem(ResType resType) const;
-    bool IsNotElement(ResType resType) const;
+    bool IsElementRef(const ResourceItem &resourceItem) const;
+    bool IsMediaRef(const ResourceItem &resourceItem) const;
+    bool IsProfileRef(const ResourceItem &resourceItem) const;
     bool ParseRefString(std::string &key) const;
     bool ParseRefString(std::string &key, bool &update) const;
     bool ParseRefImpl(std::string &key, const std::map<std::string, ResType> &refs, bool isSystem) const;
