@@ -38,7 +38,7 @@ const static std::string LONG_PATH_HEAD = "\\\\?\\";
 const static std::string ID_DEFINED_INDENTATION = "    ";
 const static int32_t VERSION_MAX_LEN = 128;
 const static int32_t INT_TO_BYTES = sizeof(uint32_t);
-static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 4.001" };
+static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 4.002" };
 const static int32_t TAG_LEN = 4;
 
 enum class KeyType {
@@ -83,11 +83,6 @@ enum class OrientationType {
     HORIZONTAL = 1,
 };
 
-const std::map<std::string, OrientationType> g_orientaionMap = {
-    { "vertical", OrientationType::VERTICAL },
-    { "horizontal", OrientationType::HORIZONTAL },
-};
-
 enum class DeviceType {
     PHONE = 0,
     TABLET = 1,
@@ -95,14 +90,6 @@ enum class DeviceType {
     // RESERVER 3
     TV = 4,
     WEARABLE = 6,
-};
-
-const std::map<std::string, DeviceType> g_deviceMap = {
-    { "phone", DeviceType::PHONE },
-    { "tablet", DeviceType::TABLET },
-    { "car", DeviceType::CAR },
-    { "tv", DeviceType::TV },
-    { "wearable", DeviceType::WEARABLE },
 };
 
 enum class ResolutionType {
@@ -114,6 +101,51 @@ enum class ResolutionType {
     XXXLDPI = 640,
 };
 
+enum class NightMode {
+    DARK = 0,
+    LIGHT = 1,
+};
+
+enum class InputDevice {
+    INPUTDEVICE_NOT_SET = -1,
+    INPUTDEVICE_POINTINGDEVICE = 0,
+};
+
+enum Option {
+    END = -1,
+    IDS = 1,
+    DEFINED_IDS = 2,
+    DEPENDENTRY = 3,
+    STARTID = 'e',
+    FORCEWRITE = 'f',
+    HELP = 'h',
+    INPUTPATH = 'i',
+    JSON = 'j',
+    FILELIST = 'l',
+    MODULES = 'm',
+    OUTPUTPATH = 'o',
+    PACKAGENAME = 'p',
+    RESHEADER = 'r',
+    VERSION = 'v',
+    APPEND = 'x',
+    COMBINE = 'z',
+    UNKNOWN = '?',
+    NO_ARGUMENT = ':',
+};
+
+const std::map<std::string, OrientationType> g_orientaionMap = {
+    { "vertical", OrientationType::VERTICAL },
+    { "horizontal", OrientationType::HORIZONTAL },
+};
+
+const std::map<std::string, DeviceType> g_deviceMap = {
+    { "phone", DeviceType::PHONE },
+    { "tablet", DeviceType::TABLET },
+    { "car", DeviceType::CAR },
+    { "tv", DeviceType::TV },
+    { "wearable", DeviceType::WEARABLE },
+};
+
 const std::map<std::string, ResolutionType> g_resolutionMap = {
     { "sdpi", ResolutionType::SDPI },
     { "mdpi",  ResolutionType::MDPI },
@@ -123,19 +155,9 @@ const std::map<std::string, ResolutionType> g_resolutionMap = {
     { "xxxldpi", ResolutionType::XXXLDPI },
 };
 
-enum class NightMode {
-    DARK = 0,
-    LIGHT = 1,
-};
-
 const std::map<std::string, NightMode> g_nightModeMap = {
     { "dark", NightMode::DARK },
     { "light", NightMode::LIGHT },
-};
-
-enum class InputDevice {
-    INPUTDEVICE_NOT_SET = -1,
-    INPUTDEVICE_POINTINGDEVICE = 0,
 };
 
 const std::map<std::string, InputDevice> g_inputDeviceMap = {
