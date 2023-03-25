@@ -14,7 +14,7 @@
  */
 
 #include "cmd_parser.h"
-#include<algorithm>
+#include <algorithm>
 #include "cmd_list.h"
 #include "resource_util.h"
 
@@ -23,28 +23,26 @@ namespace Global {
 namespace Restool {
 using namespace std;
 const struct option PackageParser::CMD_OPTS[] = {
-    { "inputPath", required_argument, nullptr, 'i' },
-    { "packageName", required_argument, nullptr, 'p' },
-    { "outputPath", required_argument, nullptr, 'o' },
-    { "resHeader", required_argument, nullptr, 'r' },
-    { "forceWrite", no_argument, nullptr, 'f' },
-    { "version", no_argument, nullptr, 'v'},
-    { "modules", optional_argument, nullptr, 'm' },
-    { "json", optional_argument, nullptr, 'j' },
-    { "startId", optional_argument, nullptr, 'e' },
-    { "cache", optional_argument, nullptr, 'c' },
-    { "fileList", required_argument, nullptr, 'l' },
-    { "preview", no_argument, nullptr, 'a' },
-    { "priority", required_argument, nullptr, 'g' },
-    { "append", required_argument, nullptr, 'x' },
-    { "combine", required_argument, nullptr, 'z' },
-    { "dependEntry", required_argument, nullptr, 'd' },
-    { "help", no_argument, nullptr, 'h'},
-    { "ids", required_argument, nullptr, 's'},
-    { "defined-ids", required_argument, nullptr, 't'},
+    { "inputPath", required_argument, nullptr, Option::INPUTPATH },
+    { "packageName", required_argument, nullptr, Option::PACKAGENAME },
+    { "outputPath", required_argument, nullptr, Option::OUTPUTPATH },
+    { "resHeader", required_argument, nullptr, Option::RESHEADER },
+    { "forceWrite", no_argument, nullptr, Option::FORCEWRITE },
+    { "version", no_argument, nullptr, Option::VERSION},
+    { "modules", required_argument, nullptr, Option::MODULES },
+    { "json", required_argument, nullptr, Option::JSON },
+    { "startId", required_argument, nullptr, Option::STARTID },
+    { "fileList", required_argument, nullptr, Option::FILELIST },
+    { "append", required_argument, nullptr, Option::APPEND },
+    { "combine", required_argument, nullptr, Option::COMBINE },
+    { "dependEntry", required_argument, nullptr, Option::DEPENDENTRY },
+    { "help", no_argument, nullptr, Option::HELP},
+    { "ids", required_argument, nullptr, Option::IDS},
+    { "defined-ids", required_argument, nullptr, Option::DEFINED_IDS},
+    { 0, 0, 0, 0},
 };
 
-const string PackageParser::CMD_PARAMS = "i:p:o:r:m:j:e:c:l:g:x:d:s:t:afhvz";
+const string PackageParser::CMD_PARAMS = ":i:p:o:r:m:j:e:l:x:fhvz";
 
 uint32_t PackageParser::Parse(int argc, char *argv[])
 {
@@ -373,32 +371,29 @@ bool PackageParser::IsAscii(const string& argValue) const
 void PackageParser::InitCommand()
 {
     using namespace placeholders;
-    handles_.emplace('i', bind(&PackageParser::AddInput, this, _1));
-    handles_.emplace('p', bind(&PackageParser::AddPackageName, this, _1));
-    handles_.emplace('o', bind(&PackageParser::AddOutput, this, _1));
-    handles_.emplace('r', bind(&PackageParser::AddResourceHeader, this, _1));
-    handles_.emplace('f', [this](const string &) -> uint32_t { return ForceWrite(); });
-    handles_.emplace('v', [this](const string &) -> uint32_t { return PrintVersion(); });
-    handles_.emplace('m', bind(&PackageParser::AddMoudleNames, this, _1));
-    handles_.emplace('j', bind(&PackageParser::AddConfig, this,  _1));
-    handles_.emplace('e', bind(&PackageParser::AddStartId, this, _1));
-    handles_.emplace('c', bind(&PackageParser::AddCachePath, this, _1));
-    handles_.emplace('a', [this](const string &) -> uint32_t { return SetPreviewMode(); });
-    handles_.emplace('g', bind(&PackageParser::SetPriority, this, _1));
-    handles_.emplace('x', bind(&PackageParser::AddAppend, this, _1));
-    handles_.emplace('z', [this](const string &) -> uint32_t { return SetCombine(); });
-    handles_.emplace('d', bind(&PackageParser::AddDependEntry, this, _1));
-    handles_.emplace('h', [this](const string &) -> uint32_t { return ShowHelp(); });
-    handles_.emplace('s', bind(&PackageParser::SetIdDefinedOutput, this, _1));
-    handles_.emplace('t', bind(&PackageParser::SetIdDefinedInputPath, this, _1));
+    handles_.emplace(Option::INPUTPATH, bind(&PackageParser::AddInput, this, _1));
+    handles_.emplace(Option::PACKAGENAME, bind(&PackageParser::AddPackageName, this, _1));
+    handles_.emplace(Option::OUTPUTPATH, bind(&PackageParser::AddOutput, this, _1));
+    handles_.emplace(Option::RESHEADER, bind(&PackageParser::AddResourceHeader, this, _1));
+    handles_.emplace(Option::FORCEWRITE, [this](const string &) -> uint32_t { return ForceWrite(); });
+    handles_.emplace(Option::VERSION, [this](const string &) -> uint32_t { return PrintVersion(); });
+    handles_.emplace(Option::MODULES, bind(&PackageParser::AddMoudleNames, this, _1));
+    handles_.emplace(Option::JSON, bind(&PackageParser::AddConfig, this,  _1));
+    handles_.emplace(Option::STARTID, bind(&PackageParser::AddStartId, this, _1));
+    handles_.emplace(Option::APPEND, bind(&PackageParser::AddAppend, this, _1));
+    handles_.emplace(Option::COMBINE, [this](const string &) -> uint32_t { return SetCombine(); });
+    handles_.emplace(Option::DEPENDENTRY, bind(&PackageParser::AddDependEntry, this, _1));
+    handles_.emplace(Option::HELP, [this](const string &) -> uint32_t { return ShowHelp(); });
+    handles_.emplace(Option::IDS, bind(&PackageParser::SetIdDefinedOutput, this, _1));
+    handles_.emplace(Option::DEFINED_IDS, bind(&PackageParser::SetIdDefinedInputPath, this, _1));
 }
 
 uint32_t PackageParser::HandleProcess(int c, const string& argValue)
 {
     auto handler = handles_.find(c);
     if (handler == handles_.end()) {
-        cout << "Warning: unsupport " << c << endl;
-        return RESTOOL_SUCCESS;
+        cout << "Error: unsupport " << c << endl;
+        return RESTOOL_ERROR;
     }
     return handler->second(argValue);
 }
@@ -419,14 +414,42 @@ uint32_t PackageParser::ParseCommand(int argc, char *argv[])
 {
     restoolPath_ = string(argv[0]);
     while (true) {
-        int optIndex = 0;
+        int optIndex = -1;
+        opterr = 0;
         int c = getopt_long(argc, argv, CMD_PARAMS.c_str(), CMD_OPTS, &optIndex);
-        if (c == -1) {
-            break;
+        if (optIndex != -1) {
+            string curOpt = (optarg == nullptr) ? argv[optind - 1] : argv[optind - 2];
+            if (curOpt != ("--" + string(CMD_OPTS[optIndex].name))) {
+                cout << "Error: unknown option " << curOpt << endl;
+                return RESTOOL_ERROR;
+            }
         }
-
+        if (c == Option::END) {
+            if (argc == optind) {
+                break;
+            }
+            string errmsg = "Error: invalid arguments : ";
+            for (int i = optind; i < argc; i++) {
+                errmsg.append(argv[i]).append(" ");
+            }
+            cout << errmsg << endl;
+            return RESTOOL_ERROR;
+        }
+        if (c == Option::UNKNOWN) {
+            string optUnknown = (optopt == 0) ? argv[optind - 1] : ("-" + string(1, optopt));
+            cout << "Error: unknown option " << optUnknown << endl;
+            return RESTOOL_ERROR;
+        }
+        if (c == Option::NO_ARGUMENT) {
+            if (IsLongOpt(argv)) {
+                cout << "Error: option " << argv[optind - 1] << " must have argument" << endl;
+            } else {
+                cout << "Error: unknown option " << argv[optind - 1] << endl;
+            }
+            return RESTOOL_ERROR;
+        }
         string argValue = (optarg != nullptr) ? optarg : "";
-        if (c == 'l') {
+        if (c == Option::FILELIST) {
             return ParseFileList(argValue);
         }
         if (HandleProcess(c, argValue) != RESTOOL_SUCCESS) {
@@ -434,6 +457,16 @@ uint32_t PackageParser::ParseCommand(int argc, char *argv[])
         }
     }
     return RESTOOL_SUCCESS;
+}
+
+bool PackageParser::IsLongOpt(char *argv[]) const
+{
+    for (auto iter : CMD_OPTS) {
+        if (optopt == iter.val && argv[optind - 1] == ("--" + string(iter.name))) {
+            return true;
+        }
+    }
+    return false;
 }
 }
 }

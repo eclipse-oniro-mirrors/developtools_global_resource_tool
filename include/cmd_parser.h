@@ -81,6 +81,7 @@ private:
     uint32_t SetIdDefinedOutput(const std::string& argValue);
     uint32_t SetIdDefinedInputPath(const std::string& argValue);
     bool IsAscii(const std::string& argValue) const;
+    bool IsLongOpt(char *argv[]) const;
 
     static const struct option CMD_OPTS[];
     static const std::string CMD_PARAMS;
@@ -124,20 +125,25 @@ void CmdParser<T>::ShowUseage()
     std::cout << "Usage:\n";
     std::cout << TOOL_NAME << " [arguments] Package the OHOS resources.\n";
     std::cout << "[arguments]:\n";
-    std::cout << "    -i    input resource path, can add more.\n";
-    std::cout << "    -p    package name.\n";
-    std::cout << "    -o    output path.\n";
-    std::cout << "    -r    resource header file path(like ./ResourceTable.js, ./ResrouceTable.h).\n";
-    std::cout << "    -f    if output path exists,force delete it.\n";
-    std::cout << "    -v    print tool version.\n";
-    std::cout << "    -m    module name, can add more, split by ','(like entry1,entry2,...).\n";
-    std::cout << "    -j    config.json path.\n";
-    std::cout << "    -e    start id mask, e.g 0x01000000, in [0x01000000, 0x06FFFFFF),[0x08000000, 0x41FFFFFF)\n";
-    std::cout << "    -x    resources folder path\n";
-    std::cout << "    -z    flag for incremental compilation\n";
-    std::cout << "    -h    Displays this help menu\n";
-    std::cout << "    --ids            save id_defined.json direcory\n";
-    std::cout << "    --defined-ids    input id_defined.json path\n";
+    std::cout << "    -i/--inputPath      input resource path, can add more.\n";
+    std::cout << "    -p/--packageName    package name.\n";
+    std::cout << "    -o/--outputPath     output path.\n";
+    std::cout << "    -r/--resHeader      resource header file path(like ./ResourceTable.js, ./ResrouceTable.h).\n";
+    std::cout << "    -f/--forceWrite     if output path exists,force delete it.\n";
+    std::cout << "    -v/--version        print tool version.\n";
+    std::cout << "    -m/--modules        module name, can add more, split by ','(like entry1,entry2,...).\n";
+    std::cout << "    -j/--json           config.json path.\n";
+    std::cout << "    -e/--startId        start id mask, e.g 0x01000000,";
+    std::cout << " in [0x01000000, 0x06FFFFFF),[0x08000000, 0x41FFFFFF)\n";
+    std::cout << "    -x/--append         resources folder path\n";
+    std::cout << "    -z/--combine        flag for incremental compilation\n";
+    std::cout << "    -h/--help           Displays this help menu\n";
+    std::cout << "    -l/--fileList       input json file of the option set, e.g resConfig.json.";
+    std::cout << " For details, see the developer documentation.\n";
+    std::cout << "    --ids               save id_defined.json direcory\n";
+    std::cout << "    --defined-ids       input id_defined.json path\n";
+    std::cout << "    --dependEntry       Build result directory of the specified entry module when the feature";
+    std::cout << " module resources are independently built in the FA model.\n";
 }
 
 template<class T>
