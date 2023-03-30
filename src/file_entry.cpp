@@ -282,7 +282,7 @@ bool FileEntry::RemoveAllDirInner(const FileEntry &entry)
 {
     string path = entry.GetFilePath().GetPath();
     if (entry.IsFile()) {
-#if _WIN32
+#ifdef _WIN32
         bool result = remove(AdapateLongPath(path).c_str()) == 0;
 #else
         bool result = remove(path.c_str()) == 0;
@@ -299,7 +299,7 @@ bool FileEntry::RemoveAllDirInner(const FileEntry &entry)
             return false;
         }
     }
-#if _WIN32
+#ifdef _WIN32
     bool result = rmdir(AdapateLongPath(path).c_str()) == 0;
 #else
     bool result = rmdir(path.c_str()) == 0;
@@ -315,7 +315,7 @@ bool FileEntry::CreateDirsInner(const string &path, string::size_type offset)
 {
     string::size_type pos = path.find_first_of(SEPARATE.front(), offset);
     if (pos == string::npos) {
-#if _WIN32
+#ifdef _WIN32
         return CreateDirectory(AdapateLongPath(path).c_str(), nullptr) != 0;
 #else
         return mkdir(path.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == 0;
@@ -324,7 +324,7 @@ bool FileEntry::CreateDirsInner(const string &path, string::size_type offset)
 
     string subPath = path.substr(0, pos + 1);
     if (!Exist(subPath)) {
-#if _WIN32
+#ifdef _WIN32
         if (!CreateDirectory(AdapateLongPath(subPath).c_str(), nullptr)) {
 #else
         if (mkdir(subPath.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0) {
@@ -360,7 +360,7 @@ void FileEntry::FilePath::Init()
     }
 }
 
-#if _WIN32
+#ifdef _WIN32
 string FileEntry::AdapateLongPath(const string &path)
 {
     if (path.size() >= MAX_PATH -12) { //the max file path can not exceed 260 - 12
