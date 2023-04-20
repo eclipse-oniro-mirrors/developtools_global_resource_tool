@@ -71,7 +71,7 @@ bool ResourceUtil::RmoveAllDir(const string &path)
 
 bool ResourceUtil::OpenJsonFile(const string &path, Json::Value &root)
 {
-    ifstream ifs(path, ios::binary);
+    ifstream ifs(FileEntry::AdapateLongPath(path), ios::binary);
     if (!ifs.is_open()) {
         cerr << "Error: open json failed '" << path << "', reason: " << strerror(errno) << endl;
         return false;
@@ -97,7 +97,7 @@ bool ResourceUtil::SaveToJsonFile(const string &path, const Json::Value &root)
     writerBuilder["indentation"] = "    ";
     writerBuilder["emitUTF8"] = true;
     unique_ptr<Json::StreamWriter> writer(writerBuilder.newStreamWriter());
-    ofstream out(path, ofstream::out | ofstream::binary);
+    ofstream out(FileEntry::AdapateLongPath(path), ofstream::out | ofstream::binary);
     if (!out.is_open()) {
         cerr << "Error: open failed '" << path <<"', reason: " << strerror(errno) << endl;
         return false;

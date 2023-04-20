@@ -360,15 +360,15 @@ void FileEntry::FilePath::Init()
     }
 }
 
-#ifdef _WIN32
 string FileEntry::AdapateLongPath(const string &path)
 {
+#ifdef _WIN32
     if (path.size() >= MAX_PATH -12) { //the max file path can not exceed 260 - 12
         return LONG_PATH_HEAD + path;
     }
+#endif
     return path;
 }
-#endif
 }
 }
 }
