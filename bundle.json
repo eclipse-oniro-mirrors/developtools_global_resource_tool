@@ -1,7 +1,7 @@
 {
     "name": "@ohos/global_resource_tool",
     "description": "OpenHarmony resource compile.",
-    "version": "3.1",
+    "version": "4.0",
     "license": "Apache License 2.0",
     "pubiishAs": "code-segment",
     "segment": {
@@ -15,6 +15,8 @@
       "syscap": [],
       "feature": [],
       "adapted_system_type": ["mini", "small", "standard" ],
+      "rom": "0KB",
+      "ram": "0KB",
       "deps": {
         "components": [],
         "third_party": [
