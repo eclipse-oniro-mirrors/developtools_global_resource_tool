@@ -19,10 +19,6 @@ resource tool is used in computer.In OpenHarmony SDK toolchain.Provide to IDE.Su
 
 ## Instructions
 
-### SDK Build
-
-[SDK build refer](https://gitee.com/openharmony/build/blob/master/README.md)
-
 ### Test
 
 In PC, run `python test.py ./restool ./out`  
@@ -54,11 +50,11 @@ entry Directory Structure
 
 **global_resource_tool**
 
-[third_party_libxml2](https://gitee.com/openharmony/third_party_libxml2/README.md)
+[third_party_libxml2](https://gitee.com/openharmony/third_party_libxml2/blob/master/README.md)
 
-[third_party_jsoncpp](https://gitee.com/openharmony/third_party_jsoncpp/README.md)
+[third_party_jsoncpp](https://gitee.com/openharmony/third_party_jsoncpp/blob/master/README.md)
 
-[third_party_sqlite](https://gitee.com/openharmony/third_party_sqlite/README.md)
+[third_party_sqlite](https://gitee.com/openharmony/third_party_sqlite/blob/master/README.md)
 
-[third_party_bounds_checking_function](https://gitee.com/openharmony/third_party_bounds_checking_function/README.md)
+[third_party_bounds_checking_function](https://gitee.com/openharmony/third_party_bounds_checking_function/blob/master/README.en.md)
 
