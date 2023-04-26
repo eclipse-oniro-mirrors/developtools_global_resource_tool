@@ -13,6 +13,8 @@
 
 import("//build/ohos.gni")
 import("//build/test.gni")
+import("./restool.gni")
+
 ohos_executable("restool") {
   sources = [
     "src/append_compiler.cpp",
@@ -53,8 +55,7 @@ ohos_executable("restool") {
     "src/xml/xml_key_node.cpp",
   ]
 
-  include_dirs = []
-  include_dirs += [
+  include_dirs = [
     "include",
     "//third_party/jsoncpp/include",
     "//third_party/sqlite/include",
@@ -62,9 +63,9 @@ ohos_executable("restool") {
   ]
 
   deps = [
-    "//developtools/global_resource_tool/build/bounds_checking_function:restool_bounds_checking_function",
-    "//developtools/global_resource_tool/build/jsoncpp:restool_jsoncpp",
-    "//developtools/global_resource_tool/build/sqlite3:restool_sqlite",
+    "build/bounds_checking_function:restool_bounds_checking_function",
+    "build/jsoncpp:restool_jsoncpp",
+    "build/sqlite3:restool_sqlite",
     "//third_party/libxml2:static_libxml2",
   ]
 
@@ -84,21 +85,17 @@ ohos_unittest_py("restool_test") {
   sources = [ "test/test.py" ]
 }
 
-ID_DEFINED_PATH = "//base/global/system_resources/systemres/main/resources/base/element/id_defined.json"
-
 ohos_copy("restool_id_defined") {
-  sources = [ "${ID_DEFINED_PATH}" ]
-  outputs =
-      [ get_label_info(
-            "//developtools/global_resource_tool:restool($host_toolchain)",
-            "root_out_dir") + "/developtools/global_resource_tool/" ]
-  deps = [ "//developtools/global_resource_tool:restool($host_toolchain)" ]
+  sources = [ "${id_defined_path}" ]
+  outputs = [ get_label_info(":restool($host_toolchain)", "root_out_dir") +
+              "/developtools/global_resource_tool/" ]
+  deps = [ ":restool($host_toolchain)" ]
   subsystem_name = "developtools"
   part_name = "global_resource_tool"
 }
 
 ohos_prebuilt_etc("restool_systemres") {
-  source = "${ID_DEFINED_PATH}"
+  source = "${id_defined_path}"
   subsystem_name = "developtools"
   part_name = "global_resource_tool"
 }
