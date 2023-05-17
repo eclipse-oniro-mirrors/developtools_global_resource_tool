@@ -370,7 +370,7 @@ string ResourceUtil::DecToHexStr(const int32_t i)
 {
     stringstream ot;
     string result;
-    ot << setiosflags(ios::uppercase) << "0x" << hex << setw(8) << setfill('0') << i;// 0x expadding 8 bit
+    ot << setiosflags(ios::uppercase) << "0x" << hex << setw(8) << setfill('0') << i; // 0x expadding 8 bit
     ot >> result;
     return result;
 }
