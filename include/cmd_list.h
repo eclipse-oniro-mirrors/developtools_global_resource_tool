@@ -30,9 +30,12 @@ public:
     using HandleBack = std::function<uint32_t(int c, const std::string &argValue)>;
     uint32_t Init(const std::string &filePath, HandleBack callback);
 private:
+    void InitFileListCommand(Json::Value &root, HandleBack callback);
+    using HandleFileListValue = std::function<uint32_t()>;
+    std::vector<HandleFileListValue> fileListHandles_;
     uint32_t GetString(const Json::Value &node, int c, HandleBack callback);
     uint32_t GetArray(const Json::Value &node, int c, HandleBack callback);
-    uint32_t GetModuleNames(const Json::Value &node, HandleBack callback);
+    uint32_t GetModuleNames(const Json::Value &node, int c, HandleBack callback);
 };
 }
 }
