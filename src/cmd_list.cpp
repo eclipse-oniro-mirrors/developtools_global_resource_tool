@@ -20,7 +20,7 @@ namespace OHOS {
 namespace Global {
 namespace Restool {
 using namespace std;
-uint32_t CmdList::Init(const string &filePath, function<uint32_t(int c, const string &argValue)> callback)
+uint32_t CmdList::Init(const string &filePath, HandleBack callback)
 {
     Json::Value root;
     if (!ResourceUtil::OpenJsonFile(filePath, root)) {
@@ -31,23 +31,12 @@ uint32_t CmdList::Init(const string &filePath, function<uint32_t(int c, const st
         return RESTOOL_SUCCESS;
     }
 
-    if (GetString(root["configPath"], Option::JSON, callback) != RESTOOL_SUCCESS ||
-        GetString(root["packageName"], Option::PACKAGENAME, callback) != RESTOOL_SUCCESS ||
-        GetString(root["output"], Option::OUTPUTPATH, callback) != RESTOOL_SUCCESS ||
-        GetString(root["startId"], Option::STARTID, callback) != RESTOOL_SUCCESS ||
-        GetString(root["entryCompiledResource"], Option::DEPENDENTRY, callback) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
+    InitFileListCommand(root, callback);
 
-    if (GetModuleNames(root["moduleNames"], callback) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-
-    if (GetArray(root["ResourceTable"], Option::RESHEADER, callback) != RESTOOL_SUCCESS ||
-        GetString(root["applicationResource"], Option::INPUTPATH, callback) != RESTOOL_SUCCESS ||
-        GetArray(root["moduleResources"], Option::INPUTPATH, callback) != RESTOOL_SUCCESS ||
-        GetArray(root["dependencies"], Option::INPUTPATH, callback) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
+    for (auto iter : fileListHandles_) {
+        if (iter() != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
+        }
     }
 
     callback(Option::FORCEWRITE, "");
@@ -55,6 +44,25 @@ uint32_t CmdList::Init(const string &filePath, function<uint32_t(int c, const st
 }
 
 // below private
+void CmdList::InitFileListCommand(Json::Value &root, HandleBack callback)
+{
+    using namespace placeholders;
+    fileListHandles_.push_back(bind(&CmdList::GetString, this, root["configPath"], Option::JSON, callback));
+    fileListHandles_.push_back(bind(&CmdList::GetString, this, root["packageName"], Option::PACKAGENAME, callback));
+    fileListHandles_.push_back(bind(&CmdList::GetString, this, root["output"], Option::OUTPUTPATH, callback));
+    fileListHandles_.push_back(bind(&CmdList::GetString, this, root["startId"], Option::STARTID, callback));
+    fileListHandles_.push_back(bind(&CmdList::GetString, this, root["entryCompiledResource"],
+        Option::DEPENDENTRY, callback));
+    fileListHandles_.push_back(bind(&CmdList::GetString, this, root["ids"], Option::IDS, callback));
+    fileListHandles_.push_back(bind(&CmdList::GetString, this, root["definedIds"], Option::DEFINED_IDS, callback));
+    fileListHandles_.push_back(bind(&CmdList::GetString, this, root["applicationResource"],
+        Option::INPUTPATH, callback));
+    fileListHandles_.push_back(bind(&CmdList::GetArray, this, root["ResourceTable"], Option::RESHEADER, callback));
+    fileListHandles_.push_back(bind(&CmdList::GetArray, this, root["moduleResources"], Option::INPUTPATH, callback));
+    fileListHandles_.push_back(bind(&CmdList::GetArray, this, root["dependencies"], Option::INPUTPATH, callback));
+    fileListHandles_.push_back(bind(&CmdList::GetModuleNames, this, root["moduleNames"], Option::MODULES, callback));
+}
+
 uint32_t CmdList::GetString(const Json::Value &node, int c, HandleBack callback)
 {
     if (!node.isString()) {
@@ -84,13 +92,13 @@ uint32_t CmdList::GetArray(const Json::Value &node, int c, HandleBack callback)
     return RESTOOL_SUCCESS;
 }
 
-uint32_t CmdList::GetModuleNames(const Json::Value &node, HandleBack callback)
+uint32_t CmdList::GetModuleNames(const Json::Value &node, int c, HandleBack callback)
 {
     string moduleNames;
     if (node.isString()) {
-        return GetString(node, Option::MODULES, callback);
+        return GetString(node, c, callback);
     }
-    if (GetArray(node, Option::MODULES, [&moduleNames](int c, const string &argValue) {
+    if (GetArray(node, c, [&moduleNames](int c, const string &argValue) {
         if (!moduleNames.empty()) {
             moduleNames.append(",");
         }
@@ -100,7 +108,7 @@ uint32_t CmdList::GetModuleNames(const Json::Value &node, HandleBack callback)
         return RESTOOL_ERROR;
     }
 
-    if (!moduleNames.empty() && callback(Option::MODULES, moduleNames) != RESTOOL_SUCCESS) {
+    if (!moduleNames.empty() && callback(c, moduleNames) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
