@@ -206,8 +206,7 @@ uint32_t IdWorker::InitIdDefined()
         if (combine) {
             idDefinedPath = FileEntry::FilePath(inputPath).Append(ID_DEFINED_FILE).GetPath();
         } else {
-            idDefinedPath = FileEntry::FilePath(inputPath).Append(RESOURCES_DIR)
-                .Append("base").Append("element").Append(ID_DEFINED_FILE).GetPath();
+            idDefinedPath = ResourceUtil::GetBaseElementPath(inputPath).Append(ID_DEFINED_FILE).GetPath();
         }
         if (ResourceUtil::FileExist(idDefinedPath) && startId > 0) {
             cerr << "Error: the set start_id and id_defined.json cannot be used together." << endl;
