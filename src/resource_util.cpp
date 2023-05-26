@@ -72,7 +72,7 @@ bool ResourceUtil::RmoveAllDir(const string &path)
 
 bool ResourceUtil::OpenJsonFile(const string &path, Json::Value &root)
 {
-    ifstream ifs(FileEntry::AdapateLongPath(path), ios::binary);
+    ifstream ifs(FileEntry::AdaptLongPath(path), ios::binary);
     if (!ifs.is_open()) {
         cerr << "Error: open json failed '" << path << "', reason: " << strerror(errno) << endl;
         return false;
@@ -98,7 +98,7 @@ bool ResourceUtil::SaveToJsonFile(const string &path, const Json::Value &root)
     writerBuilder["indentation"] = "    ";
     writerBuilder["emitUTF8"] = true;
     unique_ptr<Json::StreamWriter> writer(writerBuilder.newStreamWriter());
-    ofstream out(FileEntry::AdapateLongPath(path), ofstream::out | ofstream::binary);
+    ofstream out(FileEntry::AdaptLongPath(path), ofstream::out | ofstream::binary);
     if (!out.is_open()) {
         cerr << "Error: open failed '" << path <<"', reason: " << strerror(errno) << endl;
         return false;
@@ -390,6 +390,16 @@ string ResourceUtil::GetAllRestypeString()
         result = result + "," + iter->first;
     }
     return result;
+}
+
+FileEntry::FilePath ResourceUtil::GetBaseElementPath(const string input)
+{
+    return FileEntry::FilePath(input).Append("base").Append("element");
+}
+
+FileEntry::FilePath ResourceUtil::GetMainPath(const string input)
+{
+    return FileEntry::FilePath(input).GetParent();
 }
 
 }

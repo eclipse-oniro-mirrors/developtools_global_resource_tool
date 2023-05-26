@@ -16,9 +16,10 @@
 #ifndef OHOS_RESTOOL_RESOURCE_UTIL_H
 #define OHOS_RESTOOL_RESOURCE_UTIL_H
 
-#include<vector>
-#include "resource_data.h"
+#include <vector>
+#include "file_entry.h"
 #include "json/json.h"
+#include "resource_data.h"
 
 namespace OHOS {
 namespace Global {
@@ -192,6 +193,21 @@ public:
      * @return All restype string
      */
     static std::string GetAllRestypeString();
+
+    /**
+     * @brief get \base\element dir
+     * @param string inputpath
+     * @return resource\base\element dir
+     */
+    static FileEntry::FilePath GetBaseElementPath(const std::string input);
+
+    /**
+     * @brief get main dir
+     * @param string inputpath
+     * @return main dir
+     */
+    static FileEntry::FilePath GetMainPath(const std::string input);
+
 private:
     enum class IgnoreType {
         IGNORE_FILE,
