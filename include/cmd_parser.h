@@ -69,6 +69,7 @@ private:
     uint32_t AddConfig(const std::string& argValue);
     uint32_t AddStartId(const std::string& argValue);
     uint32_t AddCachePath(const std::string& argValue);
+    void AdaptResourcesDirForInput();
     uint32_t CheckParam() const;
     uint32_t HandleProcess(int c, const std::string& argValue);
     uint32_t ParseFileList(const std::string& fileListPath);

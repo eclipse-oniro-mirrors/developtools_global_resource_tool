@@ -50,7 +50,11 @@ uint32_t PackageParser::Parse(int argc, char *argv[])
     if (ParseCommand(argc, argv) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
-    return CheckParam();
+    if (CheckParam() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    AdaptResourcesDirForInput();
+    return RESTOOL_SUCCESS;
 }
 
 const vector<string> &PackageParser::GetInputs() const
@@ -218,6 +222,16 @@ uint32_t PackageParser::AddCachePath(const string& argValue)
 {
     cachePath_ = argValue;
     return RESTOOL_SUCCESS;
+}
+
+// -i input directory, add the resource directory
+void PackageParser::AdaptResourcesDirForInput()
+{
+    if (!isFileList_ && !combine_) { // -l and increment compile -i, no need to add resource directory
+        for (auto &path : inputs_) {
+            path = FileEntry::FilePath(path).Append(RESOURCES_DIR).GetPath();
+        }
+    }
 }
 
 uint32_t PackageParser::CheckParam() const

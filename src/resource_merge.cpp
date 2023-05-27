@@ -48,14 +48,14 @@ uint32_t ResourceMerge::Init()
 
     map<ConfigParser::ModuleType, vector<string>> inputTypes;
     for (auto it = inputs.crbegin(); it != inputs.crend(); it++) {
-        string filePath = FileEntry::FilePath(*it).Append(ConfigParser::GetConfigName()).GetPath();
-        string resourceDir = FileEntry::FilePath(*it).Append(RESOURCES_DIR).GetPath();
+        string configPath = ResourceUtil::GetMainPath(*it).Append(ConfigParser::GetConfigName()).GetPath();
+        string resourceDir = FileEntry::FilePath(*it).GetPath();
         ConfigParser::ModuleType moduleType = ConfigParser::ModuleType::NONE;
-        if (!ResourceUtil::FileExist(filePath)) {
+        if (!ResourceUtil::FileExist(configPath)) {
             inputTypes[moduleType].push_back(resourceDir);
             continue;
         }
-        ConfigParser configParser(filePath);
+        ConfigParser configParser(configPath);
         if (configParser.Init() != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }
