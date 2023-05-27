@@ -57,7 +57,7 @@ public:
     static bool CopyFileInner(const std::string &src, const std::string &dst);
     static bool IsDirectory(const std::string &path);
     static std::string RealPath(const std::string &path);
-    static std::string AdapateLongPath(const std::string &path);
+    static std::string AdaptLongPath(const std::string &path);
 
 private:
     bool IsIgnore(const std::string &filename) const;

@@ -64,7 +64,7 @@ const vector<unique_ptr<FileEntry>> FileEntry::GetChilds() const
 #ifdef _WIN32
     WIN32_FIND_DATA findData;
     string temp(filePath + "\\*.*");
-    HANDLE handle = FindFirstFile(AdapateLongPath(temp).c_str(), &findData);
+    HANDLE handle = FindFirstFile(AdaptLongPath(temp).c_str(), &findData);
     if (handle == INVALID_HANDLE_VALUE) {
         return children;
     }
@@ -113,7 +113,7 @@ const FileEntry::FilePath &FileEntry::GetFilePath() const
 bool FileEntry::Exist(const string &path)
 {
 #ifdef _WIN32
-    return PathFileExists(AdapateLongPath(path).c_str());
+    return PathFileExists(AdaptLongPath(path).c_str());
 #else
     struct stat s;
     if (stat(path.c_str(), &s) != 0) {
@@ -145,7 +145,7 @@ bool FileEntry::CreateDirs(const string &path)
 bool FileEntry::CopyFileInner(const string &src, const string &dst)
 {
 #ifdef _WIN32
-    if (!CopyFile(AdapateLongPath(src).c_str(), AdapateLongPath(dst).c_str(), false)) {
+    if (!CopyFile(AdaptLongPath(src).c_str(), AdaptLongPath(dst).c_str(), false)) {
         cerr << "Error: copy file fail from '" << src << "' to '" << dst << "'. reason:" << strerror(errno) << endl;
         return false;
     }
@@ -164,7 +164,7 @@ bool FileEntry::CopyFileInner(const string &src, const string &dst)
 bool FileEntry::IsDirectory(const string &path)
 {
 #ifdef _WIN32
-    if (!PathIsDirectory(AdapateLongPath(path).c_str())) {
+    if (!PathIsDirectory(AdaptLongPath(path).c_str())) {
         return false;
     }
     return true;
@@ -179,7 +179,7 @@ string FileEntry::RealPath(const string &path)
 {
 #ifdef _WIN32
     char buffer[MAX_PATH];
-    if (!PathCanonicalize(buffer, AdapateLongPath(path).c_str())) {
+    if (!PathCanonicalize(buffer, AdaptLongPath(path).c_str())) {
         return "";
     }
 
@@ -283,7 +283,7 @@ bool FileEntry::RemoveAllDirInner(const FileEntry &entry)
     string path = entry.GetFilePath().GetPath();
     if (entry.IsFile()) {
 #ifdef _WIN32
-        bool result = remove(AdapateLongPath(path).c_str()) == 0;
+        bool result = remove(AdaptLongPath(path).c_str()) == 0;
 #else
         bool result = remove(path.c_str()) == 0;
 #endif
@@ -300,7 +300,7 @@ bool FileEntry::RemoveAllDirInner(const FileEntry &entry)
         }
     }
 #ifdef _WIN32
-    bool result = rmdir(AdapateLongPath(path).c_str()) == 0;
+    bool result = rmdir(AdaptLongPath(path).c_str()) == 0;
 #else
     bool result = rmdir(path.c_str()) == 0;
 #endif
@@ -316,7 +316,7 @@ bool FileEntry::CreateDirsInner(const string &path, string::size_type offset)
     string::size_type pos = path.find_first_of(SEPARATE.front(), offset);
     if (pos == string::npos) {
 #ifdef _WIN32
-        return CreateDirectory(AdapateLongPath(path).c_str(), nullptr) != 0;
+        return CreateDirectory(AdaptLongPath(path).c_str(), nullptr) != 0;
 #else
         return mkdir(path.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == 0;
 #endif
@@ -325,7 +325,7 @@ bool FileEntry::CreateDirsInner(const string &path, string::size_type offset)
     string subPath = path.substr(0, pos + 1);
     if (!Exist(subPath)) {
 #ifdef _WIN32
-        if (!CreateDirectory(AdapateLongPath(subPath).c_str(), nullptr)) {
+        if (!CreateDirectory(AdaptLongPath(subPath).c_str(), nullptr)) {
 #else
         if (mkdir(subPath.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0) {
 #endif
@@ -360,7 +360,7 @@ void FileEntry::FilePath::Init()
     }
 }
 
-string FileEntry::AdapateLongPath(const string &path)
+string FileEntry::AdaptLongPath(const string &path)
 {
 #ifdef _WIN32
     if (path.size() >= MAX_PATH -12) { //the max file path can not exceed 260 - 12

@@ -168,9 +168,9 @@ uint32_t ResourcePack::InitConfigJson()
             cerr << "Error: more input path, -j config.json empty" << endl;
             return RESTOOL_ERROR;
         }
-        config = FileEntry::FilePath(packageParser_.GetInputs()[0]).Append(CONFIG_JSON).GetPath();
+        config = ResourceUtil::GetMainPath(packageParser_.GetInputs()[0]).Append(CONFIG_JSON).GetPath();
         if (!ResourceUtil::FileExist(config)) {
-            config = FileEntry::FilePath(packageParser_.GetInputs()[0]).Append(MODULE_JSON).GetPath();
+            config = ResourceUtil::GetMainPath(packageParser_.GetInputs()[0]).Append(MODULE_JSON).GetPath();
         }
     }
 
