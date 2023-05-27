@@ -114,16 +114,22 @@ const string &PackageParser::GetDependEntry() const
 
 uint32_t PackageParser::AddInput(const string& argValue)
 {
-    auto ret = find_if(inputs_.begin(), inputs_.end(), [argValue](auto iter) {return argValue == iter;});
+    string inputPath = ResourceUtil::RealPath(argValue);
+    if (inputPath.empty()) {
+        cerr << "Error: invalid input '" << argValue << "'" << endl;
+        return RESTOOL_ERROR;
+    }
+
+    auto ret = find_if(inputs_.begin(), inputs_.end(), [inputPath](auto iter) {return inputPath == iter;});
     if (ret != inputs_.end()) {
         cerr << "Error: repeat input '" << argValue << "'" << endl;
         return RESTOOL_ERROR;
     }
 
-    if (!IsAscii(argValue)) {
+    if (!IsAscii(inputPath)) {
         return RESTOOL_ERROR;
     }
-    inputs_.push_back(argValue);
+    inputs_.push_back(inputPath);
     return RESTOOL_SUCCESS;
 }
 
