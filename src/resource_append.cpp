@@ -536,6 +536,9 @@ bool ResourceAppend::LoadResourceItemFromMem(const char buffer[], int32_t length
         string data = ParseString(buffer, length, offset);
         if (resType ==  ResType::RAW) {
             FileEntry::FilePath outPath(packageParser_.GetOutput());
+            if (ResourceUtil::FileExist(outPath.Append(data).GetPath())) {
+                continue;
+            }
             if (!ResourceUtil::CreateDirs(outPath.Append(data).GetParent().GetPath())) {
                 return false;
             }
