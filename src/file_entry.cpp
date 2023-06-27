@@ -179,7 +179,7 @@ string FileEntry::RealPath(const string &path)
 {
 #ifdef _WIN32
     char buffer[MAX_PATH];
-    if (!PathCanonicalize(buffer, AdapateLongPath(path).c_str())) {
+    if (!PathCanonicalize(buffer, path.c_str())) {
         return "";
     }
 
@@ -193,6 +193,9 @@ string FileEntry::RealPath(const string &path)
         if (!PathCombine(temp, current, buffer)) {
             return "";
         }
+        if (!Exist(string(temp))) {
+            return "";
+        }
         return string(temp);
     }
 #else
@@ -201,6 +204,9 @@ string FileEntry::RealPath(const string &path)
         return "";
     }
 #endif
+    if (!Exist(string(buffer))) {
+        return "";
+    }
     return string(buffer);
 }
 
