@@ -37,6 +37,7 @@ ohos_executable("restool") {
     "src/preview_manager.cpp",
     "src/reference_parser.cpp",
     "src/resource_append.cpp",
+    "src/resource_check.cpp",
     "src/resource_directory.cpp",
     "src/resource_item.cpp",
     "src/resource_merge.cpp",
@@ -66,6 +67,7 @@ ohos_executable("restool") {
     "build/bounds_checking_function:restool_bounds_checking_function",
     "build/jsoncpp:restool_jsoncpp",
     "build/sqlite3:restool_sqlite",
+    "//third_party/libpng:libpng_static",
     "//third_party/libxml2:static_libxml2",
   ]
 

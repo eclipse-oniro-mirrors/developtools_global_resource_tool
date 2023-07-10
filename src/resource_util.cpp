@@ -402,6 +402,37 @@ FileEntry::FilePath ResourceUtil::GetMainPath(const string input)
     return FileEntry::FilePath(input).GetParent();
 }
 
+uint32_t ResourceUtil::GetNormalSize(const vector<KeyParam> &keyParams, uint32_t index)
+{
+    string device;
+    string dpi;
+    if (keyParams.size() == 0) {
+        device = "phone";
+        dpi = "sdpi";
+    }
+    for (const auto &keyparam : keyParams) {
+        string limitKey = GetKeyParamValue(keyparam);
+        if (limitKey.empty()) {
+            continue;
+        }
+        if (keyparam.keyType == KeyType::DEVICETYPE) {
+            device = limitKey;
+        } else if (keyparam.keyType == KeyType::RESOLUTION) {
+            dpi = limitKey;
+        }
+    }
+    if (device.empty()) {
+        device = "phone";
+    }
+    if (dpi.empty()) {
+        dpi = "sdpi";
+    }
+    if (device != "phone" && device != "tablet") {
+        return 0;
+    }
+    return g_normalIconMap.find(dpi + "-" + device)->second[index];
+}
+
 }
 }
 }

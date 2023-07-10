@@ -21,6 +21,7 @@
 #include "resource_util.h"
 #include "resource_item.h"
 #include "resource_data.h"
+#include "resource_append.h"
 
 namespace OHOS {
 namespace Global {
@@ -55,6 +56,8 @@ private:
     uint32_t HandleLabel(std::vector<ResourceItem> &items, ConfigParser &config) const;
     uint32_t HandleIcon(std::vector<ResourceItem> &items, ConfigParser &config) const;
     void SaveResourceItem(const ResourceItem &resourceItem, int32_t nextId) const;
+    void CheckConfigJson();
+    void CheckConfigJsonForCombine(ResourceAppend &resourceAppend);
     bool CopyIcon(std::string &dataPath, const std::string &idName, std::string &fileName) const;
     PackageParser packageParser_;
     std::string moduleName_;
