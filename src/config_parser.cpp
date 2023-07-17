@@ -14,8 +14,8 @@
  */
 
 #include "config_parser.h"
-#include<iostream>
-#include<regex>
+#include <iostream>
+#include <regex>
 #include "reference_parser.h"
 #include "restool_errors.h"
 
@@ -370,8 +370,23 @@ bool ConfigParser::ParseJsonStringRef(Json::Value &parent, const string &key, Js
     }
     if (update) {
         parent[key + "Id"] = atoi(value.c_str());
+        AddCheckNode(key, static_cast<uint32_t>(atoi(value.c_str())));
     }
     return true;
+}
+
+void ConfigParser::AddCheckNode(const string &key, uint32_t id)
+{
+    if (g_keyNodeIndexs.find(key) != g_keyNodeIndexs.end()) {
+        auto result = jsonCheckIds_.find(key);
+        if (result == jsonCheckIds_.end()) {
+            set<uint32_t> set;
+            set.emplace(id);
+            jsonCheckIds_.emplace(key, set);
+        } else {
+            result->second.emplace(id);
+        }
+    }
 }
 
 bool ConfigParser::GetRefIdFromString(string &value, bool &update, const string &match) const

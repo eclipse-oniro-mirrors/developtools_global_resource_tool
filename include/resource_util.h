@@ -208,6 +208,14 @@ public:
      */
     static FileEntry::FilePath GetMainPath(const std::string input);
 
+    /**
+     * @brief Gets the standard size of icons under different qualifier phrases
+     * @param keyParams set of qualifiers
+     * @param uint32_t index
+     * @return standard size of the png
+    */
+    static uint32_t GetNormalSize(const std::vector<KeyParam> &keyParams, uint32_t index);
+
 private:
     enum class IgnoreType {
         IGNORE_FILE,

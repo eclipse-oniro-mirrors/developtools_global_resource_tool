@@ -16,7 +16,8 @@
 #ifndef OHOS_RESTOOL_CONFIG_PARSER_H
 #define OHOS_RESTOOL_CONFIG_PARSER_H
 
-#include<functional>
+#include <functional>
+#include <set>
 #include "resource_util.h"
 
 namespace OHOS {
@@ -45,6 +46,10 @@ public:
     ModuleType GetModuleType() const;
     uint32_t ParseRefence();
     uint32_t Save(const std::string &filePath) const;
+    const std::map<std::string, std::set<uint32_t>> GetCheckNode() const
+    {
+        return jsonCheckIds_;
+    }
     void SetDependEntry(const bool isDenpend)
     {
         dependEntry = isDenpend;
@@ -75,6 +80,7 @@ private:
     bool GetRefIdFromString(std::string &value, bool &update, const std::string &match) const;
     bool ParseModuleType(const std::string &type);
     bool ParseAbilitiesForDepend(Json::Value &moduleNode);
+    void AddCheckNode(const std::string &key, uint32_t id);
     std::string filePath_;
     std::string packageName_;
     std::string moduleName_;
@@ -83,6 +89,7 @@ private:
     std::string mainAbility_;
     int32_t abilityIconId_;
     int32_t abilityLabelId_;
+    std::map<std::string, std::set<uint32_t>> jsonCheckIds_;
     static const std::map<std::string, ModuleType> MODULE_TYPES;
     static const std::map<std::string, std::string> JSON_STRING_IDS;
     static const std::map<std::string, std::string> JSON_ARRAY_IDS;

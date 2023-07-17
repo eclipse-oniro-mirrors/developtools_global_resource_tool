@@ -16,9 +16,10 @@
 #ifndef OHOS_RESTOOL_RESOURCE_DATA_H
 #define OHOS_RESTOOL_RESOURCE_DATA_H
 
-#include<map>
-#include<stdint.h>
-#include<string>
+#include <map>
+#include <stdint.h>
+#include <string>
+#include <vector>
 
 namespace OHOS {
 namespace Global {
@@ -38,7 +39,7 @@ const static std::string LONG_PATH_HEAD = "\\\\?\\";
 const static std::string ID_DEFINED_INDENTATION = "    ";
 const static int32_t VERSION_MAX_LEN = 128;
 const static int32_t INT_TO_BYTES = sizeof(uint32_t);
-static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 4.003" };
+static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 4.004" };
 const static int32_t TAG_LEN = 4;
 
 enum class KeyType {
@@ -214,6 +215,26 @@ const std::map<int32_t, ResType> g_resTypeMap = {
     { static_cast<int32_t>(ResType::GRAPHIC), ResType::GRAPHIC},
     { static_cast<int32_t>(ResType::PATTERN), ResType::PATTERN},
     { static_cast<int32_t>(ResType::INVALID_RES_TYPE), ResType::INVALID_RES_TYPE},
+};
+
+const std::map<std::string, std::vector<uint32_t>> g_normalIconMap = {
+    { "sdpi-phone", {41, 144} },
+    { "sdpi-tablet", {51, 192} },
+    { "mdpi-phone", {54, 192} },
+    { "mdpi-tablet", {68, 256} },
+    { "ldpi-phone", {81, 288} },
+    { "ldpi-tablet", {102, 384} },
+    { "xldpi-phone", {108, 384} },
+    { "xldpi-tablet", {136, 512} },
+    { "xxldpi-phone", {162, 576} },
+    { "xxldpi-tablet", {204, 768} },
+    { "xxxldpi-phone", {216, 768} },
+    { "xxxldpi-tablet", {272, 1024} },
+};
+
+const std::map<std::string, uint32_t> g_keyNodeIndexs = {
+    { "icon", 0 },
+    { "startWindowIcon", 1 },
 };
 
 struct DirectoryInfo {

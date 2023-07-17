@@ -22,7 +22,7 @@
 #include "increment_manager.h"
 #include "resource_merge.h"
 #include "resource_table.h"
-#include "resource_append.h"
+#include "resource_check.h"
 #include "preview_manager.h"
 
 namespace OHOS {
@@ -315,6 +315,12 @@ uint32_t ResourcePack::GenerateConfigJson()
     return configJson_.Save(outputPath);
 }
 
+void ResourcePack::CheckConfigJson()
+{
+    ResourceCheck resourceCheck(configJson_);
+    resourceCheck.CheckConfigJson();
+}
+
 uint32_t ResourcePack::ScanResources(const vector<string> &inputs, const string &output)
 {
     auto &fileManager = FileManager::GetInstance();
@@ -363,6 +369,8 @@ uint32_t ResourcePack::PackNormal()
     if (GenerateConfigJson() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
+
+    CheckConfigJson();
 
     ResourceTable resourceTable;
     if (!packageParser_.GetDependEntry().empty()) {
@@ -588,11 +596,20 @@ uint32_t ResourcePack::PackCombine()
         return RESTOOL_ERROR;
     }
 
+    CheckConfigJsonForCombine(resourceAppend);
+
     if (GenerateHeader() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
 }
+
+void ResourcePack::CheckConfigJsonForCombine(ResourceAppend &resourceAppend)
+{
+    ResourceCheck resourceCheck(configJson_, make_shared<ResourceAppend>(resourceAppend));
+    resourceCheck.CheckConfigJsonForCombine();
+}
+
 }
 }
 }

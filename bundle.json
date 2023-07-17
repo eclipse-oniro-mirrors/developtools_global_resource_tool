@@ -23,7 +23,8 @@
           "bounds_checking_function",
           "libxml2",
           "jsoncpp",
-          "sqlite"
+          "sqlite",
+          "libpng"
         ]
       },
       "build": {

@@ -30,6 +30,10 @@ public:
     virtual ~ResourceAppend() {};
     uint32_t Append();
     uint32_t Combine();
+    const std::map<int32_t, std::vector<std::shared_ptr<ResourceItem>>> GetItems() const
+    {
+        return items_;
+    }
 
 private:
     bool Combine(const std::string &folderPath);
