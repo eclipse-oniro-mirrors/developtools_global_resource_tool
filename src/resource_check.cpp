@@ -67,7 +67,6 @@ void ResourceCheck::CheckConfigJsonForCombine()
 
 void ResourceCheck::CheckNodeInResourceItem(const string &key, const ResourceItem &resourceItem)
 {
-    string limitKey = resourceItem.GetLimitKey();
     string filePath = resourceItem.GetFilePath();
     uint32_t width;
     uint32_t height;
