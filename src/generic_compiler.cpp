@@ -14,7 +14,7 @@
  */
 
 #include "generic_compiler.h"
-#include<iostream>
+#include <iostream>
 #include "file_entry.h"
 #include "resource_util.h"
 #include "restool_errors.h"
@@ -54,9 +54,6 @@ bool GenericCompiler::PostFile(const FileInfo &fileInfo)
     resourceItem.SetLimitKey(fileInfo.limitKey);
 
     string data = fileInfo.filename;
-    if (IsConvertToSolidXml(fileInfo)) {
-        data = FileEntry::FilePath(data).ReplaceExtension(".sxml").GetPath();
-    }
     data = moduleName_ + SEPARATOR + RESOURCES_DIR + SEPARATOR + \
         fileInfo.limitKey + SEPARATOR + fileInfo.fileCluster + SEPARATOR + data;
     if (!resourceItem.SetData(reinterpret_cast<const int8_t *>(data.c_str()), data.length())) {
@@ -75,37 +72,16 @@ string GenericCompiler::GetOutputFilePath(const FileInfo &fileInfo) const
 
 bool GenericCompiler::IsIgnore(const FileInfo &fileInfo) const
 {
-    if (IsConvertToSolidXml(fileInfo)) {
-        if (HasConvertedToSolidXml(fileInfo)) {
-            return true;
-        }
-        return false;
-    }
     return ResourceUtil::FileExist(GetOutputFilePath(fileInfo));
 }
 
 bool GenericCompiler::CopyFile(const FileInfo &fileInfo) const
 {
-    if (previewMode_) {
-        return true;
-    }
-    if (IsConvertToSolidXml(fileInfo)) {
-        return true;
-    }
-
     string outputFolder = GetOutputFolder(fileInfo);
     if (!ResourceUtil::CreateDirs(outputFolder)) {
         return false;
     }
     return ResourceUtil::CopyFleInner(fileInfo.filePath, GetOutputFilePath(fileInfo));
-}
-
-bool GenericCompiler::IsConvertToSolidXml(const FileInfo &fileInfo) const
-{
-    if (NeedIfConvertToSolidXml() && IsXmlFile(fileInfo)) {
-        return true;
-    }
-    return false;
 }
 }
 }

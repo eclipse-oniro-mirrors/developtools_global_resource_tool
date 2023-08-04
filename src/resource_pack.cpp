@@ -19,11 +19,9 @@
 #include "file_entry.h"
 #include "file_manager.h"
 #include "header.h"
-#include "increment_manager.h"
 #include "resource_merge.h"
 #include "resource_table.h"
 #include "resource_check.h"
-#include "preview_manager.h"
 
 namespace OHOS {
 namespace Global {
@@ -35,10 +33,6 @@ ResourcePack::ResourcePack(const PackageParser &packageParser):packageParser_(pa
 
 uint32_t ResourcePack::Package()
 {
-    if (packageParser_.GetPreviewMode()) {
-        return PackPreview();
-    }
-
     if (!packageParser_.GetAppend().empty()) {
         return PackAppend();
     }
@@ -118,12 +112,6 @@ void ResourcePack::InitHeaderCreater()
 
 uint32_t ResourcePack::InitOutput() const
 {
-    string cachePath = packageParser_.GetCachePath();
-    string indexPath = FileEntry::FilePath(cachePath).Append(IncrementManager::ID_JSON_FILE).GetPath();
-    if (!cachePath.empty() && ResourceUtil::FileExist(indexPath)) {
-        return RESTOOL_SUCCESS;
-    }
-
     bool forceWrite = packageParser_.GetForceWrite();
     bool combine = packageParser_.GetCombine();
     string output = packageParser_.GetOutput();
@@ -325,19 +313,7 @@ uint32_t ResourcePack::ScanResources(const vector<string> &inputs, const string 
 {
     auto &fileManager = FileManager::GetInstance();
     fileManager.SetModuleName(moduleName_);
-    string cachePath = packageParser_.GetCachePath();
-    if (cachePath.empty()) {
-        if (fileManager.ScanModules(inputs, output) != RESTOOL_SUCCESS) {
-            return RESTOOL_ERROR;
-        }
-        return RESTOOL_SUCCESS;
-    }
-
-    auto &incrementManager = IncrementManager::GetInstance();
-    if (incrementManager.Init(cachePath, inputs, output, moduleName_) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-    if (fileManager.ScanIncrement(output) != RESTOOL_SUCCESS) {
+    if (fileManager.ScanModules(inputs, output) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
@@ -563,13 +539,6 @@ void ResourcePack::SaveResourceItem(const ResourceItem &resourceItem, int32_t ne
     resInfo.insert(make_pair(nextId, vet));
     FileManager &fileManager = FileManager::GetInstance();
     fileManager.MergeResourceItem(resInfo);
-}
-
-uint32_t ResourcePack::PackPreview()
-{
-    PreviewManager preview;
-    preview.SetPriority(packageParser_.GetPriority());
-    return preview.ScanModules(packageParser_.GetInputs(), packageParser_.GetOutput());
 }
 
 uint32_t ResourcePack::PackAppend()

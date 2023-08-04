@@ -140,13 +140,6 @@ public:
     static bool IsIgnoreFile(const std::string &filename, bool isFile);
 
     /**
-     * @brief need convert to solid xml
-     * @param resType: ResType
-     * @return true if need, other false
-     */
-    static bool NeedConverToSolidXml(ResType resType);
-
-    /**
      * @brief generate hash string
      * @param key: string
      * @return hash string

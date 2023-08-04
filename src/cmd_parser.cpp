@@ -102,11 +102,6 @@ int32_t PackageParser::GetStartId() const
     return startId_;
 }
 
-const string &PackageParser::GetCachePath() const
-{
-    return cachePath_;
-}
-
 const string &PackageParser::GetDependEntry() const
 {
     return dependEntry_;
@@ -224,12 +219,6 @@ uint32_t PackageParser::AddStartId(const string& argValue)
     return RESTOOL_ERROR;
 }
 
-uint32_t PackageParser::AddCachePath(const string& argValue)
-{
-    cachePath_ = argValue;
-    return RESTOOL_SUCCESS;
-}
-
 // -i input directory, add the resource directory
 void PackageParser::AdaptResourcesDirForInput()
 {
@@ -252,7 +241,7 @@ uint32_t PackageParser::CheckParam() const
         return RESTOOL_ERROR;
     }
 
-    if (previewMode_ || !append_.empty()) {
+    if (!append_.empty()) {
         return RESTOOL_SUCCESS;
     }
     if (packageName_.empty()) {
@@ -276,28 +265,6 @@ uint32_t PackageParser::CheckParam() const
 bool PackageParser::IsFileList() const
 {
     return isFileList_;
-}
-
-uint32_t PackageParser::SetPreviewMode()
-{
-    previewMode_ = true;
-    return RESTOOL_SUCCESS;
-}
-
-bool PackageParser::GetPreviewMode() const
-{
-    return previewMode_;
-}
-
-int32_t PackageParser::GetPriority() const
-{
-    return priority_;
-}
-
-uint32_t PackageParser::SetPriority(const string& argValue)
-{
-    priority_ = atoi(argValue.c_str());
-    return RESTOOL_SUCCESS;
 }
 
 uint32_t PackageParser::AddAppend(const string& argValue)

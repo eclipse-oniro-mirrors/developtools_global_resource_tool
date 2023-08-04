@@ -14,8 +14,8 @@
  */
 
 #include "resource_module.h"
-#include<algorithm>
-#include<iostream>
+#include <algorithm>
+#include <iostream>
 #include "factory_resource_compiler.h"
 #include "restool_errors.h"
 
@@ -27,9 +27,6 @@ const vector<ResType> ResourceModule::SCAN_SEQ = {
     ResType::ELEMENT,
     ResType::MEDIA,
     ResType::PROF,
-    ResType::ANIMATION,
-    ResType::GRAPHIC,
-    ResType::LAYOUT,
 };
 ResourceModule::ResourceModule(const string &modulePath, const string &moduleOutput, const string &moduleName)
     : modulePath_(modulePath), moduleOutput_(moduleOutput), moduleName_(moduleName)
@@ -59,7 +56,6 @@ uint32_t ResourceModule::ScanResource()
         unique_ptr<IResourceCompiler> resourceCompiler =
             FactoryResourceCompiler::CreateCompiler(type, moduleOutput_);
         resourceCompiler->SetModuleName(moduleName_);
-        resourceCompiler->SetPreviewMode(previewMode_);
         if (resourceCompiler->Compile(item->second) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }
@@ -111,10 +107,6 @@ uint32_t ResourceModule::MergeResourceItem(map<int32_t, vector<ResourceItem>> &a
 // below private
 void ResourceModule::Push(const map<int32_t, std::vector<ResourceItem>> &other)
 {
-    if (previewMode_) {
-        return;
-    }
-
     for (const auto &iter : other) {
         owner_.emplace(iter.first, iter.second);
     }

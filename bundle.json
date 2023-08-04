@@ -21,9 +21,7 @@
         "components": [],
         "third_party": [
           "bounds_checking_function",
-          "libxml2",
           "jsoncpp",
-          "sqlite",
           "libpng"
         ]
       },

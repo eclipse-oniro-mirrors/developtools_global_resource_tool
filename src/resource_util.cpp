@@ -137,8 +137,7 @@ string ResourceUtil::ResTypeToString(ResType type)
 
 string ResourceUtil::GetIdName(const string &name, ResType type)
 {
-    if (type != ResType::MEDIA && type != ResType::LAYOUT && type != ResType::PROF &&
-        type != ResType::ANIMATION && type != ResType::GRAPHIC) {
+    if (type != ResType::MEDIA && type != ResType::PROF) {
         return name;
     }
 
@@ -241,15 +240,6 @@ bool ResourceUtil::IsIgnoreFile(const string &filename, bool isFile)
         if (regex_match(key, regex(iter.first))) {
             return true;
         }
-    }
-    return false;
-}
-
-bool ResourceUtil::NeedConverToSolidXml(ResType resType)
-{
-    if (resType == ResType::LAYOUT || resType == ResType::ANIMATION ||
-        resType == ResType::GRAPHIC) {
-        return true;
     }
     return false;
 }

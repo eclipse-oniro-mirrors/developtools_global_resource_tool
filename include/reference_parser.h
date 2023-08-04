@@ -26,7 +26,6 @@ class ReferenceParser {
 public:
     ReferenceParser();
     virtual ~ReferenceParser();
-    uint32_t ParseRefInSolidXml(const std::vector<std::string> &solidXmlFolders) const;
     uint32_t ParseRefInResources(std::map<int32_t, std::vector<ResourceItem>> &items, const std::string &output);
     uint32_t ParseRefInResourceItem(ResourceItem &resourceItem) const;
     uint32_t ParseRefInJsonFile(ResourceItem &resourceItem, const std::string &output, const bool isIncrement = false);

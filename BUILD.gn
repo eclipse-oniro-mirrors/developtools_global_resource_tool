@@ -28,13 +28,8 @@ ohos_executable("restool") {
     "src/header.cpp",
     "src/i_resource_compiler.cpp",
     "src/id_worker.cpp",
-    "src/increment_index.cpp",
-    "src/increment_list.cpp",
-    "src/increment_manager.cpp",
     "src/json_compiler.cpp",
     "src/key_parser.cpp",
-    "src/module_combine.cpp",
-    "src/preview_manager.cpp",
     "src/reference_parser.cpp",
     "src/resource_append.cpp",
     "src/resource_check.cpp",
@@ -42,33 +37,23 @@ ohos_executable("restool") {
     "src/resource_item.cpp",
     "src/resource_merge.cpp",
     "src/resource_module.cpp",
-    "src/resource_module_inc.cpp",
     "src/resource_pack.cpp",
     "src/resource_table.cpp",
     "src/resource_util.cpp",
     "src/restool.cpp",
-    "src/solid_xml_compiler.cpp",
-    "src/sqlite_database.cpp",
     "src/task_handle.cpp",
-    "src/xml/key_manager.cpp",
-    "src/xml/solid_xml.cpp",
-    "src/xml/xml_converter.cpp",
-    "src/xml/xml_key_node.cpp",
   ]
 
   include_dirs = [
     "include",
     "//third_party/jsoncpp/include",
-    "//third_party/sqlite/include",
     "//third_party/bounds_checking_function/include",
   ]
 
   deps = [
-    "build/bounds_checking_function:restool_bounds_checking_function",
-    "build/jsoncpp:restool_jsoncpp",
-    "build/sqlite3:restool_sqlite",
+    "//third_party/bounds_checking_function:libsec_static",
+    "//third_party/jsoncpp:jsoncpp_static",
     "//third_party/libpng:libpng_static",
-    "//third_party/libxml2:static_libxml2",
   ]
 
   cflags = [ "-std=c++17" ]
