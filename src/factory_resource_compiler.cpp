@@ -17,7 +17,6 @@
 #include "append_compiler.h"
 #include "generic_compiler.h"
 #include "json_compiler.h"
-#include "solid_xml_compiler.h"
 
 namespace OHOS {
 namespace Global {
@@ -27,8 +26,6 @@ unique_ptr<IResourceCompiler> FactoryResourceCompiler::CreateCompiler(ResType ty
 {
     if (type == ResType::ELEMENT) {
         return make_unique<JsonCompiler>(type, output);
-    } else if (type == ResType::LAYOUT || type == ResType::ANIMATION || type == ResType::GRAPHIC) {
-        return make_unique<SolidXmlCompiler>(type, output);
     } else {
         return make_unique<GenericCompiler>(type, output);
     }

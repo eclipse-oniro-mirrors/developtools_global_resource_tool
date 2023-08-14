@@ -14,8 +14,8 @@
  */
 
 #include "file_manager.h"
-#include<algorithm>
-#include<iostream>
+#include <algorithm>
+#include <iostream>
 #include "factory_resource_compiler.h"
 #include "file_entry.h"
 #include "key_parser.h"
@@ -23,7 +23,6 @@
 #include "resource_directory.h"
 #include "resource_util.h"
 #include "restool_errors.h"
-
 #include "resource_module.h"
 
 namespace OHOS {
@@ -32,24 +31,13 @@ namespace Restool {
 using namespace std;
 uint32_t FileManager::ScanModules(const vector<string> &inputs, const string &output)
 {
-    vector<string> sxmlFolders;
     for (auto input : inputs) {
         map<ResType, vector<DirectoryInfo>> resTypeOfDirs;
         if (ScanModule(input, output, resTypeOfDirs) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }
-        FilterRefSolidXml(output, sxmlFolders, resTypeOfDirs);
     }
-    return ParseReference(output, sxmlFolders);
-}
-
-uint32_t FileManager::ScanIncrement(const string &output)
-{
-    auto &incrementManager = IncrementManager::GetInstance();
-    items_ = incrementManager.GetResourceItems();
-    vector<string> sxmlFolders;
-    FilterRefSolidXml(output, sxmlFolders, incrementManager.GetScanDirs());
-    return ParseReference(output, sxmlFolders);
+    return ParseReference(output);
 }
 
 uint32_t FileManager::MergeResourceItem(const map<int32_t, vector<ResourceItem>> &resourceInfos)
@@ -70,39 +58,13 @@ uint32_t FileManager::ScanModule(const string &input, const string &output,
     return RESTOOL_SUCCESS;
 }
 
-uint32_t FileManager::ParseReference(const string &output, const vector<string> &sxmlFolders)
+uint32_t FileManager::ParseReference(const string &output)
 {
     ReferenceParser referenceParser;
-    if (referenceParser.ParseRefInSolidXml(sxmlFolders) != RESTOOL_SUCCESS ||
-        referenceParser.ParseRefInResources(items_, output) != RESTOOL_SUCCESS) {
+    if (referenceParser.ParseRefInResources(items_, output) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
-}
-
-bool FileManager::NeedParseReferenceInSolidXml(ResType resType) const
-{
-    if (resType == ResType::LAYOUT || resType == ResType::ANIMATION || resType == ResType::GRAPHIC) {
-        return true;
-    }
-    return false;
-}
-
-void FileManager::FilterRefSolidXml(const string &output, vector<string> &outputPaths,
-    const map<ResType, vector<DirectoryInfo>> &resTypeOfDirs) const
-{
-    for (const auto &iter : resTypeOfDirs) {
-        if (!NeedParseReferenceInSolidXml(iter.first)) {
-            continue;
-        }
-        for (const auto &resourceDir : iter.second) {
-            string outputPath = FileEntry::FilePath(output).Append(RESOURCES_DIR).Append(resourceDir.limitKey)
-                .Append(resourceDir.fileCluster).GetPath();
-            if (find(outputPaths.begin(), outputPaths.end(), outputPath) == outputPaths.end()) {
-                outputPaths.push_back(outputPath);
-            }
-        }
-    }
 }
 }
 }

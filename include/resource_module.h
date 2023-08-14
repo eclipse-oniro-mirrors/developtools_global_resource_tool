@@ -18,6 +18,7 @@
 
 #include "resource_item.h"
 #include "resource_directory.h"
+#include "resource_util.h"
 
 namespace OHOS {
 namespace Global {
@@ -31,10 +32,6 @@ public:
     const std::map<ResType, std::vector<DirectoryInfo>> &GetScanDirectorys() const;
     static uint32_t MergeResourceItem(std::map<int32_t, std::vector<ResourceItem>> &alls,
         const std::map<int32_t, std::vector<ResourceItem>> &other, bool tipError = false);
-    void SetPreviewMode(bool enable)
-    {
-        previewMode_ = enable;
-    };
 
 protected:
     const std::string &modulePath_;
@@ -42,7 +39,6 @@ protected:
     const std::string &moduleName_;
     std::map<int32_t, std::vector<ResourceItem>> owner_;
     std::map<ResType, std::vector<DirectoryInfo>> scanDirs_;
-    bool previewMode_ = false;
 private:
     void Push(const std::map<int32_t, std::vector<ResourceItem>> &other);
     static const std::vector<ResType> SCAN_SEQ;

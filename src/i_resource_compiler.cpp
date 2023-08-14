@@ -20,8 +20,6 @@
 #include "id_worker.h"
 #include "resource_util.h"
 #include "restool_errors.h"
-#include "sqlite_database.h"
-#include "xml_converter.h"
 
 namespace OHOS {
 namespace Global {
@@ -72,13 +70,6 @@ uint32_t IResourceCompiler::Compile(const vector<DirectoryInfo> &directoryInfos)
             return RESTOOL_ERROR;
         }
     }
-
-    if (previewMode_) {
-        return RESTOOL_SUCCESS;
-    }
-    if (NeedIfConvertToSolidXml() && ConvertToSolidXml(setsByDirectory) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
     return PostCommit();
 }
 
@@ -90,20 +81,6 @@ const map<int32_t, vector<ResourceItem>> &IResourceCompiler::GetResult() const
 uint32_t IResourceCompiler::Compile(const FileInfo &fileInfo)
 {
     if (CompileSingleFile(fileInfo) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-
-    if (previewMode_) {
-        return RESTOOL_SUCCESS;
-    }
-    map<string, vector<FileInfo>> setsByDirectory;
-    if (NeedIfConvertToSolidXml()) {
-        string outputFolder = FileEntry::FilePath(output_).Append(RESOURCES_DIR)
-            .Append(fileInfo.limitKey).Append(fileInfo.fileCluster).GetPath();
-        setsByDirectory[outputFolder].push_back(fileInfo);
-    }
-
-    if (ConvertToSolidXml(setsByDirectory) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return PostCommit();
@@ -122,33 +99,6 @@ const map<pair<ResType, string>, vector<ResourceItem>> &IResourceCompiler::GetRe
 void IResourceCompiler::SetModuleName(const string &moduleName)
 {
     moduleName_ = moduleName;
-}
-
-uint32_t IResourceCompiler::ConvertToSolidXml(const map<string, vector<FileInfo>> &setsByDirectory)
-{
-    for (const auto &iter : setsByDirectory) {
-        vector<string> xmlPaths;
-        ListXmlFile(iter.second, xmlPaths);
-        if (xmlPaths.empty()) {
-            continue;
-        }
-
-        string xmlOutPath = iter.first;
-        if (!ResourceUtil::CreateDirs(xmlOutPath)) {
-            return RESTOOL_ERROR;
-        }
-
-        sort(xmlPaths.begin(), xmlPaths.end());
-        XmlConverter xmlConverter(xmlPaths, xmlOutPath);
-        if (!xmlConverter.GenerateSolidXml()) {
-            return RESTOOL_ERROR;
-        }
-
-        if (!xmlConverter.GenerateKey()) {
-            return RESTOOL_ERROR;
-        }
-    }
-    return RESTOOL_SUCCESS;
 }
 
 uint32_t IResourceCompiler::CompileSingleFile(const FileInfo &fileInfo)
@@ -173,9 +123,6 @@ uint32_t IResourceCompiler::PostCommit()
 
 bool IResourceCompiler::MergeResourceItem(const ResourceItem &resourceItem)
 {
-    if (previewMode_) {
-        return SqliteDatabase::GetInstance().Insert(resourceItem);
-    }
     string idName = ResourceUtil::GetIdName(resourceItem.GetName(), resourceItem.GetResType());
     if (!IdWorker::GetInstance().IsValidName(idName)) {
         cerr << "Error: invalid idName '" << idName << "'."<< NEW_LINE_PATH <<  resourceItem.GetFilePath() << endl;
@@ -198,43 +145,6 @@ bool IResourceCompiler::MergeResourceItem(const ResourceItem &resourceItem)
 
     nameInfos_[make_pair(resourceItem.GetResType(), idName)].push_back(resourceItem);
     return true;
-}
-
-void IResourceCompiler::ListXmlFile(const vector<FileInfo> &fileInfos, vector<string> &xmlPaths) const
-{
-    for (const auto &fileInfo : fileInfos) {
-        if (!IsXmlFile(fileInfo)) {
-            continue;
-        }
-
-        if (HasConvertedToSolidXml(fileInfo)) {
-            continue;
-        }
-        xmlPaths.push_back(fileInfo.filePath);
-    }
-}
-
-bool IResourceCompiler::IsXmlFile(const FileInfo &fileInfo) const
-{
-    if (FileEntry::FilePath(fileInfo.filePath).GetExtension() != ".xml") {
-        return false;
-    }
-    return true;
-}
-
-bool IResourceCompiler::HasConvertedToSolidXml(const FileInfo &fileInfo) const
-{
-    string solidXmlPath = FileEntry::FilePath(output_).Append(RESOURCES_DIR).Append(fileInfo.limitKey)
-        .Append(fileInfo.fileCluster).Append(fileInfo.filename).ReplaceExtension(".sxml").GetPath();
-    if (ResourceUtil::FileExist(solidXmlPath)) {
-        return true;
-    }
-    return false;
-}
-
-bool IResourceCompiler::NeedIfConvertToSolidXml() const
-{
-    return ResourceUtil::NeedConverToSolidXml(type_);
 }
 
 string IResourceCompiler::GetOutputFolder(const DirectoryInfo &directoryInfo) const

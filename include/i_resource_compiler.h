@@ -16,8 +16,7 @@
 #ifndef OHOS_RESTOOL_RESOURCE_COMPILER_H
 #define OHOS_RESTOOL_RESOURCE_COMPILER_H
 
-#include<vector>
-#include "increment_manager.h"
+#include <vector>
 #include "resource_data.h"
 #include "resource_item.h"
 
@@ -32,24 +31,16 @@ public:
     const std::map<int32_t, std::vector<ResourceItem>> &GetResult() const;
     uint32_t Compile(const FileInfo &fileInfo);
     void SetModuleName(const std::string &moduleName);
-    void SetPreviewMode(bool enable)
-    {
-        previewMode_ = enable;
-    };
     uint32_t CompileForAppend(const FileInfo &fileInfo);
     const std::map<std::pair<ResType, std::string>, std::vector<ResourceItem>> &GetResourceItems() const;
 
 protected:
     virtual uint32_t CompileSingleFile(const FileInfo &fileInfo);
     bool MergeResourceItem(const ResourceItem &resourceItem);
-    bool IsXmlFile(const FileInfo &fileInfo) const;
-    bool HasConvertedToSolidXml(const FileInfo &fileInfo) const;
-    bool NeedIfConvertToSolidXml() const;
     std::string GetOutputFolder(const DirectoryInfo &directoryInfo) const;
     ResType type_;
     std::string output_;
     std::string moduleName_;
-    bool previewMode_ = false;
 
     // id, resource items
     std::map<int32_t, std::vector<ResourceItem>> resourceInfos_;
@@ -57,9 +48,7 @@ protected:
     std::map<std::pair<ResType, std::string>, std::vector<ResourceItem>> nameInfos_;
 
 private:
-    uint32_t ConvertToSolidXml(const std::map<std::string, std::vector<FileInfo>> &setsByDirectory);
     uint32_t PostCommit();
-    void ListXmlFile(const std::vector<FileInfo> &fileInfo, std::vector<std::string> &xmlPaths) const;
 };
 }
 }

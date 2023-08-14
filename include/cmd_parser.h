@@ -16,10 +16,10 @@
 #ifndef OHOS_RESTOOL_CMD_PARSER_H
 #define OHOS_RESTOOL_CMD_PARSER_H
 
-#include<getopt.h>
-#include<iostream>
-#include<functional>
-#include<vector>
+#include <getopt.h>
+#include <iostream>
+#include <functional>
+#include <vector>
 #include "singleton.h"
 #include "resource_data.h"
 #include "restool_errors.h"
@@ -46,10 +46,7 @@ public:
     const std::string &GetConfig() const;
     const std::string &GetRestoolPath() const;
     int32_t GetStartId() const;
-    const std::string &GetCachePath() const;
     bool IsFileList() const;
-    bool GetPreviewMode() const;
-    int32_t GetPriority() const;
     const std::vector<std::string> &GetAppend() const;
     bool GetCombine() const;
     const std::string &GetDependEntry() const;
@@ -68,13 +65,10 @@ private:
     uint32_t AddMoudleNames(const std::string& argValue);
     uint32_t AddConfig(const std::string& argValue);
     uint32_t AddStartId(const std::string& argValue);
-    uint32_t AddCachePath(const std::string& argValue);
     void AdaptResourcesDirForInput();
     uint32_t CheckParam() const;
     uint32_t HandleProcess(int c, const std::string& argValue);
     uint32_t ParseFileList(const std::string& fileListPath);
-    uint32_t SetPreviewMode();
-    uint32_t SetPriority(const std::string& argValue);
     uint32_t AddAppend(const std::string& argValue);
     uint32_t SetCombine();
     uint32_t AddDependEntry(const std::string& argValue);
@@ -97,10 +91,7 @@ private:
     std::string configPath_;
     std::string restoolPath_;
     int32_t startId_ = 0;
-    std::string cachePath_;
     bool isFileList_ = false;
-    bool previewMode_ = false;
-    int32_t priority_ = -1;
     std::vector<std::string> append_;
     bool combine_ = false;
     std::string dependEntry_;

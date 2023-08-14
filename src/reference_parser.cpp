@@ -14,11 +14,10 @@
  */
 
 #include "reference_parser.h"
-#include<iostream>
-#include<regex>
+#include <iostream>
+#include <regex>
 #include "file_entry.h"
 #include "restool_errors.h"
-#include "xml_key_node.h"
 
 namespace OHOS {
 namespace Global {
@@ -33,10 +32,8 @@ const map<string, ResType> ReferenceParser::ID_REFS = {
     { "^\\$profile:", ResType::PROF },
     { "^\\$integer:", ResType::INTEGER },
     { "^\\$string:", ResType::STRING },
-    { "^\\$layout:", ResType::LAYOUT },
     { "^\\$pattern:", ResType::PATTERN },
     { "^\\$plural:", ResType::PLURAL },
-    { "^\\$graphic:", ResType::GRAPHIC },
     { "^\\$theme:", ResType::THEME }
 };
 
@@ -49,10 +46,8 @@ const map<string, ResType> ReferenceParser::ID_OHOS_REFS = {
     { "^\\$ohos:profile:", ResType::PROF },
     { "^\\$ohos:integer:", ResType::INTEGER },
     { "^\\$ohos:string:", ResType::STRING },
-    { "^\\$ohos:layout:", ResType::LAYOUT },
     { "^\\$ohos:pattern:", ResType::PATTERN },
     { "^\\$ohos:plural:", ResType::PLURAL },
-    { "^\\$ohos:graphic:", ResType::GRAPHIC },
     { "^\\$ohos:theme:", ResType::THEME }
 };
 
@@ -62,29 +57,6 @@ ReferenceParser::ReferenceParser() : idWorker_(IdWorker::GetInstance())
 
 ReferenceParser::~ReferenceParser()
 {
-}
-
-uint32_t ReferenceParser::ParseRefInSolidXml(const vector<string> &solidXmlFolders) const
-{
-    for (const auto &solidXmlFolder : solidXmlFolders) {
-        string filePath = FileEntry::FilePath(solidXmlFolder)
-            .Append(XmlKeyNode::KEY_TO_FILE_NAME.at(XmlKeyNode::KeyType::CONSTANT)).GetPath();
-        if (!ResourceUtil::FileExist(filePath)) {
-            continue;
-        }
-
-        XmlKeyNode xmlKeyNode;
-        if (!xmlKeyNode.LoadFromFile(filePath, [this](auto &key) -> bool {
-            return ParseRefString(key);
-            })) {
-            return RESTOOL_ERROR;
-        }
-
-        if (!xmlKeyNode.SaveToFile(filePath)) {
-            return RESTOOL_ERROR;
-        }
-    }
-    return RESTOOL_SUCCESS;
 }
 
 uint32_t ReferenceParser::ParseRefInResources(map<int32_t, vector<ResourceItem>> &items, const string &output)
