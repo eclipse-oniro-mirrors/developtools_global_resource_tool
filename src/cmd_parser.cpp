@@ -39,6 +39,7 @@ const struct option PackageParser::CMD_OPTS[] = {
     { "help", no_argument, nullptr, Option::HELP},
     { "ids", required_argument, nullptr, Option::IDS},
     { "defined-ids", required_argument, nullptr, Option::DEFINED_IDS},
+    { "icon-check", no_argument, nullptr, Option::ICON_CHECK},
     { 0, 0, 0, 0},
 };
 
@@ -338,6 +339,17 @@ const string &PackageParser::GetIdDefinedInputPath() const
     return idDefinedInputPath_;
 }
 
+uint32_t PackageParser::IconCheck()
+{
+    isIconCheck_ = true;
+    return RESTOOL_SUCCESS;
+}
+
+bool PackageParser::GetIconCheck() const
+{
+    return isIconCheck_;
+}
+
 bool PackageParser::IsAscii(const string& argValue) const
 {
 #ifdef __WIN32
@@ -373,6 +385,7 @@ void PackageParser::InitCommand()
     handles_.emplace(Option::HELP, [this](const string &) -> uint32_t { return ShowHelp(); });
     handles_.emplace(Option::IDS, bind(&PackageParser::SetIdDefinedOutput, this, _1));
     handles_.emplace(Option::DEFINED_IDS, bind(&PackageParser::SetIdDefinedInputPath, this, _1));
+    handles_.emplace(Option::ICON_CHECK, [this](const string &) -> uint32_t { return IconCheck(); });
 }
 
 uint32_t PackageParser::HandleProcess(int c, const string& argValue)

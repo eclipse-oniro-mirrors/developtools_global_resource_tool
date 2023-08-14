@@ -114,6 +114,7 @@ enum Option {
     IDS = 1,
     DEFINED_IDS = 2,
     DEPENDENTRY = 3,
+    ICON_CHECK = 4,
     STARTID = 'e',
     FORCEWRITE = 'f',
     HELP = 'h',

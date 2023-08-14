@@ -36,6 +36,7 @@ private:
     uint32_t GetString(const Json::Value &node, int c, HandleBack callback);
     uint32_t GetArray(const Json::Value &node, int c, HandleBack callback);
     uint32_t GetModuleNames(const Json::Value &node, int c, HandleBack callback);
+    uint32_t GetBool(const Json::Value &node, int c, HandleBack callback);
 };
 }
 }
