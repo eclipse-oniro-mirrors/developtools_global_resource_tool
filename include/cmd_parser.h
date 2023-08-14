@@ -52,6 +52,7 @@ public:
     const std::string &GetDependEntry() const;
     const std::string &GetIdDefinedOutput() const;
     const std::string &GetIdDefinedInputPath() const;
+    bool GetIconCheck() const;
 
 private:
     void InitCommand();
@@ -77,6 +78,7 @@ private:
     uint32_t SetIdDefinedInputPath(const std::string& argValue);
     bool IsAscii(const std::string& argValue) const;
     bool IsLongOpt(char *argv[]) const;
+    uint32_t IconCheck();
 
     static const struct option CMD_OPTS[];
     static const std::string CMD_PARAMS;
@@ -97,6 +99,7 @@ private:
     std::string dependEntry_;
     std::string idDefinedOutput_;
     std::string idDefinedInputPath_;
+    bool isIconCheck_ = false;
 };
 
 template<class T>
@@ -136,6 +139,7 @@ void CmdParser<T>::ShowUseage()
     std::cout << "    --defined-ids       input id_defined.json path\n";
     std::cout << "    --dependEntry       Build result directory of the specified entry module when the feature";
     std::cout << " module resources are independently built in the FA model.\n";
+    std::cout << "    --icon-check        Enable the PNG image verification function for icons and startwindows.\n";
 }
 
 template<class T>

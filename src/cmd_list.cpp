@@ -61,6 +61,7 @@ void CmdList::InitFileListCommand(Json::Value &root, HandleBack callback)
     fileListHandles_.push_back(bind(&CmdList::GetArray, this, root["moduleResources"], Option::INPUTPATH, callback));
     fileListHandles_.push_back(bind(&CmdList::GetArray, this, root["dependencies"], Option::INPUTPATH, callback));
     fileListHandles_.push_back(bind(&CmdList::GetModuleNames, this, root["moduleNames"], Option::MODULES, callback));
+    fileListHandles_.push_back(bind(&CmdList::GetBool, this, root["iconCheck"], Option::ICON_CHECK, callback));
 }
 
 uint32_t CmdList::GetString(const Json::Value &node, int c, HandleBack callback)
@@ -109,6 +110,18 @@ uint32_t CmdList::GetModuleNames(const Json::Value &node, int c, HandleBack call
     }
 
     if (!moduleNames.empty() && callback(c, moduleNames) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t CmdList::GetBool(const Json::Value &node, int c, HandleBack callback)
+{
+    if (node.type() != Json::booleanValue) {
+        return RESTOOL_SUCCESS;
+    }
+
+    if (node.asBool() && callback(c, "") != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;

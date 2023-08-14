@@ -346,7 +346,9 @@ uint32_t ResourcePack::PackNormal()
         return RESTOOL_ERROR;
     }
 
-    CheckConfigJson();
+    if (packageParser_.GetIconCheck()) {
+        CheckConfigJson();
+    }
 
     ResourceTable resourceTable;
     if (!packageParser_.GetDependEntry().empty()) {
@@ -565,7 +567,9 @@ uint32_t ResourcePack::PackCombine()
         return RESTOOL_ERROR;
     }
 
-    CheckConfigJsonForCombine(resourceAppend);
+    if (packageParser_.GetIconCheck()) {
+        CheckConfigJsonForCombine(resourceAppend);
+    }
 
     if (GenerateHeader() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
