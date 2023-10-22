@@ -392,7 +392,7 @@ uint32_t PackageParser::HandleProcess(int c, const string& argValue)
 {
     auto handler = handles_.find(c);
     if (handler == handles_.end()) {
-        cerr << "Error: unsupport " << c << endl;
+        cout << "Error: unsupport " << c << endl;
         return RESTOOL_ERROR;
     }
     return handler->second(argValue);
@@ -420,7 +420,7 @@ uint32_t PackageParser::ParseCommand(int argc, char *argv[])
         if (optIndex != -1) {
             string curOpt = (optarg == nullptr) ? argv[optind - 1] : argv[optind - 2];
             if (curOpt != ("--" + string(CMD_OPTS[optIndex].name))) {
-                cerr << "Error: unknown option " << curOpt << endl;
+                cout << "Error: unknown option " << curOpt << endl;
                 return RESTOOL_ERROR;
             }
         }
@@ -432,19 +432,19 @@ uint32_t PackageParser::ParseCommand(int argc, char *argv[])
             for (int i = optind; i < argc; i++) {
                 errmsg.append(argv[i]).append(" ");
             }
-            cerr << errmsg << endl;
+            cout << errmsg << endl;
             return RESTOOL_ERROR;
         }
         if (c == Option::UNKNOWN) {
             string optUnknown = (optopt == 0) ? argv[optind - 1] : ("-" + string(1, optopt));
-            cerr << "Error: unknown option " << optUnknown << endl;
+            cout << "Error: unknown option " << optUnknown << endl;
             return RESTOOL_ERROR;
         }
         if (c == Option::NO_ARGUMENT) {
             if (IsLongOpt(argv)) {
-                cerr << "Error: option " << argv[optind - 1] << " must have argument" << endl;
+                cout << "Error: option " << argv[optind - 1] << " must have argument" << endl;
             } else {
-                cerr << "Error: unknown option " << argv[optind - 1] << endl;
+                cout << "Error: unknown option " << argv[optind - 1] << endl;
             }
             return RESTOOL_ERROR;
         }
