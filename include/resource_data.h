@@ -39,7 +39,7 @@ const static std::string LONG_PATH_HEAD = "\\\\?\\";
 const static std::string ID_DEFINED_INDENTATION = "    ";
 const static int32_t VERSION_MAX_LEN = 128;
 const static int32_t INT_TO_BYTES = sizeof(uint32_t);
-static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 4.102" };
+static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 4.103" };
 const static int32_t TAG_LEN = 4;
 
 enum class KeyType {
@@ -73,6 +73,7 @@ enum class ResType {
     MEDIA = 19,
     PROF = 20,
     PATTERN = 22,
+    SYMBOL = 23,
     INVALID_RES_TYPE = -1,
 };
 
@@ -192,7 +193,8 @@ const std::map<std::string, ResType> g_contentClusterMap = {
     { "boolean", ResType::BOOLEAN },
     { "pattern", ResType::PATTERN },
     { "theme", ResType::THEME },
-    { "float", ResType::FLOAT }
+    { "float", ResType::FLOAT },
+    { "symbol", ResType::SYMBOL }
 };
 
 const std::map<int32_t, ResType> g_resTypeMap = {
@@ -211,6 +213,7 @@ const std::map<int32_t, ResType> g_resTypeMap = {
     { static_cast<int32_t>(ResType::MEDIA), ResType::MEDIA},
     { static_cast<int32_t>(ResType::PROF), ResType::PROF},
     { static_cast<int32_t>(ResType::PATTERN), ResType::PATTERN},
+    { static_cast<int32_t>(ResType::SYMBOL), ResType::SYMBOL},
     { static_cast<int32_t>(ResType::INVALID_RES_TYPE), ResType::INVALID_RES_TYPE},
 };
 

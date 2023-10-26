@@ -34,7 +34,8 @@ const map<string, ResType> ReferenceParser::ID_REFS = {
     { "^\\$string:", ResType::STRING },
     { "^\\$pattern:", ResType::PATTERN },
     { "^\\$plural:", ResType::PLURAL },
-    { "^\\$theme:", ResType::THEME }
+    { "^\\$theme:", ResType::THEME },
+    { "^\\$symbol:", ResType::SYMBOL }
 };
 
 const map<string, ResType> ReferenceParser::ID_OHOS_REFS = {
@@ -48,7 +49,8 @@ const map<string, ResType> ReferenceParser::ID_OHOS_REFS = {
     { "^\\$ohos:string:", ResType::STRING },
     { "^\\$ohos:pattern:", ResType::PATTERN },
     { "^\\$ohos:plural:", ResType::PLURAL },
-    { "^\\$ohos:theme:", ResType::THEME }
+    { "^\\$ohos:theme:", ResType::THEME },
+    { "^\\$ohos:symbol:", ResType::SYMBOL }
 };
 
 ReferenceParser::ReferenceParser() : idWorker_(IdWorker::GetInstance())
@@ -197,7 +199,8 @@ bool ReferenceParser::IsStringOfResourceItem(ResType resType) const
         resType == ResType::INTEGER ||
         resType == ResType::BOOLEAN ||
         resType == ResType::COLOR ||
-        resType == ResType::FLOAT) {
+        resType == ResType::FLOAT ||
+        resType == ResType::SYMBOL) {
         return true;
     }
     return false;
