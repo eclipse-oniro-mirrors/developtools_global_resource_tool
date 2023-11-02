@@ -45,10 +45,12 @@ private:
     bool HandleTheme(const Json::Value &objectNode, ResourceItem &resourceItem) const;
     bool HandlePattern(const Json::Value &objectNode, ResourceItem &resourceItem) const;
     bool HandlePlural(const Json::Value &objectNode, ResourceItem &resourceItem) const;
+    bool HandleSymbol(const Json::Value &objectNode, ResourceItem &resourceItem) const;
 
     bool PushString(const std::string &value, ResourceItem &resourceItem) const;
     bool CheckJsonStringValue(const Json::Value &valueNode, const ResourceItem &resourceItem) const;
     bool CheckJsonIntegerValue(const Json::Value &valueNode, const ResourceItem &resourceItem) const;
+    bool CheckJsonSymbolValue(const Json::Value &valueNode, const ResourceItem &resourceItem) const;
     using HandleValue = std::function<bool(const Json::Value&, const ResourceItem&, std::vector<std::string>&)>;
     bool ParseValueArray(const Json::Value &objectNode, ResourceItem &resourceItem,
                          const std::vector<std::string> &extra, HandleValue callback) const;

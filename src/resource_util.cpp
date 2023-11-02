@@ -423,6 +423,11 @@ uint32_t ResourceUtil::GetNormalSize(const vector<KeyParam> &keyParams, uint32_t
     return g_normalIconMap.find(dpi + "-" + device)->second[index];
 }
 
+bool ResourceUtil::isUnicodeInPlane15or16(int unicode)
+{
+    return (unicode >= 0xF0000 && unicode <= 0xFFFFF) || (unicode >= 0x100000 && unicode <= 0x10FFFF);
+}
+
 }
 }
 }

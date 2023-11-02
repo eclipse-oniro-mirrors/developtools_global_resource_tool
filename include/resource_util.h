@@ -209,6 +209,13 @@ public:
     */
     static uint32_t GetNormalSize(const std::vector<KeyParam> &keyParams, uint32_t index);
 
+    /**
+     * @brief Check if the Unicode code belongs to the 15 plane or 16 plane
+     * @param int unicode
+     * @return ture Unicode code belongs to the 15 plane or 16 plane, other false;
+    */
+    static bool isUnicodeInPlane15or16(int unicode);
+
 private:
     enum class IgnoreType {
         IGNORE_FILE,

@@ -90,6 +90,7 @@ void JsonCompiler::InitParser()
     handles_.emplace(ResType::THEME, bind(&JsonCompiler::HandleTheme, this, _1, _2));
     handles_.emplace(ResType::PATTERN, bind(&JsonCompiler::HandlePattern, this, _1, _2));
     handles_.emplace(ResType::PLURAL, bind(&JsonCompiler::HandlePlural, this, _1, _2));
+    handles_.emplace(ResType::SYMBOL, bind(&JsonCompiler::HandleSymbol, this, _1, _2));
 }
 
 bool JsonCompiler::ParseJsonArrayLevel(const Json::Value &arrayNode, const FileInfo &fileInfo)
@@ -273,6 +274,15 @@ bool JsonCompiler::HandlePlural(const Json::Value &objectNode, ResourceItem &res
     return true;
 }
 
+bool JsonCompiler::HandleSymbol(const Json::Value &objectNode, ResourceItem &resourceItem) const
+{
+    Json::Value valueNode = objectNode[TAG_VALUE];
+    if (!CheckJsonSymbolValue(valueNode, resourceItem)) {
+        return false;
+    }
+    return PushString(valueNode.asString(), resourceItem);
+}
+
 bool JsonCompiler::PushString(const string &value, ResourceItem &resourceItem) const
 {
     if (!resourceItem.SetData(reinterpret_cast<const int8_t *>(value.c_str()), value.length())) {
@@ -327,6 +337,26 @@ bool JsonCompiler::CheckJsonIntegerValue(const Json::Value &valueNode, const Res
         }
     } else if (!valueNode.isInt()) {
         cerr << "Error: '" << resourceItem.GetName() << "' value not integer.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        return false;
+    }
+    return true;
+}
+
+bool JsonCompiler::CheckJsonSymbolValue(const Json::Value &valueNode, const ResourceItem &resourceItem) const
+{
+    if (!valueNode.isString()) {
+        cerr << "Error: '" << resourceItem.GetName() << "' value not string.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        return false;
+    }
+    string unicodeStr = valueNode.asString();
+    if (regex_match(unicodeStr, regex("^\\$(ohos:)?symbol:.*"))) {
+        return true;
+    }
+    int unicode = strtol(unicodeStr.c_str(), nullptr, 16);
+    if (!ResourceUtil::isUnicodeInPlane15or16(unicode)) {
+        cerr << "Error: '" << resourceItem.GetName() << "' value must in 0xF0000 ~ 0xFFFFF or 0x100000 ~ 0x10FFFF.";
         cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
