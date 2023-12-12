@@ -216,6 +216,12 @@ public:
     */
     static bool isUnicodeInPlane15or16(int unicode);
 
+    /**
+     * @brief Remove spaces before and after strings
+     * @param str input string
+    */
+    static void RemoveSpaces(std::string &str);
+
 private:
     enum class IgnoreType {
         IGNORE_FILE,

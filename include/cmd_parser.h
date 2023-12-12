@@ -53,6 +53,8 @@ public:
     const std::string &GetIdDefinedOutput() const;
     const std::string &GetIdDefinedInputPath() const;
     bool GetIconCheck() const;
+    const TargetConfig &GetTargetConfigValues() const;
+    bool IsTargetConfig() const;
 
 private:
     void InitCommand();
@@ -79,6 +81,7 @@ private:
     bool IsAscii(const std::string& argValue) const;
     bool IsLongOpt(char *argv[]) const;
     uint32_t IconCheck();
+    uint32_t ParseTargetConfig(const std::string& argValue);
 
     static const struct option CMD_OPTS[];
     static const std::string CMD_PARAMS;
@@ -100,6 +103,8 @@ private:
     std::string idDefinedOutput_;
     std::string idDefinedInputPath_;
     bool isIconCheck_ = false;
+    TargetConfig targetConfig_;
+    bool isTtargetConfig_;
 };
 
 template<class T>
@@ -140,6 +145,7 @@ void CmdParser<T>::ShowUseage()
     std::cout << "    --dependEntry       Build result directory of the specified entry module when the feature";
     std::cout << " module resources are independently built in the FA model.\n";
     std::cout << "    --icon-check        Enable the PNG image verification function for icons and startwindows.\n";
+    std::cout << "    --target-config     When used with '-i', selective compilation is supported.\n";
 }
 
 template<class T>

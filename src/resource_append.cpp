@@ -25,6 +25,7 @@
 #include "reference_parser.h"
 #include "resource_table.h"
 #include "resource_util.h"
+#include "select_compile_parse.h"
 #ifdef __WIN32
 #include "windows.h"
 #endif
@@ -531,6 +532,9 @@ bool ResourceAppend::LoadResourceItemFromMem(const char buffer[], int32_t length
             keyParam.keyType = static_cast<KeyType>(ParseInt32(buffer, length, offset));
             keyParam.value = ParseInt32(buffer, length, offset);
             keyParams.push_back(keyParam);
+        }
+        if (limitKeyStr != "base" && !limitKeyStr.empty() && !SelectCompileParse::IsSelectCompile(keyParams)) {
+            return true;
         }
         // data
         string data = ParseString(buffer, length, offset);

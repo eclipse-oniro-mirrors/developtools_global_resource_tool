@@ -428,6 +428,12 @@ bool ResourceUtil::isUnicodeInPlane15or16(int unicode)
     return (unicode >= 0xF0000 && unicode <= 0xFFFFF) || (unicode >= 0x100000 && unicode <= 0x10FFFF);
 }
 
+void ResourceUtil::RemoveSpaces(string &str)
+{
+    str.erase(0, str.find_first_not_of(" "));
+    str.erase(str.find_last_not_of(" ") + 1); // move back one place
+}
+
 }
 }
 }
