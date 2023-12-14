@@ -41,6 +41,7 @@ ohos_executable("restool") {
     "src/resource_table.cpp",
     "src/resource_util.cpp",
     "src/restool.cpp",
+    "src/select_compile_parse.cpp",
     "src/task_handle.cpp",
   ]
 

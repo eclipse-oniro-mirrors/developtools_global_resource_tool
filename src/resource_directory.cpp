@@ -17,6 +17,7 @@
 #include<iostream>
 #include "file_entry.h"
 #include "resource_util.h"
+#include "select_compile_parse.h"
 
 namespace OHOS {
 namespace Global {
@@ -60,7 +61,9 @@ bool ResourceDirectory::ScanResourceLimitKeyDir(const string &resourceTypeDir, c
         cerr << "Error: invalid limit key '" << limitKey << "'." << NEW_LINE_PATH << resourceTypeDir << endl;
         return false;
     }
-
+    if (!SelectCompileParse::IsSelectCompile(keyParams)) {
+        return true;
+    }
     FileEntry f(resourceTypeDir);
     if (!f.Init()) {
         return false;

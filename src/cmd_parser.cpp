@@ -17,6 +17,7 @@
 #include <algorithm>
 #include "cmd_list.h"
 #include "resource_util.h"
+#include "select_compile_parse.h"
 
 namespace OHOS {
 namespace Global {
@@ -40,6 +41,7 @@ const struct option PackageParser::CMD_OPTS[] = {
     { "ids", required_argument, nullptr, Option::IDS},
     { "defined-ids", required_argument, nullptr, Option::DEFINED_IDS},
     { "icon-check", no_argument, nullptr, Option::ICON_CHECK},
+    { "target-config", required_argument, nullptr, Option::TARGET_CONFIG},
     { 0, 0, 0, 0},
 };
 
@@ -242,9 +244,15 @@ uint32_t PackageParser::CheckParam() const
         return RESTOOL_ERROR;
     }
 
+    if (isTtargetConfig_ && !append_.empty()) {
+        cerr << "Error: -x and --target-config cannot be used together." << endl;
+        return RESTOOL_ERROR;
+    }
+
     if (!append_.empty()) {
         return RESTOOL_SUCCESS;
     }
+
     if (packageName_.empty()) {
         cerr << "Error: package name empty." << endl;
         return RESTOOL_ERROR;
@@ -350,6 +358,30 @@ bool PackageParser::GetIconCheck() const
     return isIconCheck_;
 }
 
+uint32_t PackageParser::ParseTargetConfig(const string& argValue)
+{
+    if (isTtargetConfig_) {
+        cerr << "Error: repeat input '--target-config'" << endl;
+        return RESTOOL_ERROR;
+    }
+    if (!SelectCompileParse::ParseTargetConfig(argValue, targetConfig_)) {
+        cerr << "Error: '" << argValue << "' is not valid parameter." << endl;
+        return RESTOOL_ERROR;
+    }
+    isTtargetConfig_ = true;
+    return RESTOOL_SUCCESS;
+}
+
+const TargetConfig &PackageParser::GetTargetConfigValues() const
+{
+    return targetConfig_;
+}
+
+bool PackageParser::IsTargetConfig() const
+{
+    return isTtargetConfig_;
+}
+
 bool PackageParser::IsAscii(const string& argValue) const
 {
 #ifdef __WIN32
@@ -386,6 +418,7 @@ void PackageParser::InitCommand()
     handles_.emplace(Option::IDS, bind(&PackageParser::SetIdDefinedOutput, this, _1));
     handles_.emplace(Option::DEFINED_IDS, bind(&PackageParser::SetIdDefinedInputPath, this, _1));
     handles_.emplace(Option::ICON_CHECK, [this](const string &) -> uint32_t { return IconCheck(); });
+    handles_.emplace(Option::TARGET_CONFIG, bind(&PackageParser::ParseTargetConfig, this, _1));
 }
 
 uint32_t PackageParser::HandleProcess(int c, const string& argValue)

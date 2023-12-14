@@ -25,6 +25,8 @@ namespace Restool {
 class KeyParser {
 public:
     static bool Parse(const std::string &folderName, std::vector<KeyParam> &keyparams);
+    static bool ParseLimit(const std::string &func, std::vector<std::string> &limitValues,
+        TargetConfig &targetConfig);
 
 private:
     typedef bool (*parse_key_founction)(const std::string &folderName, std::vector<KeyParam> &keyparams);

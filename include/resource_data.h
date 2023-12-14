@@ -39,7 +39,7 @@ const static std::string LONG_PATH_HEAD = "\\\\?\\";
 const static std::string ID_DEFINED_INDENTATION = "    ";
 const static int32_t VERSION_MAX_LEN = 128;
 const static int32_t INT_TO_BYTES = sizeof(uint32_t);
-static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 4.103" };
+static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 4.104" };
 const static int32_t TAG_LEN = 4;
 
 enum class KeyType {
@@ -55,6 +55,7 @@ enum class KeyType {
     // RESERVER 9
     INPUTDEVICE = 10,
     KEY_TYPE_MAX,
+    OTHER,
 };
 
 enum class ResType {
@@ -117,6 +118,7 @@ enum Option {
     DEFINED_IDS = 2,
     DEPENDENTRY = 3,
     ICON_CHECK = 4,
+    TARGET_CONFIG = 5,
     STARTID = 'e',
     FORCEWRITE = 'f',
     HELP = 'h',
@@ -169,6 +171,10 @@ const std::map<std::string, InputDevice> g_inputDeviceMap = {
 struct KeyParam {
     KeyType keyType;
     uint32_t value;
+    bool operator == (const KeyParam &other)
+    {
+        return keyType == other.keyType && value == other.value;
+    }
 };
 
 struct IdData {
@@ -250,6 +256,53 @@ struct FileInfo : DirectoryInfo {
     std::string filename;
     ResType fileType;
 };
+
+struct TargetConfig {
+    std::vector<KeyParam> mccmnc;
+    std::vector<KeyParam> locale;
+    std::vector<KeyParam> orientation;
+    std::vector<KeyParam> device;
+    std::vector<KeyParam> colormode;
+    std::vector<KeyParam> density;
+};
+
+struct Mccmnc {
+    KeyParam mcc;
+    KeyParam mnc;
+    bool operator == (const Mccmnc &other)
+    {
+        if (mcc.value != other.mcc.value) {
+            return false;
+        }
+        if (mnc.keyType != KeyType::OTHER && other.mnc.keyType != KeyType::OTHER &&
+            mnc.value != other.mnc.value) {
+            return false;
+        }
+        return true;
+    }
+};
+
+struct Locale {
+    KeyParam language;
+    KeyParam script;
+    KeyParam region;
+    bool operator == (const Locale &other)
+    {
+        if (language.value != other.language.value) {
+            return false;
+        }
+        if (script.keyType != KeyType::OTHER && other.script.keyType != KeyType::OTHER &&
+            script.value != other.script.value) {
+            return false;
+        }
+        if (region.keyType != KeyType::OTHER && other.region.keyType != KeyType::OTHER &&
+            region.value != other.region.value) {
+            return false;
+        }
+        return true;
+    }
+};
+
 }
 }
 }

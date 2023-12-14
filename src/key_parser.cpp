@@ -73,6 +73,37 @@ bool KeyParser::ParseMatch(const vector<string> &keys,
     return true;
 }
 
+bool KeyParser::ParseLimit(const string &func, std::vector<std::string> &limitValues,
+    TargetConfig &targetConfig)
+{
+    map<string, function<bool(const string &)>> parseLimitFunc {
+        {"mccmnc", [&targetConfig](const string &limitValue) { return ParseMccMnc(limitValue,
+            targetConfig.mccmnc); }},
+        {"locale", [&targetConfig](const string &limitValue) { return ParseLSR(limitValue,
+            targetConfig.locale); }},
+        {"orientation", [&targetConfig](const string &limitValue) { return ParseOrientation(limitValue,
+            targetConfig.orientation); }},
+        {"device", [&targetConfig](const string &limitValue) { return ParseDeviceType(limitValue,
+            targetConfig.device); }},
+        {"colormode", [&targetConfig](const string &limitValue) { return ParseNightMode(limitValue,
+            targetConfig.colormode); }},
+        {"density", [&targetConfig](const string &limitValue) { return ParseResolution(limitValue,
+            targetConfig.density); }}
+    };
+
+    auto iter = parseLimitFunc.find(func);
+    if (iter == parseLimitFunc.end()) {
+        return false;
+    }
+    for (auto &limitValue : limitValues) {
+        ResourceUtil::RemoveSpaces(limitValue);
+        if (!iter->second(limitValue)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool KeyParser::ParseMatchBySeq(const vector<string> &keys,
     vector<KeyParam> &keyparams, const vector<parse_key_founction> &founctions)
 {
