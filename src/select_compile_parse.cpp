@@ -160,7 +160,7 @@ bool SelectCompileParse::IsSelectableLocale(vector<KeyParam> &keyParams, size_t 
         break;
     }
     InitLocale(limit);
-    return find(localeArray_.begin(), localeArray_.end(), localeLimit) != localeArray_.end();;
+    return find(localeArray_.begin(), localeArray_.end(), localeLimit) != localeArray_.end();
 }
 
 bool SelectCompileParse::IsSelectableOther(vector<KeyParam> &keyParams, size_t &index, vector<KeyParam> &limit)
