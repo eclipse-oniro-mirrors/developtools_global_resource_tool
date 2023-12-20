@@ -41,7 +41,7 @@ bool ResourceDirectory::ScanResources(const string &resourcesDir, function<bool(
             return false;
         }
 
-        if (limitKey == RAW_FILE_DIR) {
+        if (limitKey == RAW_FILE_DIR || limitKey == RES_FILE_DIR) {
             continue;
         }
 

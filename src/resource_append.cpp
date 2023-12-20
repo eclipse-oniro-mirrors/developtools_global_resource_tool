@@ -163,8 +163,8 @@ bool ResourceAppend::ScanSubLimitkeyResources(const FileEntry entry, const strin
             continue;
         }
 
-        if (limitKey == RAW_FILE_DIR) {
-            if (!ScanRawFiles(child->GetFilePath().GetPath(), outputPath)) {
+        if (limitKey == RAW_FILE_DIR || limitKey == RES_FILE_DIR) {
+            if (!ScanRawFilesOrResFiles(child->GetFilePath().GetPath(), outputPath, limitKey)) {
                 return false;
             }
             continue;
@@ -292,7 +292,11 @@ bool ResourceAppend::ScanFile(const FileInfo &fileInfo, const string &outputPath
 bool ResourceAppend::ScanSingleFile(const string &filePath, const string &outputPath)
 {
     if (filePath.find(RAW_FILE_DIR) != string::npos) {
-        return WriteRawFile(filePath, outputPath);
+        return WriteRawFilesOrResFiles(filePath, outputPath, RAW_FILE_DIR);
+    }
+
+    if (filePath.find(RES_FILE_DIR) != string::npos) {
+        return WriteRawFilesOrResFiles(filePath, outputPath, RES_FILE_DIR);
     }
 
     FileEntry::FilePath path(filePath);
@@ -400,7 +404,7 @@ bool ResourceAppend::LoadResourceItem(const string &filePath)
 #endif
 }
 
-bool ResourceAppend::ScanRawFiles(const string &path, const string &outputPath)
+bool ResourceAppend::ScanRawFilesOrResFiles(const string &path, const string &outputPath, const string &limit)
 {
     FileEntry entry(path);
     if (!entry.Init()) {
@@ -415,9 +419,9 @@ bool ResourceAppend::ScanRawFiles(const string &path, const string &outputPath)
 
         bool ret = false;
         if (child->IsFile()) {
-            ret = WriteRawFile(child->GetFilePath().GetPath(), outputPath);
+            ret = WriteRawFilesOrResFiles(child->GetFilePath().GetPath(), outputPath, limit);
         } else {
-            ret = ScanRawFiles(child->GetFilePath().GetPath(), outputPath);
+            ret = ScanRawFilesOrResFiles(child->GetFilePath().GetPath(), outputPath, limit);
         }
 
         if (!ret) {
@@ -427,18 +431,19 @@ bool ResourceAppend::ScanRawFiles(const string &path, const string &outputPath)
     return true;
 }
 
-bool ResourceAppend::WriteRawFile(const string &filePath, const string &outputPath)
+bool ResourceAppend::WriteRawFilesOrResFiles(const string &filePath, const string &outputPath, const string &limit)
 {
-    string::size_type pos = filePath.find(RAW_FILE_DIR);
+    string::size_type pos = filePath.find(limit);
     if (pos == string::npos) {
-        cerr << "Error: invaild raw file." << NEW_LINE_PATH << filePath << endl;
+        cerr << "Error: invalid file path." << NEW_LINE_PATH << filePath << endl;
         return false;
     }
 
     string sub = filePath.substr(pos);
     sub = FileEntry::FilePath(RESOURCES_DIR).Append(sub).GetPath();
     vector<KeyParam> keyParams;
-    ResourceItem resourceItem("", keyParams, ResType::RAW);
+    auto iter = g_copyFileMap.find(limit);
+    ResourceItem resourceItem("", keyParams, iter->second);
     resourceItem.SetData(sub);
     resourceItem.SetFilePath(filePath);
     resourceItem.SetLimitKey("");
@@ -538,7 +543,7 @@ bool ResourceAppend::LoadResourceItemFromMem(const char buffer[], int32_t length
         }
         // data
         string data = ParseString(buffer, length, offset);
-        if (resType ==  ResType::RAW) {
+        if (resType ==  ResType::RAW || resType ==  ResType::RES) {
             FileEntry::FilePath outPath(packageParser_.GetOutput());
             if (ResourceUtil::FileExist(outPath.Append(data).GetPath())) {
                 continue;

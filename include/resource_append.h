@@ -52,8 +52,8 @@ private:
     bool WriteFileInner(std::ostringstream &outStream, const std::string &outputPath) const;
     bool WriteResourceItem(const ResourceItem &resourceItem, std::ostringstream &out);
     bool LoadResourceItem(const std::string &filePath);
-    bool ScanRawFiles(const std::string &path, const std::string &outputPath);
-    bool WriteRawFile(const std::string &filePath, const std::string &outputPath);
+    bool ScanRawFilesOrResFiles(const std::string &path, const std::string &outputPath, const std::string &limit);
+    bool WriteRawFilesOrResFiles(const std::string &filePath, const std::string &outputPath, const std::string &limit);
     bool Push(const std::shared_ptr<ResourceItem> &resourceItem);
     void AddRef(const std::shared_ptr<ResourceItem> &resourceItem);
     bool LoadResourceItemFromMem(const char buffer[], int32_t length);
