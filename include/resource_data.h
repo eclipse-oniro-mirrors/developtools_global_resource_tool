@@ -29,6 +29,7 @@ const static std::string RESOURCES_DIR = "resources";
 const static std::string CONFIG_JSON = "config.json";
 const static std::string MODULE_JSON = "module.json";
 const static std::string RAW_FILE_DIR = "rawfile";
+const static std::string RES_FILE_DIR = "resfile";
 const static std::string ID_DEFINED_FILE = "id_defined.json";
 const static std::string RESOURCE_INDEX_FILE = "resources.index";
 const static std::string JSON_EXTENSION = ".json";
@@ -75,6 +76,7 @@ enum class ResType {
     PROF = 20,
     PATTERN = 22,
     SYMBOL = 23,
+    RES = 24,
     INVALID_RES_TYPE = -1,
 };
 
@@ -182,6 +184,11 @@ struct IdData {
     uint32_t dataOffset;
 };
 
+const std::map<std::string, ResType> g_copyFileMap = {
+    { RAW_FILE_DIR, ResType::RAW },
+    { RES_FILE_DIR, ResType::RES },
+};
+
 const std::map<std::string, ResType> g_fileClusterMap = {
     { "element", ResType::ELEMENT },
     { "media", ResType::MEDIA },
@@ -220,6 +227,7 @@ const std::map<int32_t, ResType> g_resTypeMap = {
     { static_cast<int32_t>(ResType::PROF), ResType::PROF},
     { static_cast<int32_t>(ResType::PATTERN), ResType::PATTERN},
     { static_cast<int32_t>(ResType::SYMBOL), ResType::SYMBOL},
+    { static_cast<int32_t>(ResType::RES), ResType::RES},
     { static_cast<int32_t>(ResType::INVALID_RES_TYPE), ResType::INVALID_RES_TYPE},
 };
 

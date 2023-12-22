@@ -280,7 +280,7 @@ uint32_t PackageParser::AddAppend(const string& argValue)
 {
     string appendPath = ResourceUtil::RealPath(argValue);
     if (appendPath.empty()) {
-        cout << "Warning: invaild compress '" << argValue << "'" << endl;
+        cout << "Warning: invalid compress '" << argValue << "'" << endl;
         appendPath = argValue;
     }
     auto ret = find_if(append_.begin(), append_.end(), [appendPath](auto iter) {return appendPath == iter;});

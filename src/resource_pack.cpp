@@ -238,29 +238,41 @@ uint32_t ResourcePack::GenerateJsHeader(const std::string &headerPath) const
     return result;
 }
 
-uint32_t ResourcePack::CopyRawFile(const vector<string> &inputs) const
+uint32_t ResourcePack::CopyRawFileOrResFile(const string &filePath, const string &fileType) const
+{
+    if (!ResourceUtil::FileExist(filePath)) {
+        return RESTOOL_SUCCESS;
+    }
+
+    if (!FileEntry::IsDirectory(filePath)) {
+        cerr << "Error: '" << filePath << "' not directory." << endl;
+        return RESTOOL_ERROR;
+    }
+
+    string dst = FileEntry::FilePath(packageParser_.GetOutput())
+        .Append(RESOURCES_DIR).Append(fileType).GetPath();
+    if (CopyRawFileOrResFileImpl(filePath, dst) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t ResourcePack::CopyRawFileOrResFile(const vector<string> &inputs) const
 {
     for (const auto &input : inputs) {
         string rawfilePath = FileEntry::FilePath(input).Append(RAW_FILE_DIR).GetPath();
-        if (!ResourceUtil::FileExist(rawfilePath)) {
-            continue;
-        }
-
-        if (!FileEntry::IsDirectory(rawfilePath)) {
-            cerr << "Error: '" << rawfilePath << "' not directory." << endl;
+        if (CopyRawFileOrResFile(rawfilePath, RAW_FILE_DIR) == RESTOOL_ERROR) {
             return RESTOOL_ERROR;
         }
-
-        string dst = FileEntry::FilePath(packageParser_.GetOutput())
-            .Append(RESOURCES_DIR).Append(RAW_FILE_DIR).GetPath();
-        if (CopyRawFileImpl(rawfilePath, dst) != RESTOOL_SUCCESS) {
+        string resfilePath = FileEntry::FilePath(input).Append(RES_FILE_DIR).GetPath();
+        if (CopyRawFileOrResFile(resfilePath, RES_FILE_DIR) == RESTOOL_ERROR) {
             return RESTOOL_ERROR;
         }
     }
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ResourcePack::CopyRawFileImpl(const string &src, const string &dst) const
+uint32_t ResourcePack::CopyRawFileOrResFileImpl(const string &src, const string &dst) const
 {
     if (!ResourceUtil::CreateDirs(dst)) {
         return RESTOOL_ERROR;
@@ -278,7 +290,7 @@ uint32_t ResourcePack::CopyRawFileImpl(const string &src, const string &dst) con
 
         string subPath = FileEntry::FilePath(dst).Append(filename).GetPath();
         if (!entry->IsFile()) {
-            if (CopyRawFileImpl(entry->GetFilePath().GetPath(), subPath) != RESTOOL_SUCCESS) {
+            if (CopyRawFileOrResFileImpl(entry->GetFilePath().GetPath(), subPath) != RESTOOL_SUCCESS) {
                 return RESTOOL_ERROR;
             }
         } else {
@@ -338,7 +350,7 @@ uint32_t ResourcePack::PackNormal()
         return RESTOOL_ERROR;
     }
 
-    if (CopyRawFile(resourceMerge.GetInputs()) != RESTOOL_SUCCESS) {
+    if (CopyRawFileOrResFile(resourceMerge.GetInputs()) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
 
