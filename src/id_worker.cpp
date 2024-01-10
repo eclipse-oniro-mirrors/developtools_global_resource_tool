@@ -394,9 +394,17 @@ bool IdWorker::PushResourceId(const ResourceId &resourceId, bool isSystem)
         return false;
     }
     if (isSystem) {
-        sysDefinedIds_.emplace(make_pair(resType, resourceId.name), resourceId);
+        auto ret1 = sysDefinedIds_.emplace(make_pair(resType, resourceId.name), resourceId);
+        if (!ret1.second) {
+            cerr << "Error: the same type of '" << resourceId.name << "' exists in the id_defined.json. " << endl;
+            return false;
+        }
     } else {
-        appDefinedIds_.emplace(make_pair(resType, resourceId.name), resourceId);
+        auto ret2 = appDefinedIds_.emplace(make_pair(resType, resourceId.name), resourceId);
+        if (!ret2.second) {
+            cerr << "Error: the same type of '" << resourceId.name << "' exists in the id_defined.json. " << endl;
+            return false;
+        }
     }
     return true;
 }

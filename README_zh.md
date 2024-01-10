@@ -105,7 +105,7 @@ restool -i out1 -i out2 -o out -p com.ohos.demo -r out/ResourceTable.txt -j entr
 
 生成id_defined.json文件：
 ```
-restool -i entry/src/main  -j entry/src/main/module.json -p com.ohos.demo -o out -r out/ResourceTable.txt --ids out/id_defined.json -f
+restool -i entry/src/main  -j entry/src/main/module.json -p com.ohos.demo -o out -r out/ResourceTable.txt --ids out -f
 ```
 
 指定资源ID固定的id_defined.json文件：
