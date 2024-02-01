@@ -76,7 +76,7 @@ ohos_unittest_py("restool_test") {
 ohos_copy("restool_id_defined") {
   sources = [ "${id_defined_path}" ]
   outputs = [ get_label_info(":restool($host_toolchain)", "root_out_dir") +
-              "/developtools/global_resource_tool/" ]
+              "/developtools/global_resource_tool/{{source_file_part}}" ]
   deps = [ ":restool($host_toolchain)" ]
   subsystem_name = "developtools"
   part_name = "global_resource_tool"
