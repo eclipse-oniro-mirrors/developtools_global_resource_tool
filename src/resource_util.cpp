@@ -34,7 +34,6 @@ const map<string, ResourceUtil::IgnoreType> ResourceUtil::IGNORE_FILE_REGEX = {
     { "desktop\\.ini", IgnoreType::IGNORE_ALL },
     { "picasa\\.ini", IgnoreType::IGNORE_ALL },
     { "\\..+", IgnoreType::IGNORE_ALL },
-    { "_.+", IgnoreType::IGNORE_DIR },
     { "cvs", IgnoreType::IGNORE_ALL },
     { "thumbs\\.db", IgnoreType::IGNORE_ALL },
     { ".+~", IgnoreType::IGNORE_ALL }
