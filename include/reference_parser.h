@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@
 #ifndef OHOS_RESTOOL_REFERENCE_PARSER_H
 #define OHOS_RESTOOL_REFERENCE_PARSER_H
 
+#include <cJSON.h>
 #include "id_worker.h"
 #include "resource_item.h"
 
@@ -31,7 +32,7 @@ public:
     uint32_t ParseRefInJsonFile(ResourceItem &resourceItem, const std::string &output, const bool isIncrement = false);
     uint32_t ParseRefInString(std::string &value, bool &update) const;
 private:
-    bool ParseRefJson(const std::string &from, const std::string &to) const;
+    bool ParseRefJson(const std::string &from, const std::string &to);
     bool ParseRefResourceItemData(const ResourceItem &resourceItem, std::string &data, bool &update) const;
     bool IsStringOfResourceItem(ResType resType) const;
     bool IsArrayOfResourceItem(ResType resType) const;
@@ -41,10 +42,11 @@ private:
     bool ParseRefString(std::string &key) const;
     bool ParseRefString(std::string &key, bool &update) const;
     bool ParseRefImpl(std::string &key, const std::map<std::string, ResType> &refs, bool isSystem) const;
-    bool ParseRefJsonImpl(Json::Value &root, bool &needSave) const;
+    bool ParseRefJsonImpl(cJSON *root, bool &needSave) const;
     const IdWorker &idWorker_;
     static const std::map<std::string, ResType> ID_REFS;
     static const std::map<std::string, ResType> ID_OHOS_REFS;
+    cJSON *root_;
 };
 }
 }

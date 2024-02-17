@@ -120,10 +120,8 @@ restool -i entry/src/main  -j entry/src/main/module.json -p com.ohos.demo -o out
 
 **global_resource_tool**
 
-[third_party_libxml2](https://gitee.com/openharmony/third_party_libxml2/blob/master/README.md)
+[third_party_cJSON](https://gitee.com/openharmony/third_party_cJSON/blob/master/README.md)
 
-[third_party_jsoncpp](https://gitee.com/openharmony/third_party_jsoncpp/blob/master/README.md)
-
-[third_party_sqlite](https://gitee.com/openharmony/third_party_sqlite/blob/master/README.md)
+[third_party_libpng](https://gitee.com/openharmony/third_party_libpng/blob/master/README.md)
 
 [third_party_bounds_checking_function](https://gitee.com/openharmony/third_party_bounds_checking_function/blob/master/README.md )

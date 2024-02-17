@@ -18,7 +18,6 @@ import("./restool.gni")
 ohos_executable("restool") {
   sources = [
     "src/append_compiler.cpp",
-    "src/cmd_list.cpp",
     "src/cmd_parser.cpp",
     "src/config_parser.cpp",
     "src/factory_resource_compiler.cpp",
@@ -27,10 +26,12 @@ ohos_executable("restool") {
     "src/generic_compiler.cpp",
     "src/header.cpp",
     "src/i_resource_compiler.cpp",
+    "src/id_defined_parser.cpp",
     "src/id_worker.cpp",
     "src/json_compiler.cpp",
     "src/key_parser.cpp",
     "src/reference_parser.cpp",
+    "src/resconfig_parser.cpp",
     "src/resource_append.cpp",
     "src/resource_check.cpp",
     "src/resource_directory.cpp",
@@ -53,7 +54,7 @@ ohos_executable("restool") {
 
   deps = [
     "//third_party/bounds_checking_function:libsec_static",
-    "//third_party/jsoncpp:jsoncpp_static",
+    "//third_party/cJSON:cjson_static",
     "//third_party/libpng:libpng_static",
   ]
 

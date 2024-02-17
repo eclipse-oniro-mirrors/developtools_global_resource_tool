@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,10 +14,10 @@
  */
 
 #include "header.h"
-#include<algorithm>
-#include<fstream>
-#include<iomanip>
-#include<iostream>
+#include <algorithm>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
 
 namespace OHOS {
 namespace Global {
@@ -49,7 +49,7 @@ Header::~Header()
 uint32_t Header::Create(HandleHeaderTail headerHandler, HandleBody bodyHandler, HandleHeaderTail tailHandler) const
 {
     IdWorker &idWorker = IdWorker::GetInstance();
-    vector<IdWorker::ResourceId> resourceIds = idWorker.GetHeaderId();
+    vector<ResourceId> resourceIds = idWorker.GetHeaderId();
 
     ofstream out(outputPath_, ofstream::out | ofstream::binary);
     if (!out.is_open()) {

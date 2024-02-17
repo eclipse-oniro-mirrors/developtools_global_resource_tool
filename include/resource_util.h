@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,8 +17,8 @@
 #define OHOS_RESTOOL_RESOURCE_UTIL_H
 
 #include <vector>
+#include <cJSON.h>
 #include "file_entry.h"
-#include "json/json.h"
 #include "resource_data.h"
 
 namespace OHOS {
@@ -62,7 +62,7 @@ public:
      * @param root: json root node
      * @return true if open success, other false.
      */
-    static bool OpenJsonFile(const std::string &path, Json::Value &root);
+    static bool OpenJsonFile(const std::string &path, cJSON **root);
 
     /**
      * @brief save json file.
@@ -70,7 +70,7 @@ public:
      * @param root: json root node
      * @return true if save success, other false.
      */
-    static bool SaveToJsonFile(const std::string &path, const Json::Value &root);
+    static bool SaveToJsonFile(const std::string &path, const cJSON *root);
 
     /**
      * @brief get resource type from directory.
@@ -222,6 +222,17 @@ public:
     */
     static void RemoveSpaces(std::string &str);
 
+    /**
+     * @brief Check whether the system resource name is valid
+     * @param str system resource name
+    */
+    static bool IsValidSystemName(const std::string &name);
+
+    /**
+     * @brief Check whether the value is int
+     * @param snode cJSON node
+    */
+    static bool IsIntValue(const cJSON *node);
 private:
     enum class IgnoreType {
         IGNORE_FILE,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,7 +15,7 @@
 
 #include "cmd_parser.h"
 #include <algorithm>
-#include "cmd_list.h"
+#include "resconfig_parser.h"
 #include "resource_util.h"
 #include "select_compile_parse.h"
 
@@ -434,8 +434,8 @@ uint32_t PackageParser::HandleProcess(int c, const string& argValue)
 uint32_t PackageParser::ParseFileList(const string& fileListPath)
 {
     isFileList_ = true;
-    CmdList cmdList;
-    if (cmdList.Init(fileListPath, [this](int c, const string &argValue) -> int32_t {
+    ResConfigParser resConfigParser;
+    if (resConfigParser.Init(fileListPath, [this](int c, const string &argValue) -> int32_t {
         return HandleProcess(c, argValue);
     }) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
