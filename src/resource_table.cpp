@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,7 @@
  */
 
 #include "resource_table.h"
+#include <cJSON.h>
 #include "cmd_parser.h"
 #include "file_entry.h"
 #include "file_manager.h"
@@ -147,9 +148,11 @@ uint32_t ResourceTable::LoadResTable(const string path, map<int32_t, vector<Reso
 
 uint32_t ResourceTable::CreateIdDefined(const map<int32_t, vector<ResourceItem>> &allResource) const
 {
-    Json::Value root;
+    cJSON *root = cJSON_CreateObject();
+    cJSON *recordArray = cJSON_CreateArray();
+    cJSON_AddItemToObject(root, "record", recordArray);
     for (const auto &pairPtr : allResource) {
-        Json::Value jsonItem;
+        cJSON *jsonItem = cJSON_CreateObject();
         ResourceItem item = pairPtr.second.front();
         ResType resType = item.GetResType();
         string type = ResourceUtil::ResTypeToString(resType);
@@ -160,22 +163,14 @@ uint32_t ResourceTable::CreateIdDefined(const map<int32_t, vector<ResourceItem>>
             cerr << ResourceUtil::GetAllRestypeString() << endl;
             return RESTOOL_ERROR;
         }
-        jsonItem["type"] = type;
-        jsonItem["name"] = ResourceUtil::GetIdName(name, resType);
-        jsonItem["id"] = ResourceUtil::DecToHexStr(id);
-        root["record"].append(jsonItem);
+        cJSON_AddStringToObject(jsonItem, "type", type.c_str());
+        cJSON_AddStringToObject(jsonItem, "name", ResourceUtil::GetIdName(name, resType).c_str());
+        cJSON_AddStringToObject(jsonItem, "id", ResourceUtil::DecToHexStr(id).c_str());
+        cJSON_AddItemToArray(recordArray, jsonItem);
     }
-
-    ofstream out(idDefinedPath_, ofstream::out | ofstream::binary);
-    if (!out.is_open()) {
-        cerr << "Error: open failed '" << idDefinedPath_ << "',reason: " << strerror(errno) << endl;
+    if (!ResourceUtil::SaveToJsonFile(idDefinedPath_, root)) {
         return RESTOOL_ERROR;
     }
-    Json::StreamWriterBuilder jswBuilder;
-    jswBuilder["indentation"] = ID_DEFINED_INDENTATION;
-    unique_ptr<Json::StreamWriter> writer(jswBuilder.newStreamWriter());
-    writer->write(root, &out);
-    out.close();
     return RESTOOL_SUCCESS;
 }
 

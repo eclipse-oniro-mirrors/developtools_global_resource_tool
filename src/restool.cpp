@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,11 +24,6 @@ uint32_t ProccssHap(PackageParser &packageParser)
     TaskHandle taskHandle;
     return taskHandle.HandlePackage(packageParser);
 }
-
-uint32_t PackCmdHandle(PackageParser &packageParser)
-{
-    return ProccssHap(packageParser);
-}
 }
 
 int main(int argc, char *argv[])
@@ -44,7 +39,7 @@ int main(int argc, char *argv[])
     }
 
     auto &packageParser = parser.GetCmdParser();
-    if (PackCmdHandle(packageParser) != RESTOOL_SUCCESS) {
+    if (ProccssHap(packageParser) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     cout << "Info: restool resources compile success." << endl;

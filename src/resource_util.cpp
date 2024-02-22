@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,6 +20,7 @@
 #include <iostream>
 #include <iomanip>
 #include <regex>
+#include <sstream>
 #include "file_entry.h"
 
 namespace OHOS {
@@ -69,7 +70,7 @@ bool ResourceUtil::RmoveAllDir(const string &path)
     return FileEntry::RemoveAllDir(path);
 }
 
-bool ResourceUtil::OpenJsonFile(const string &path, Json::Value &root)
+bool ResourceUtil::OpenJsonFile(const string &path, cJSON **root)
 {
     ifstream ifs(FileEntry::AdaptLongPath(path), ios::binary);
     if (!ifs.is_open()) {
@@ -77,13 +78,11 @@ bool ResourceUtil::OpenJsonFile(const string &path, Json::Value &root)
         return false;
     }
 
-    Json::CharReaderBuilder readBuilder;
-    readBuilder["collectComments"] = false;
-    readBuilder["failIfExtra"] = true;
-    JSONCPP_STRING errs;
-    if (!parseFromStream(readBuilder, ifs, &root, &errs)) {
-        cerr << "Error: parseFromStream failed." << NEW_LINE_PATH << path;
-        cerr << "\n" << errs << endl;
+    string jsonString((istreambuf_iterator<char>(ifs)), istreambuf_iterator<char>());
+    *root = cJSON_Parse(jsonString.c_str());
+    if (!root) {
+        cerr << "Error: cJSON_Parse failed." << NEW_LINE_PATH << path;
+        cerr << "\n" << cJSON_GetErrorPtr() << endl;
         ifs.close();
         return false;
     }
@@ -91,18 +90,17 @@ bool ResourceUtil::OpenJsonFile(const string &path, Json::Value &root)
     return true;
 }
 
-bool ResourceUtil::SaveToJsonFile(const string &path, const Json::Value &root)
+bool ResourceUtil::SaveToJsonFile(const string &path, const cJSON *root)
 {
-    Json::StreamWriterBuilder writerBuilder;
-    writerBuilder["indentation"] = "    ";
-    writerBuilder["emitUTF8"] = true;
-    unique_ptr<Json::StreamWriter> writer(writerBuilder.newStreamWriter());
     ofstream out(FileEntry::AdaptLongPath(path), ofstream::out | ofstream::binary);
     if (!out.is_open()) {
-        cerr << "Error: open failed '" << path <<"', reason: " << strerror(errno) << endl;
+        cerr << "Error: SaveToJsonFile open failed '" << path <<"', reason: " << strerror(errno) << endl;
         return false;
     }
-    writer->write(root, &out);
+    char *jsonString = cJSON_Print(root);
+    out << jsonString;
+    free(jsonString);
+
     out.close();
     return true;
 }
@@ -431,6 +429,28 @@ void ResourceUtil::RemoveSpaces(string &str)
 {
     str.erase(0, str.find_first_not_of(" "));
     str.erase(str.find_last_not_of(" ") + 1); // move back one place
+}
+
+bool ResourceUtil::IsValidSystemName(const string &name)
+{
+    if (regex_match(name, regex("^ohos.+"))) {
+        return true;
+    }
+    cerr << "Error: '" << name << "' must start with 'ohos'" << endl;
+    return false;
+}
+
+bool ResourceUtil::IsIntValue(const cJSON *node)
+{
+    if (node && cJSON_IsNumber(node)) {
+        double num = node->valuedouble;
+        if (num == static_cast<int>(num)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    return false;
 }
 
 }

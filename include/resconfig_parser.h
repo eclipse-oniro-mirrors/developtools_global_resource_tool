@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,30 +13,32 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_RESTOOL_CMD_LIST_H
-#define OHOS_RESTOOL_CMD_LIST_H
+#ifndef OHOS_RESTOOL_RES_CONFIG_PARSER_H
+#define OHOS_RESTOOL_RES_CONFIG_PARSER_H
 
-#include<functional>
-#include<string>
+#include <functional>
+#include <string>
+#include <cJSON.h>
 #include "resource_util.h"
 
 namespace OHOS {
 namespace Global {
 namespace Restool {
-class CmdList {
+class ResConfigParser {
 public:
-    CmdList() {};
-    virtual ~CmdList() {};
+    ResConfigParser();
+    virtual ~ResConfigParser();
     using HandleBack = std::function<uint32_t(int c, const std::string &argValue)>;
     uint32_t Init(const std::string &filePath, HandleBack callback);
 private:
-    void InitFileListCommand(Json::Value &root, HandleBack callback);
-    using HandleFileListValue = std::function<uint32_t()>;
-    std::vector<HandleFileListValue> fileListHandles_;
-    uint32_t GetString(const Json::Value &node, int c, HandleBack callback);
-    uint32_t GetArray(const Json::Value &node, int c, HandleBack callback);
-    uint32_t GetModuleNames(const Json::Value &node, int c, HandleBack callback);
-    uint32_t GetBool(const Json::Value &node, int c, HandleBack callback);
+    void InitFileListCommand(HandleBack callback);
+    using HandleFileListValue = std::function<uint32_t(const cJSON *)>;
+    std::map<std::string, HandleFileListValue> fileListHandles_;
+    uint32_t GetString(const cJSON *node, int c, HandleBack callback);
+    uint32_t GetArray(const cJSON *node, int c, HandleBack callback);
+    uint32_t GetModuleNames(const cJSON *node, int c, HandleBack callback);
+    uint32_t GetBool(const cJSON *node, int c, HandleBack callback);
+    cJSON *root_;
 };
 }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,9 +19,9 @@
 #include "file_entry.h"
 #include "file_manager.h"
 #include "header.h"
+#include "resource_check.h"
 #include "resource_merge.h"
 #include "resource_table.h"
-#include "resource_check.h"
 
 namespace OHOS {
 namespace Global {
@@ -63,10 +63,10 @@ uint32_t ResourcePack::Init()
 
 uint32_t ResourcePack::InitModule()
 {
-    IdWorker::ResourceIdCluster hapType = IdWorker::ResourceIdCluster::RES_ID_APP;
+    ResourceIdCluster hapType = ResourceIdCluster::RES_ID_APP;
     string packageName = packageParser_.GetPackageName();
     if (packageName == "ohos.global.systemres") {
-        hapType = IdWorker::ResourceIdCluster::RES_ID_SYS;
+        hapType = ResourceIdCluster::RES_ID_SYS;
     }
 
     moduleName_ = configJson_.GetModuleName();
@@ -177,7 +177,7 @@ uint32_t ResourcePack::GenerateTextHeader(const string &headerPath) const
     Header textHeader(headerPath);
     bool first = true;
     uint32_t result = textHeader.Create([](stringstream &buffer) {},
-        [&first](stringstream &buffer, const IdWorker::ResourceId& resourceId) {
+        [&first](stringstream &buffer, const ResourceId& resourceId) {
             if (first) {
                 first = false;
             } else {
@@ -201,7 +201,7 @@ uint32_t ResourcePack::GenerateCplusHeader(const string &headerPath) const
         buffer << "#define RESOURCE_TABLE_H\n\n";
         buffer << "#include<stdint.h>\n\n";
         buffer << "namespace OHOS {\n";
-    }, [](stringstream &buffer, const IdWorker::ResourceId& resourceId) {
+    }, [](stringstream &buffer, const ResourceId& resourceId) {
         string name = resourceId.type + "_" + resourceId.name;
         transform(name.begin(), name.end(), name.begin(), ::toupper);
         buffer << "const int32_t " << name << " = ";
@@ -220,7 +220,7 @@ uint32_t ResourcePack::GenerateJsHeader(const std::string &headerPath) const
     uint32_t result = JsHeader.Create([](stringstream &buffer) {
         buffer << Header::LICENSE_HEADER << "\n";
         buffer << "export default {\n";
-    }, [&itemType](stringstream &buffer, const IdWorker::ResourceId& resourceId) {
+    }, [&itemType](stringstream &buffer, const ResourceId& resourceId) {
         if (itemType != resourceId.type) {
             if (!itemType.empty()) {
                 buffer << "\n" << "    " << "},\n";
@@ -317,7 +317,7 @@ uint32_t ResourcePack::GenerateConfigJson()
 
 void ResourcePack::CheckConfigJson()
 {
-    ResourceCheck resourceCheck(configJson_);
+    ResourceCheck resourceCheck(configJson_.GetCheckNode());
     resourceCheck.CheckConfigJson();
 }
 
@@ -591,7 +591,7 @@ uint32_t ResourcePack::PackCombine()
 
 void ResourcePack::CheckConfigJsonForCombine(ResourceAppend &resourceAppend)
 {
-    ResourceCheck resourceCheck(configJson_, make_shared<ResourceAppend>(resourceAppend));
+    ResourceCheck resourceCheck(configJson_.GetCheckNode(), make_shared<ResourceAppend>(resourceAppend));
     resourceCheck.CheckConfigJsonForCombine();
 }
 

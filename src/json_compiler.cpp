@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,7 @@
 
 #include "json_compiler.h"
 #include <iostream>
+#include <limits>
 #include <regex>
 #include "restool_errors.h"
 
@@ -29,13 +30,16 @@ const string JsonCompiler::TAG_QUANTITY = "quantity";
 const vector<string> JsonCompiler::QUANTITY_ATTRS = { "zero", "one", "two", "few", "many", "other" };
 
 JsonCompiler::JsonCompiler(ResType type, const string &output)
-    : IResourceCompiler(type, output)
+    : IResourceCompiler(type, output), root_(nullptr)
 {
     InitParser();
 }
 
 JsonCompiler::~JsonCompiler()
 {
+    if (root_) {
+        cJSON_Delete(root_);
+    }
 }
 
 uint32_t JsonCompiler::CompileSingleFile(const FileInfo &fileInfo)
@@ -46,22 +50,20 @@ uint32_t JsonCompiler::CompileSingleFile(const FileInfo &fileInfo)
         return RESTOOL_SUCCESS;
     }
 
-    Json::Value root;
-    if (!ResourceUtil::OpenJsonFile(fileInfo.filePath, root)) {
+    if (!ResourceUtil::OpenJsonFile(fileInfo.filePath, &root_)) {
         return RESTOOL_ERROR;
     }
-
-    if (!root.isObject()) {
-        cerr << "Error: root node must object." << NEW_LINE_PATH << fileInfo.filePath << endl;
+    if (!root_ || !cJSON_IsObject(root_)) {
+        cerr << "Error: JsonCompiler root node not obeject." << NEW_LINE_PATH << fileInfo.filePath << endl;
         return RESTOOL_ERROR;
     }
-
-    if (root.getMemberNames().size() != 1) {
+    cJSON *item = root_->child;
+    if (cJSON_GetArraySize(root_) != 1) {
         cerr << "Error: root node must only one member." << NEW_LINE_PATH << fileInfo.filePath << endl;
         return RESTOOL_ERROR;
     }
 
-    string tag = root.getMemberNames()[0];
+    string tag = item->string;
     auto ret = g_contentClusterMap.find(tag);
     if (ret == g_contentClusterMap.end()) {
         cerr << "Error: invalid tag name '" << tag << "'." << NEW_LINE_PATH << fileInfo.filePath << endl;
@@ -70,7 +72,7 @@ uint32_t JsonCompiler::CompileSingleFile(const FileInfo &fileInfo)
     
     FileInfo copy = fileInfo;
     copy.fileType = ret->second;
-    if (!ParseJsonArrayLevel(root[tag], copy)) {
+    if (!ParseJsonArrayLevel(item, copy)) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
@@ -93,46 +95,47 @@ void JsonCompiler::InitParser()
     handles_.emplace(ResType::SYMBOL, bind(&JsonCompiler::HandleSymbol, this, _1, _2));
 }
 
-bool JsonCompiler::ParseJsonArrayLevel(const Json::Value &arrayNode, const FileInfo &fileInfo)
+bool JsonCompiler::ParseJsonArrayLevel(const cJSON *arrayNode, const FileInfo &fileInfo)
 {
-    if (!arrayNode.isArray()) {
+    if (!arrayNode || !cJSON_IsArray(arrayNode)) {
         cerr << "Error: '" << ResourceUtil::ResTypeToString(fileInfo.fileType) << "' must be array.";
         cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
         return false;
     }
 
-    if (arrayNode.empty()) {
+    if (cJSON_GetArraySize(arrayNode) == 0) {
         cerr << "Error: '" << ResourceUtil::ResTypeToString(fileInfo.fileType) << "' empty.";
         cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
         return false;
     }
-
-    for (Json::ArrayIndex index = 0; index < arrayNode.size(); index++) {
-        if (!arrayNode[index].isObject()) {
+    int32_t index = -1;
+    for (cJSON *item = arrayNode->child; item; item = item->next) {
+        index++;
+        if (!item || !cJSON_IsObject(item)) {
             cerr << "Error: the seq=" << index << " item must be object." << NEW_LINE_PATH << fileInfo.filePath << endl;
             return false;
         }
-        if (!ParseJsonObjectLevel(arrayNode[index], fileInfo)) {
+        if (!ParseJsonObjectLevel(item, fileInfo)) {
             return false;
         }
     }
     return true;
 }
 
-bool JsonCompiler::ParseJsonObjectLevel(const Json::Value &objectNode, const FileInfo &fileInfo)
+bool JsonCompiler::ParseJsonObjectLevel(const cJSON *objectNode, const FileInfo &fileInfo)
 {
-    auto nameNode = objectNode[TAG_NAME];
-    if (nameNode.empty()) {
+    cJSON *nameNode = cJSON_GetObjectItem(objectNode, TAG_NAME.c_str());
+    if (!nameNode) {
         cerr << "Error: name empty." << NEW_LINE_PATH << fileInfo.filePath << endl;
         return false;
     }
 
-    if (!nameNode.isString()) {
+    if (!cJSON_IsString(nameNode)) {
         cerr << "Error: name must string." << NEW_LINE_PATH << fileInfo.filePath << endl;
         return false;
     }
 
-    ResourceItem resourceItem(nameNode.asString(), fileInfo.keyParams, fileInfo.fileType);
+    ResourceItem resourceItem(nameNode->valuestring, fileInfo.keyParams, fileInfo.fileType);
     resourceItem.SetFilePath(fileInfo.filePath);
     resourceItem.SetLimitKey(fileInfo.limitKey);
     auto ret = handles_.find(fileInfo.fileType);
@@ -148,111 +151,121 @@ bool JsonCompiler::ParseJsonObjectLevel(const Json::Value &objectNode, const Fil
     return MergeResourceItem(resourceItem);
 }
 
-bool JsonCompiler::HandleString(const Json::Value &objectNode, ResourceItem &resourceItem) const
+bool JsonCompiler::HandleString(const cJSON *objectNode, ResourceItem &resourceItem) const
 {
-    Json::Value valueNode = objectNode[TAG_VALUE];
+    cJSON *valueNode = cJSON_GetObjectItem(objectNode, TAG_VALUE.c_str());
     if (!CheckJsonStringValue(valueNode, resourceItem)) {
         return false;
     }
-    return PushString(valueNode.asString(), resourceItem);
+    return PushString(valueNode->valuestring, resourceItem);
 }
 
-bool JsonCompiler::HandleInteger(const Json::Value &objectNode, ResourceItem &resourceItem) const
+bool JsonCompiler::HandleInteger(const cJSON *objectNode, ResourceItem &resourceItem) const
 {
-    Json::Value valueNode = objectNode[TAG_VALUE];
+    cJSON *valueNode = cJSON_GetObjectItem(objectNode, TAG_VALUE.c_str());
     if (!CheckJsonIntegerValue(valueNode, resourceItem)) {
         return false;
     }
-    return PushString(valueNode.asString(), resourceItem);
+    if (cJSON_IsString(valueNode)) {
+        return PushString(valueNode->valuestring, resourceItem);
+    }
+    return PushString(to_string(valueNode->valueint), resourceItem);
 }
 
-bool JsonCompiler::HandleBoolean(const Json::Value &objectNode, ResourceItem &resourceItem) const
+bool JsonCompiler::HandleBoolean(const cJSON *objectNode, ResourceItem &resourceItem) const
 {
-    Json::Value valueNode = objectNode[TAG_VALUE];
-    if (valueNode.isString()) {
+    cJSON *valueNode = cJSON_GetObjectItem(objectNode, TAG_VALUE.c_str());
+    if (cJSON_IsString(valueNode)) {
         regex ref("^\\$(ohos:)?boolean:.*");
-        if (!regex_match(valueNode.asString(), ref)) {
-            cerr << "Error: '" << valueNode.asString() << "' only refer '$boolean:xxx'.";
+        if (!regex_match(valueNode->valuestring, ref)) {
+            cerr << "Error: '" << valueNode->valuestring << "' only refer '$boolean:xxx'.";
             cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
             return false;
         }
-    } else if (!valueNode.isBool()) {
+        return PushString(valueNode->valuestring, resourceItem);
+    }
+    if (!cJSON_IsBool(valueNode)) {
         cerr << "Error: '" << resourceItem.GetName() << "' value not boolean.";
         cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
-    return PushString(valueNode.asString(), resourceItem);
+    return PushString(cJSON_IsTrue(valueNode) == 1 ? "true" : "false", resourceItem);
 }
 
-bool JsonCompiler::HandleColor(const Json::Value &objectNode, ResourceItem &resourceItem) const
+bool JsonCompiler::HandleColor(const cJSON *objectNode, ResourceItem &resourceItem) const
 {
     return HandleString(objectNode, resourceItem);
 }
 
-bool JsonCompiler::HandleFloat(const Json::Value &objectNode, ResourceItem &resourceItem) const
+bool JsonCompiler::HandleFloat(const cJSON *objectNode, ResourceItem &resourceItem) const
 {
     return HandleString(objectNode, resourceItem);
 }
 
-bool JsonCompiler::HandleStringArray(const Json::Value &objectNode, ResourceItem &resourceItem) const
+bool JsonCompiler::HandleStringArray(const cJSON *objectNode, ResourceItem &resourceItem) const
 {
     vector<string> extra;
     return ParseValueArray(objectNode, resourceItem, extra,
-        [this](const Json::Value &arrayItem, const ResourceItem &resourceItem, vector<string> &values) -> bool {
-            if (!arrayItem.isObject()) {
+        [this](const cJSON *arrayItem, const ResourceItem &resourceItem, vector<string> &values) -> bool {
+            if (!cJSON_IsObject(arrayItem)) {
                 cerr << "Error: '" << resourceItem.GetName() << "' value array item not object.";
                 cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
                 return false;
             }
-            auto value = arrayItem[TAG_VALUE];
-            if (!CheckJsonStringValue(value, resourceItem)) {
+            cJSON *valueNode = cJSON_GetObjectItem(arrayItem, TAG_VALUE.c_str());
+            if (!CheckJsonStringValue(valueNode, resourceItem)) {
                 return false;
             }
-            values.push_back(value.asString());
+            values.push_back(valueNode->valuestring);
             return true;
     });
 }
 
-bool JsonCompiler::HandleIntegerArray(const Json::Value &objectNode, ResourceItem &resourceItem) const
+bool JsonCompiler::HandleIntegerArray(const cJSON *objectNode, ResourceItem &resourceItem) const
 {
     vector<string> extra;
     return ParseValueArray(objectNode, resourceItem, extra,
-        [this](const Json::Value &arrayItem, const ResourceItem &resourceItem, vector<string> &values) -> bool {
+        [this](const cJSON *arrayItem, const ResourceItem &resourceItem, vector<string> &values) -> bool {
             if (!CheckJsonIntegerValue(arrayItem, resourceItem)) {
                 return false;
             }
-            values.push_back(arrayItem.asString());
+            if (cJSON_IsString(arrayItem)) {
+                values.push_back(arrayItem->valuestring);
+            } else {
+                values.push_back(to_string(arrayItem->valueint));
+            }
             return true;
     });
 }
 
-bool JsonCompiler::HandleTheme(const Json::Value &objectNode, ResourceItem &resourceItem) const
+bool JsonCompiler::HandleTheme(const cJSON *objectNode, ResourceItem &resourceItem) const
 {
     vector<string> extra;
     if (!ParseParent(objectNode, resourceItem, extra)) {
         return false;
     }
     return ParseValueArray(objectNode, resourceItem, extra,
-        [this](const Json::Value &arrayItem, const ResourceItem &resourceItem, vector<string> &values) {
+        [this](const cJSON *arrayItem, const ResourceItem &resourceItem, vector<string> &values) {
             return ParseAttribute(arrayItem, resourceItem, values);
         });
 }
 
-bool JsonCompiler::HandlePattern(const Json::Value &objectNode, ResourceItem &resourceItem) const
+bool JsonCompiler::HandlePattern(const cJSON *objectNode, ResourceItem &resourceItem) const
 {
     return HandleTheme(objectNode, resourceItem);
 }
 
-bool JsonCompiler::HandlePlural(const Json::Value &objectNode, ResourceItem &resourceItem) const
+bool JsonCompiler::HandlePlural(const cJSON *objectNode, ResourceItem &resourceItem) const
 {
     vector<string> extra;
     vector<string> attrs;
     bool result = ParseValueArray(objectNode, resourceItem, extra,
-        [&attrs, this](const Json::Value &arrayItem, const ResourceItem &resourceItem, vector<string> &values) {
+        [&attrs, this](const cJSON *arrayItem, const ResourceItem &resourceItem, vector<string> &values) {
             if (!CheckPluralValue(arrayItem, resourceItem)) {
                 return false;
             }
-            string quantityValue = arrayItem[TAG_QUANTITY].asString();
+            cJSON *quantityNode = cJSON_GetObjectItem(arrayItem, TAG_QUANTITY.c_str());
+            string quantityValue = quantityNode->valuestring;
             if (find(attrs.begin(), attrs.end(), quantityValue) != attrs.end()) {
                 cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity '" << quantityValue;
                 cerr << "' duplicated." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
@@ -260,7 +273,8 @@ bool JsonCompiler::HandlePlural(const Json::Value &objectNode, ResourceItem &res
             }
             attrs.push_back(quantityValue);
             values.push_back(quantityValue);
-            values.push_back(arrayItem[TAG_VALUE].asString());
+            cJSON *valueNode = cJSON_GetObjectItem(arrayItem, TAG_VALUE.c_str());
+            values.push_back(valueNode->valuestring);
             return true;
         });
     if (!result) {
@@ -274,13 +288,13 @@ bool JsonCompiler::HandlePlural(const Json::Value &objectNode, ResourceItem &res
     return true;
 }
 
-bool JsonCompiler::HandleSymbol(const Json::Value &objectNode, ResourceItem &resourceItem) const
+bool JsonCompiler::HandleSymbol(const cJSON *objectNode, ResourceItem &resourceItem) const
 {
-    Json::Value valueNode = objectNode[TAG_VALUE];
+    cJSON *valueNode = cJSON_GetObjectItem(objectNode, TAG_VALUE.c_str());
     if (!CheckJsonSymbolValue(valueNode, resourceItem)) {
         return false;
     }
-    return PushString(valueNode.asString(), resourceItem);
+    return PushString(valueNode->valuestring, resourceItem);
 }
 
 bool JsonCompiler::PushString(const string &value, ResourceItem &resourceItem) const
@@ -293,9 +307,9 @@ bool JsonCompiler::PushString(const string &value, ResourceItem &resourceItem) c
     return true;
 }
 
-bool JsonCompiler::CheckJsonStringValue(const Json::Value &valueNode, const ResourceItem &resourceItem) const
+bool JsonCompiler::CheckJsonStringValue(const cJSON *valueNode, const ResourceItem &resourceItem) const
 {
-    if (!valueNode.isString()) {
+    if (!valueNode || !cJSON_IsString(valueNode)) {
         cerr << "Error: '" << resourceItem.GetName() << "' value not string.";
         cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
@@ -308,7 +322,7 @@ bool JsonCompiler::CheckJsonStringValue(const Json::Value &valueNode, const Reso
         { ResType::FLOAT, "\\$(ohos:)?float:" }
     };
 
-    string value = valueNode.asString();
+    string value = valueNode->valuestring;
     ResType type = resourceItem.GetResType();
     if (type ==  ResType::COLOR && !CheckColorValue(value.c_str())) {
         string error = "invalid color value '" + value + \
@@ -326,16 +340,21 @@ bool JsonCompiler::CheckJsonStringValue(const Json::Value &valueNode, const Reso
     return true;
 }
 
-bool JsonCompiler::CheckJsonIntegerValue(const Json::Value &valueNode, const ResourceItem &resourceItem) const
+bool JsonCompiler::CheckJsonIntegerValue(const cJSON *valueNode, const ResourceItem &resourceItem) const
 {
-    if (valueNode.isString()) {
+    if (!valueNode) {
+        cerr << "Error: '" << resourceItem.GetName() << "' value is empty";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        return false;
+    }
+    if (cJSON_IsString(valueNode)) {
         regex ref("^\\$(ohos:)?integer:.*");
-        if (!regex_match(valueNode.asString(), ref)) {
-            cerr << "Error: '" << valueNode.asString() << "', only refer '$integer:xxx'.";
+        if (!regex_match(valueNode->valuestring, ref)) {
+            cerr << "Error: '" << valueNode->valuestring << "', only refer '$integer:xxx'.";
             cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
             return false;
         }
-    } else if (!valueNode.isInt()) {
+    } else if (!ResourceUtil::IsIntValue(valueNode)) {
         cerr << "Error: '" << resourceItem.GetName() << "' value not integer.";
         cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
@@ -343,14 +362,14 @@ bool JsonCompiler::CheckJsonIntegerValue(const Json::Value &valueNode, const Res
     return true;
 }
 
-bool JsonCompiler::CheckJsonSymbolValue(const Json::Value &valueNode, const ResourceItem &resourceItem) const
+bool JsonCompiler::CheckJsonSymbolValue(const cJSON *valueNode, const ResourceItem &resourceItem) const
 {
-    if (!valueNode.isString()) {
+    if (!valueNode || !cJSON_IsString(valueNode)) {
         cerr << "Error: '" << resourceItem.GetName() << "' value not string.";
         cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
-    string unicodeStr = valueNode.asString();
+    string unicodeStr = valueNode->valuestring;
     if (regex_match(unicodeStr, regex("^\\$(ohos:)?symbol:.*"))) {
         return true;
     }
@@ -363,17 +382,17 @@ bool JsonCompiler::CheckJsonSymbolValue(const Json::Value &valueNode, const Reso
     return true;
 }
 
-bool JsonCompiler::ParseValueArray(const Json::Value &objectNode, ResourceItem &resourceItem,
+bool JsonCompiler::ParseValueArray(const cJSON *objectNode, ResourceItem &resourceItem,
                                    const vector<string> &extra, HandleValue callback) const
 {
-    Json::Value arrayNode = objectNode[TAG_VALUE];
-    if (!arrayNode.isArray()) {
+    cJSON *arrayNode = cJSON_GetObjectItem(objectNode, TAG_VALUE.c_str());
+    if (!cJSON_IsArray(arrayNode)) {
         cerr << "Error: '" << resourceItem.GetName() << "' value not array.";
         cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
 
-    if (arrayNode.empty()) {
+    if (cJSON_GetArraySize(arrayNode) == 0) {
         cerr << "Error: '" << resourceItem.GetName() << "' value empty.";
         cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
@@ -383,9 +402,9 @@ bool JsonCompiler::ParseValueArray(const Json::Value &objectNode, ResourceItem &
     if (!extra.empty()) {
         contents.assign(extra.begin(), extra.end());
     }
-    for (Json::ArrayIndex index = 0; index < arrayNode.size(); index++) {
+    for (cJSON *item = arrayNode->child; item; item = item->next) {
         vector<string> values;
-        if (!callback(arrayNode[index], resourceItem, values)) {
+        if (!callback(item, resourceItem, values)) {
             return false;
         }
         contents.insert(contents.end(), values.begin(), values.end());
@@ -400,23 +419,23 @@ bool JsonCompiler::ParseValueArray(const Json::Value &objectNode, ResourceItem &
     return PushString(data, resourceItem);
 }
 
-bool JsonCompiler::ParseParent(const Json::Value &objectNode, const ResourceItem &resourceItem,
+bool JsonCompiler::ParseParent(const cJSON *objectNode, const ResourceItem &resourceItem,
                                vector<string> &extra) const
 {
-    auto parent = objectNode[TAG_PARENT];
+    cJSON *parentNode = cJSON_GetObjectItem(objectNode, TAG_PARENT.c_str());
     string type = ResourceUtil::ResTypeToString(resourceItem.GetResType());
-    if (!parent.isNull()) {
-        if (!parent.isString()) {
+    if (parentNode) {
+        if (!cJSON_IsString(parentNode)) {
             cerr << "Error: " << type << " '" << resourceItem.GetName() << "' parent not string.";
             cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
             return false;
         }
-        if (parent.empty()) {
+        string parentValue = parentNode->valuestring;
+        if (parentValue.empty()) {
             cerr << "Error: " << type << " '"<< resourceItem.GetName() << "' parent empty.";
             cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
             return false;
         }
-        string parentValue = parent.asString();
         if (regex_match(parentValue, regex("^ohos:" + type + ":.+"))) {
             parentValue = "$" + parentValue;
         } else {
@@ -427,62 +446,62 @@ bool JsonCompiler::ParseParent(const Json::Value &objectNode, const ResourceItem
     return true;
 }
 
-bool JsonCompiler::ParseAttribute(const Json::Value &arrayItem, const ResourceItem &resourceItem,
+bool JsonCompiler::ParseAttribute(const cJSON *arrayItem, const ResourceItem &resourceItem,
                                   vector<string> &values) const
 {
     string type = ResourceUtil::ResTypeToString(resourceItem.GetResType());
-    if (!arrayItem.isObject()) {
+    if (!arrayItem || !cJSON_IsObject(arrayItem)) {
         cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute not object.";
         cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
-    auto name = arrayItem[TAG_NAME];
-    if (name.empty()) {
+    cJSON *nameNode = cJSON_GetObjectItem(arrayItem, TAG_NAME.c_str());
+    if (!nameNode) {
         cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute name empty.";
         cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
-    if (!name.isString()) {
+    if (!cJSON_IsString(nameNode)) {
         cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute name not string.";
         cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
-    values.push_back(name.asString());
+    values.push_back(nameNode->valuestring);
 
-    auto value = arrayItem[TAG_VALUE];
-    if (value.isNull()) {
-        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute '" << name.asString();
+    cJSON *valueNode = cJSON_GetObjectItem(arrayItem, TAG_VALUE.c_str());
+    if (!valueNode) {
+        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute '" << nameNode->valuestring;
         cerr << "' value empty." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
-    if (!value.isString()) {
-        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute '" << name.asString();
+    if (!cJSON_IsString(valueNode)) {
+        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute '" << nameNode->valuestring;
         cerr << "' value not string." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
-    values.push_back(value.asString());
+    values.push_back(valueNode->valuestring);
     return true;
 }
 
-bool JsonCompiler::CheckPluralValue(const Json::Value &arrayItem, const ResourceItem &resourceItem) const
+bool JsonCompiler::CheckPluralValue(const cJSON *arrayItem, const ResourceItem &resourceItem) const
 {
-    if (!arrayItem.isObject()) {
+    if (!arrayItem || !cJSON_IsObject(arrayItem)) {
         cerr << "Error: Plural '" << resourceItem.GetName() << "' array item not object.";
         cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
-    auto quantity = arrayItem[TAG_QUANTITY];
-    if (quantity.empty()) {
+    cJSON *quantityNode = cJSON_GetObjectItem(arrayItem, TAG_QUANTITY.c_str());
+    if (!quantityNode) {
         cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity empty.";
         cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
-    if (!quantity.isString()) {
+    if (!cJSON_IsString(quantityNode)) {
         cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity not string.";
         cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
-    string quantityValue = quantity.asString();
+    string quantityValue = quantityNode->valuestring;
     if (find(QUANTITY_ATTRS.begin(), QUANTITY_ATTRS.end(), quantityValue) == QUANTITY_ATTRS.end()) {
         string buffer(" ");
         for_each(QUANTITY_ATTRS.begin(), QUANTITY_ATTRS.end(), [&buffer](auto iter) {
@@ -493,13 +512,13 @@ bool JsonCompiler::CheckPluralValue(const Json::Value &arrayItem, const Resource
         return false;
     }
 
-    auto value = arrayItem[TAG_VALUE];
-    if (value.isNull()) {
+    cJSON *valueNode = cJSON_GetObjectItem(arrayItem, TAG_VALUE.c_str());
+    if (!valueNode) {
         cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity '" << quantityValue;
         cerr << "' value empty." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
-    if (!value.isString()) {
+    if (!cJSON_IsString(valueNode)) {
         cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity '" << quantityValue;
         cerr << "' value not string." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;

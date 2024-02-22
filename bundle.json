@@ -14,14 +14,14 @@
       "subsystem": "developtools",
       "syscap": [],
       "feature": [],
-      "adapted_system_type": ["mini", "small", "standard" ],
+      "adapted_system_type": [ "mini", "small", "standard" ],
       "rom": "0KB",
       "ram": "0KB",
       "deps": {
         "components": [],
         "third_party": [
           "bounds_checking_function",
-          "jsoncpp",
+          "cJSON",
           "libpng"
         ]
       },

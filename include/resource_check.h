@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,13 +30,14 @@ namespace Restool {
 
 class ResourceCheck {
 public:
-    ResourceCheck(const ConfigParser &configJson, const std::shared_ptr<ResourceAppend> &resourceAppend = nullptr);
+    ResourceCheck(const std::map<std::string, std::set<uint32_t>> &jsonCheckIds,
+        const std::shared_ptr<ResourceAppend> &resourceAppend = nullptr);
     virtual ~ResourceCheck() {};
     void CheckConfigJson();
     void CheckConfigJsonForCombine();
 
 private:
-    const ConfigParser configJson_;
+    const std::map<std::string, std::set<uint32_t>> jsonCheckIds_;
     const std::shared_ptr<ResourceAppend> resourceAppend_;
     void CheckNodeInResourceItem(const std::string &key, const ResourceItem &resourceItem);
     bool GetPngWidthAndHeight(const std::string &filePath, uint32_t *width, uint32_t *height);

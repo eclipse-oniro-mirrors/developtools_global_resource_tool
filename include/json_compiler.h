@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 #define OHOS_RESTOOL_JSON_COMPILER_H
 
 #include <functional>
+#include <cJSON.h>
 #include "i_resource_compiler.h"
 #include "resource_util.h"
 
@@ -31,34 +32,34 @@ protected:
     uint32_t CompileSingleFile(const FileInfo &fileInfo) override;
 private:
     void InitParser();
-    bool ParseJsonArrayLevel(const Json::Value &arrayNode, const FileInfo &fileInfo);
-    bool ParseJsonObjectLevel(const Json::Value &objectNode, const FileInfo &fileInfo);
+    bool ParseJsonArrayLevel(const cJSON *arrayNode, const FileInfo &fileInfo);
+    bool ParseJsonObjectLevel(const cJSON *objectNode, const FileInfo &fileInfo);
 
-    using HandleResource = std::function<bool(const Json::Value&, ResourceItem&)>;
-    bool HandleString(const Json::Value &objectNode, ResourceItem &resourceItem) const;
-    bool HandleInteger(const Json::Value &objectNode, ResourceItem &resourceItem) const;
-    bool HandleBoolean(const Json::Value &objectNode, ResourceItem &resourceItem) const;
-    bool HandleColor(const Json::Value &objectNode, ResourceItem &resourceItem) const;
-    bool HandleFloat(const Json::Value &objectNode, ResourceItem &resourceItem) const;
-    bool HandleStringArray(const Json::Value &objectNode, ResourceItem &resourceItem) const;
-    bool HandleIntegerArray(const Json::Value &objectNode, ResourceItem &resourceItem) const;
-    bool HandleTheme(const Json::Value &objectNode, ResourceItem &resourceItem) const;
-    bool HandlePattern(const Json::Value &objectNode, ResourceItem &resourceItem) const;
-    bool HandlePlural(const Json::Value &objectNode, ResourceItem &resourceItem) const;
-    bool HandleSymbol(const Json::Value &objectNode, ResourceItem &resourceItem) const;
+    using HandleResource = std::function<bool(const cJSON *, ResourceItem&)>;
+    bool HandleString(const cJSON *objectNode, ResourceItem &resourceItem) const;
+    bool HandleInteger(const cJSON *objectNode, ResourceItem &resourceItem) const;
+    bool HandleBoolean(const cJSON *objectNode, ResourceItem &resourceItem) const;
+    bool HandleColor(const cJSON *objectNode, ResourceItem &resourceItem) const;
+    bool HandleFloat(const cJSON *objectNode, ResourceItem &resourceItem) const;
+    bool HandleStringArray(const cJSON *objectNode, ResourceItem &resourceItem) const;
+    bool HandleIntegerArray(const cJSON *objectNode, ResourceItem &resourceItem) const;
+    bool HandleTheme(const cJSON *objectNode, ResourceItem &resourceItem) const;
+    bool HandlePattern(const cJSON *objectNode, ResourceItem &resourceItem) const;
+    bool HandlePlural(const cJSON *objectNode, ResourceItem &resourceItem) const;
+    bool HandleSymbol(const cJSON *objectNode, ResourceItem &resourceItem) const;
 
     bool PushString(const std::string &value, ResourceItem &resourceItem) const;
-    bool CheckJsonStringValue(const Json::Value &valueNode, const ResourceItem &resourceItem) const;
-    bool CheckJsonIntegerValue(const Json::Value &valueNode, const ResourceItem &resourceItem) const;
-    bool CheckJsonSymbolValue(const Json::Value &valueNode, const ResourceItem &resourceItem) const;
-    using HandleValue = std::function<bool(const Json::Value&, const ResourceItem&, std::vector<std::string>&)>;
-    bool ParseValueArray(const Json::Value &objectNode, ResourceItem &resourceItem,
+    bool CheckJsonStringValue(const cJSON *valueNode, const ResourceItem &resourceItem) const;
+    bool CheckJsonIntegerValue(const cJSON *valueNode, const ResourceItem &resourceItem) const;
+    bool CheckJsonSymbolValue(const cJSON *valueNode, const ResourceItem &resourceItem) const;
+    using HandleValue = std::function<bool(const cJSON *, const ResourceItem&, std::vector<std::string>&)>;
+    bool ParseValueArray(const cJSON *objectNode, ResourceItem &resourceItem,
                          const std::vector<std::string> &extra, HandleValue callback) const;
-    bool ParseParent(const Json::Value &objectNode, const ResourceItem &resourceItem,
+    bool ParseParent(const cJSON *objectNode, const ResourceItem &resourceItem,
                      std::vector<std::string> &extra) const;
-    bool ParseAttribute(const Json::Value &arrayItem, const ResourceItem &resourceItem,
+    bool ParseAttribute(const cJSON *arrayItem, const ResourceItem &resourceItem,
                         std::vector<std::string> &values) const;
-    bool CheckPluralValue(const Json::Value &arrayItem, const ResourceItem &resourceItem) const;
+    bool CheckPluralValue(const cJSON *arrayItem, const ResourceItem &resourceItem) const;
     bool CheckColorValue(const char *s) const;
     std::map<ResType, HandleResource> handles_;
     static const std::string TAG_NAME;
@@ -66,6 +67,7 @@ private:
     static const std::string TAG_PARENT;
     static const std::string TAG_QUANTITY;
     static const std::vector<std::string> QUANTITY_ATTRS;
+    cJSON *root_;
 };
 }
 }

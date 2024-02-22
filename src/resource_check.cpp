@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,17 +25,16 @@ namespace {
     constexpr int PNG_BYTRS_TO_CHECK = 8;
 }
 
-ResourceCheck::ResourceCheck(const ConfigParser &configJson, const shared_ptr<ResourceAppend> &resourceAppend)
-    : configJson_(configJson), resourceAppend_(resourceAppend)
+ResourceCheck::ResourceCheck(const std::map<std::string, std::set<uint32_t>> &jsonCheckIds,
+    const shared_ptr<ResourceAppend> &resourceAppend) : jsonCheckIds_(jsonCheckIds), resourceAppend_(resourceAppend)
 {
 }
 
 void ResourceCheck::CheckConfigJson()
 {
-    const map<string, set<uint32_t>> jsonCheckIds = configJson_.GetCheckNode();
     auto &fileManager = FileManager::GetInstance();
     auto &allResource = fileManager.GetResources();
-    for (auto it = jsonCheckIds.begin(); it != jsonCheckIds.end(); it++) {
+    for (auto it = jsonCheckIds_.begin(); it != jsonCheckIds_.end(); it++) {
         for (const auto &id : it->second) {
             auto res = allResource.find(id);
             if (res == allResource.end()) {
@@ -50,9 +49,8 @@ void ResourceCheck::CheckConfigJson()
 
 void ResourceCheck::CheckConfigJsonForCombine()
 {
-    const map<string, set<uint32_t>> jsonCheckIds = configJson_.GetCheckNode();
     auto &allResource = resourceAppend_->GetItems();
-    for (auto it = jsonCheckIds.begin(); it != jsonCheckIds.end(); it++) {
+    for (auto it = jsonCheckIds_.begin(); it != jsonCheckIds_.end(); it++) {
         for (const auto &id : it->second) {
             auto res = allResource.find(id);
             if (res == allResource.end()) {

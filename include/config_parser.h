@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,7 @@
 
 #include <functional>
 #include <set>
+#include <cJSON.h>
 #include "resource_util.h"
 
 namespace OHOS {
@@ -67,25 +68,24 @@ public:
         return useModule_ ? MODULE_JSON : CONFIG_JSON;
     };
 private:
-    bool ParseModule(Json::Value &moduleNode);
-    bool ParseDistro(Json::Value &distroNode);
-    bool ParseAbilities(const Json::Value &abilites);
-    bool ParseAbilitiy(const Json::Value &ability, bool &isMainAbility);
-    bool IsMainAbility(const Json::Value &skills);
-    bool IsHomeAction(const Json::Value &actions);
+    bool ParseModule(cJSON *moduleNode);
+    bool ParseDistro(cJSON *distroNode);
+    bool ParseAbilities(const cJSON *abilities);
+    bool ParseAbilitiy(const cJSON *ability, bool &isMainAbility);
+    bool IsMainAbility(const cJSON *skills);
+    bool IsHomeAction(const cJSON *actions);
     bool dependEntry = false;
-    bool ParseRefImpl(Json::Value &parent, const std::string &key, Json::Value &node);
-    bool ParseJsonArrayRef(Json::Value &parent, const std::string &key, Json::Value &node);
-    bool ParseJsonStringRef(Json::Value &parent, const std::string &key, Json::Value &node);
+    bool ParseRefImpl(cJSON *parent, const std::string &key, cJSON *node);
+    bool ParseJsonArrayRef(cJSON *parent, const std::string &key, cJSON *node);
+    bool ParseJsonStringRef(cJSON *parent, const std::string &key, cJSON *node);
     bool GetRefIdFromString(std::string &value, bool &update, const std::string &match) const;
     bool ParseModuleType(const std::string &type);
-    bool ParseAbilitiesForDepend(Json::Value &moduleNode);
+    bool ParseAbilitiesForDepend(cJSON *moduleNode);
     void AddCheckNode(const std::string &key, uint32_t id);
     std::string filePath_;
     std::string packageName_;
     std::string moduleName_;
     ModuleType moduleType_;
-    Json::Value rootNode_;
     std::string mainAbility_;
     int32_t abilityIconId_;
     int32_t abilityLabelId_;
@@ -94,6 +94,7 @@ private:
     static const std::map<std::string, std::string> JSON_STRING_IDS;
     static const std::map<std::string, std::string> JSON_ARRAY_IDS;
     static bool useModule_;
+    cJSON *root_;
 };
 }
 }

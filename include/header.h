@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,9 +16,10 @@
 #ifndef OHOS_RESTOOL_HEADER_H
 #define OHOS_RESTOOL_HEADER_H
 
-#include<functional>
-#include<sstream>
-#include<string>
+#include <functional>
+#include <cstring>
+#include <string>
+#include <sstream>
 #include "id_worker.h"
 #include "restool_errors.h"
 
@@ -31,7 +32,7 @@ public:
     Header(const std::string &outputPath);
     virtual ~Header();
     using HandleHeaderTail = std::function<void(std::stringstream&)>;
-    using HandleBody = std::function<void(std::stringstream&, const IdWorker::ResourceId&)>;
+    using HandleBody = std::function<void(std::stringstream&, const ResourceId&)>;
     uint32_t Create(HandleHeaderTail headerHandler, HandleBody bodyHander, HandleHeaderTail tailHander) const;
 private:
     const std::string &outputPath_;

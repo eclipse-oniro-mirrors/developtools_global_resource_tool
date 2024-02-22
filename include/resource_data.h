@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,7 +40,7 @@ const static std::string LONG_PATH_HEAD = "\\\\?\\";
 const static std::string ID_DEFINED_INDENTATION = "    ";
 const static int32_t VERSION_MAX_LEN = 128;
 const static int32_t INT_TO_BYTES = sizeof(uint32_t);
-static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 4.105" };
+static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 5.000" };
 const static int32_t TAG_LEN = 4;
 
 enum class KeyType {
@@ -114,6 +114,12 @@ enum class InputDevice {
     INPUTDEVICE_POINTINGDEVICE = 0,
 };
 
+enum class ResourceIdCluster {
+    RES_ID_APP = 0,
+    RES_ID_SYS,
+    RES_ID_TYPE_MAX,
+};
+
 enum Option {
     END = -1,
     IDS = 1,
@@ -182,6 +188,13 @@ struct KeyParam {
 struct IdData {
     uint32_t id;
     uint32_t dataOffset;
+};
+
+struct ResourceId {
+    int32_t id;
+    int32_t seq;
+    std::string type;
+    std::string name;
 };
 
 const std::map<std::string, ResType> g_copyFileMap = {

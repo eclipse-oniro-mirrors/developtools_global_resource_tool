@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -53,12 +53,15 @@ const map<string, ResType> ReferenceParser::ID_OHOS_REFS = {
     { "^\\$ohos:symbol:", ResType::SYMBOL }
 };
 
-ReferenceParser::ReferenceParser() : idWorker_(IdWorker::GetInstance())
+ReferenceParser::ReferenceParser() : idWorker_(IdWorker::GetInstance()), root_(nullptr)
 {
 }
 
 ReferenceParser::~ReferenceParser()
 {
+    if (root_) {
+        cJSON_Delete(root_);
+    }
 }
 
 uint32_t ReferenceParser::ParseRefInResources(map<int32_t, vector<ResourceItem>> &items, const string &output)
@@ -135,15 +138,17 @@ uint32_t ReferenceParser::ParseRefInString(string &value, bool &update) const
     return RESTOOL_ERROR;
 }
 
-bool ReferenceParser::ParseRefJson(const string &from, const string &to) const
+bool ReferenceParser::ParseRefJson(const string &from, const string &to)
 {
-    Json::Value root;
-    if (!ResourceUtil::OpenJsonFile(from, root)) {
+    if (!ResourceUtil::OpenJsonFile(from, &root_)) {
         return false;
     }
-
+    if (!root_ || !cJSON_IsObject(root_)) {
+        cerr << "Error: ReferenceParser root node not obeject." << NEW_LINE_PATH << from << endl;
+        return RESTOOL_ERROR;
+    }
     bool needSave = false;
-    if (!ParseRefJsonImpl(root, needSave)) {
+    if (!ParseRefJsonImpl(root_, needSave)) {
         return false;
     }
 
@@ -155,7 +160,7 @@ bool ReferenceParser::ParseRefJson(const string &from, const string &to) const
         return false;
     }
 
-    if (!ResourceUtil::SaveToJsonFile(to, root)) {
+    if (!ResourceUtil::SaveToJsonFile(to, root_)) {
         return false;
     }
     return true;
@@ -287,22 +292,16 @@ bool ReferenceParser::ParseRefImpl(string &key, const map<string, ResType> &refs
     return false;
 }
 
-bool ReferenceParser::ParseRefJsonImpl(Json::Value &node, bool &needSave) const
+bool ReferenceParser::ParseRefJsonImpl(cJSON *node, bool &needSave) const
 {
-    if (node.isObject()) {
-        for (const auto &member : node.getMemberNames()) {
-            if (!ParseRefJsonImpl(node[member], needSave)) {
+    if (cJSON_IsObject(node) || cJSON_IsArray(node)) {
+        for (cJSON *item = node->child; item; item = item->next) {
+            if (!ParseRefJsonImpl(item, needSave)) {
                 return false;
             }
         }
-    } else if (node.isArray()) {
-        for (Json::ArrayIndex i = 0; i < node.size(); i++) {
-            if (!ParseRefJsonImpl(node[i], needSave)) {
-                return false;
-            }
-        }
-    } else if (node.isString()) {
-        string value = node.asString();
+    }  else if (cJSON_IsString(node)) {
+        string value = node->valuestring;
         bool update = false;
         if (!ParseRefString(value, update)) {
             return false;
@@ -310,7 +309,7 @@ bool ReferenceParser::ParseRefJsonImpl(Json::Value &node, bool &needSave) const
         if (update) {
             needSave = update;
         }
-        node = value;
+        cJSON_SetValuestring(node, value.c_str());
     }
     return true;
 }
