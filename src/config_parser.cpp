@@ -74,7 +74,7 @@ uint32_t ConfigParser::Init()
     }
 
     if (!root_ || !cJSON_IsObject(root_)) {
-        cerr << "Error: ConfigParser root node not obeject." << NEW_LINE_PATH << filePath_ << endl;
+        cerr << "Error: JSON file parsing failed, please check the JSON file." << NEW_LINE_PATH << filePath_ << endl;
         return RESTOOL_ERROR;
     }
 

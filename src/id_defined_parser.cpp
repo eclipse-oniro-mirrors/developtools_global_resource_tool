@@ -85,17 +85,20 @@ uint32_t IdDefinedParser::Init(const string &filePath, bool isSystem)
     }
 
     if (!root_ || !cJSON_IsObject(root_)) {
-        cerr << "Error: IdDefinedParser root node not obeject." << NEW_LINE_PATH << filePath << endl;
+        cerr << "Error: JSON file parsing failed, please check the JSON file.";
+        cerr << NEW_LINE_PATH << filePath << endl;
         return RESTOOL_ERROR;
     }
 
     cJSON *recordNode = cJSON_GetObjectItem(root_, "record");
     if (!recordNode || !cJSON_IsArray(recordNode)) {
-        cerr << "Error: id_defined.json record not array." << endl;
+        cerr << "Error: 'record' node is not an array, please check the JSON file.";
+        cerr << NEW_LINE_PATH << filePath << endl;
         return RESTOOL_ERROR;
     }
     if (cJSON_GetArraySize(recordNode) == 0) {
-        cerr << "Error: id_defined.json 'record' empty." << endl;
+        cerr << "Error: 'record' node is empty, please check the JSON file.";
+        cerr << NEW_LINE_PATH << filePath << endl;
         return RESTOOL_ERROR;
     }
     int32_t startSysId = 0;

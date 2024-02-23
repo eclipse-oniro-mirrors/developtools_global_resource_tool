@@ -54,19 +54,22 @@ uint32_t JsonCompiler::CompileSingleFile(const FileInfo &fileInfo)
         return RESTOOL_ERROR;
     }
     if (!root_ || !cJSON_IsObject(root_)) {
-        cerr << "Error: JsonCompiler root node not obeject." << NEW_LINE_PATH << fileInfo.filePath << endl;
+        cerr << "Error: JSON file parsing failed, please check the JSON file.";
+        cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
         return RESTOOL_ERROR;
     }
     cJSON *item = root_->child;
     if (cJSON_GetArraySize(root_) != 1) {
-        cerr << "Error: root node must only one member." << NEW_LINE_PATH << fileInfo.filePath << endl;
+        cerr << "Error: node of a JSON file can only have one member, please check the JSON file.";
+        cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
         return RESTOOL_ERROR;
     }
 
     string tag = item->string;
     auto ret = g_contentClusterMap.find(tag);
     if (ret == g_contentClusterMap.end()) {
-        cerr << "Error: invalid tag name '" << tag << "'." << NEW_LINE_PATH << fileInfo.filePath << endl;
+        cerr << "Error: invalid tag name '" << tag << "', please check the JSON file.";
+        cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
         return RESTOOL_ERROR;
     }
     
