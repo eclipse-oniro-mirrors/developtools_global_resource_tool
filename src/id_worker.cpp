@@ -84,18 +84,6 @@ int32_t IdWorker::GetSystemId(ResType resType, const string &name) const
     return result->second.id;
 }
 
-bool IdWorker::IsValidName(const string &name) const
-{
-    if (!regex_match(name, regex("[a-zA-z0-9_]+"))) {
-        cerr << "Error: '" << name << "' only contain [a-zA-z0-9_]." << endl;
-        return false;
-    }
-    if (type_ != ResourceIdCluster::RES_ID_SYS) {
-        return true;
-    }
-    return ResourceUtil::IsValidSystemName(name);
-}
-
 bool IdWorker::PushCache(ResType resType, const string &name, int32_t id)
 {
     auto result = cacheIds_.emplace(make_pair(resType, name), id);

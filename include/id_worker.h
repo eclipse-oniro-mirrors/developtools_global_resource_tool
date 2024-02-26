@@ -32,7 +32,6 @@ public:
     std::vector<ResourceId> GetHeaderId() const;
     int32_t GetId(ResType resType, const std::string &name) const;
     int32_t GetSystemId(ResType resType, const std::string &name) const;
-    bool IsValidName(const std::string &name) const;
     bool PushCache(ResType resType, const std::string &name, int32_t id);
     void PushDelId(int32_t id);
 
