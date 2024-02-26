@@ -144,7 +144,7 @@ bool ReferenceParser::ParseRefJson(const string &from, const string &to)
         return false;
     }
     if (!root_ || !cJSON_IsObject(root_)) {
-        cerr << "Error: ReferenceParser root node not obeject." << NEW_LINE_PATH << from << endl;
+        cerr << "Error: JSON file parsing failed, please check the JSON file." << NEW_LINE_PATH << from << endl;
         return RESTOOL_ERROR;
     }
     bool needSave = false;

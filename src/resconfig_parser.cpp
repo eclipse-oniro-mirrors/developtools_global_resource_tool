@@ -34,7 +34,7 @@ uint32_t ResConfigParser::Init(const string &filePath, HandleBack callback)
         return RESTOOL_ERROR;
     }
     if (!root_ || !cJSON_IsObject(root_)) {
-        cerr << "Error: ResConfigParser root node not obeject." << NEW_LINE_PATH << filePath << endl;
+        cerr << "Error: JSON file parsing failed, please check the JSON file." << NEW_LINE_PATH << filePath << endl;
         return RESTOOL_ERROR;
     }
     if (!callback) {
