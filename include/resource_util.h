@@ -223,16 +223,17 @@ public:
     static void RemoveSpaces(std::string &str);
 
     /**
-     * @brief Check whether the system resource name is valid
-     * @param str system resource name
-    */
-    static bool IsValidSystemName(const std::string &name);
-
-    /**
      * @brief Check whether the value is int
      * @param snode cJSON node
     */
     static bool IsIntValue(const cJSON *node);
+
+    /**
+     * @brief Check whether the resource name is valid
+     * @param str resource name
+    */
+    static bool IsValidName(const std::string &name);
+
 private:
     enum class IgnoreType {
         IGNORE_FILE,

@@ -431,15 +431,6 @@ void ResourceUtil::RemoveSpaces(string &str)
     str.erase(str.find_last_not_of(" ") + 1); // move back one place
 }
 
-bool ResourceUtil::IsValidSystemName(const string &name)
-{
-    if (regex_match(name, regex("^ohos.+"))) {
-        return true;
-    }
-    cerr << "Error: '" << name << "' must start with 'ohos'" << endl;
-    return false;
-}
-
 bool ResourceUtil::IsIntValue(const cJSON *node)
 {
     if (node && cJSON_IsNumber(node)) {
@@ -451,6 +442,15 @@ bool ResourceUtil::IsIntValue(const cJSON *node)
         }
     }
     return false;
+}
+
+bool ResourceUtil::IsValidName(const string &name)
+{
+    if (!regex_match(name, regex("[a-zA-Z0-9_]+"))) {
+        cerr << "Error: '" << name << "' only contain [a-zA-Z0-9_]." << endl;
+        return false;
+    }
+    return true;
 }
 
 }
