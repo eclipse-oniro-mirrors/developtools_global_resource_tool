@@ -44,6 +44,7 @@ ohos_executable("restool") {
     "src/restool.cpp",
     "src/select_compile_parse.cpp",
     "src/task_handle.cpp",
+    "src/translatable_parser.cpp",
   ]
 
   include_dirs = [

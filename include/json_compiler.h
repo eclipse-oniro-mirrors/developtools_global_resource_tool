@@ -33,7 +33,7 @@ protected:
 private:
     void InitParser();
     bool ParseJsonArrayLevel(const cJSON *arrayNode, const FileInfo &fileInfo);
-    bool ParseJsonObjectLevel(const cJSON *objectNode, const FileInfo &fileInfo);
+    bool ParseJsonObjectLevel(cJSON *objectNode, const FileInfo &fileInfo);
 
     using HandleResource = std::function<bool(const cJSON *, ResourceItem&)>;
     bool HandleString(const cJSON *objectNode, ResourceItem &resourceItem) const;
@@ -62,11 +62,7 @@ private:
     bool CheckPluralValue(const cJSON *arrayItem, const ResourceItem &resourceItem) const;
     bool CheckColorValue(const char *s) const;
     std::map<ResType, HandleResource> handles_;
-    static const std::string TAG_NAME;
-    static const std::string TAG_VALUE;
-    static const std::string TAG_PARENT;
-    static const std::string TAG_QUANTITY;
-    static const std::vector<std::string> QUANTITY_ATTRS;
+    bool isBaseString_;
     cJSON *root_;
 };
 }
