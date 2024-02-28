@@ -124,7 +124,7 @@ uint32_t IResourceCompiler::PostCommit()
 bool IResourceCompiler::MergeResourceItem(const ResourceItem &resourceItem)
 {
     string idName = ResourceUtil::GetIdName(resourceItem.GetName(), resourceItem.GetResType());
-    if (!IdWorker::GetInstance().IsValidName(idName)) {
+    if (!ResourceUtil::IsValidName(idName)) {
         cerr << "Error: invalid idName '" << idName << "'."<< NEW_LINE_PATH <<  resourceItem.GetFilePath() << endl;
         return false;
     }
