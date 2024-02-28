@@ -18,19 +18,21 @@
 #include <limits>
 #include <regex>
 #include "restool_errors.h"
+#include "translatable_parser.h"
 
 namespace OHOS {
 namespace Global {
 namespace Restool {
 using namespace std;
-const string JsonCompiler::TAG_NAME = "name";
-const string JsonCompiler::TAG_VALUE = "value";
-const string JsonCompiler::TAG_PARENT = "parent";
-const string JsonCompiler::TAG_QUANTITY = "quantity";
-const vector<string> JsonCompiler::QUANTITY_ATTRS = { "zero", "one", "two", "few", "many", "other" };
+const string TAG_NAME = "name";
+const string TAG_VALUE = "value";
+const string TAG_PARENT = "parent";
+const string TAG_QUANTITY = "quantity";
+const vector<string> QUANTITY_ATTRS = { "zero", "one", "two", "few", "many", "other" };
+const vector<string> TRANSLATION_TYPE = { "string", "strarray", "plural" };
 
 JsonCompiler::JsonCompiler(ResType type, const string &output)
-    : IResourceCompiler(type, output), root_(nullptr)
+    : IResourceCompiler(type, output), isBaseString_(false), root_(nullptr)
 {
     InitParser();
 }
@@ -72,7 +74,8 @@ uint32_t JsonCompiler::CompileSingleFile(const FileInfo &fileInfo)
         cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
         return RESTOOL_ERROR;
     }
-    
+    isBaseString_ = (fileInfo.limitKey == "base" &&
+        find(TRANSLATION_TYPE.begin(), TRANSLATION_TYPE.end(), tag) != TRANSLATION_TYPE.end());
     FileInfo copy = fileInfo;
     copy.fileType = ret->second;
     if (!ParseJsonArrayLevel(item, copy)) {
@@ -125,7 +128,7 @@ bool JsonCompiler::ParseJsonArrayLevel(const cJSON *arrayNode, const FileInfo &f
     return true;
 }
 
-bool JsonCompiler::ParseJsonObjectLevel(const cJSON *objectNode, const FileInfo &fileInfo)
+bool JsonCompiler::ParseJsonObjectLevel(cJSON *objectNode, const FileInfo &fileInfo)
 {
     cJSON *nameNode = cJSON_GetObjectItem(objectNode, TAG_NAME.c_str());
     if (!nameNode) {
@@ -138,6 +141,9 @@ bool JsonCompiler::ParseJsonObjectLevel(const cJSON *objectNode, const FileInfo 
         return false;
     }
 
+    if (isBaseString_ && !TranslatableParse::ParseTranslatable(objectNode, fileInfo, nameNode->valuestring)) {
+        return false;
+    }
     ResourceItem resourceItem(nameNode->valuestring, fileInfo.keyParams, fileInfo.fileType);
     resourceItem.SetFilePath(fileInfo.filePath);
     resourceItem.SetLimitKey(fileInfo.limitKey);
