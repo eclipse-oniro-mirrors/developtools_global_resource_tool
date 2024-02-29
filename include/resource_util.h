@@ -234,6 +234,12 @@ public:
     */
     static bool IsValidName(const std::string &name);
 
+    /**
+     * @brief print warning msg
+     * @param noBaseResource set of no base resources
+    */
+    static void PrintWarningMsg(std::vector<std::pair<ResType, std::string>> &noBaseResource);
+
 private:
     enum class IgnoreType {
         IGNORE_FILE,

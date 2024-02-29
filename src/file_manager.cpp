@@ -31,11 +31,15 @@ namespace Restool {
 using namespace std;
 uint32_t FileManager::ScanModules(const vector<string> &inputs, const string &output)
 {
+    vector<pair<ResType, string>> noBaseResource;
     for (auto input : inputs) {
-        map<ResType, vector<DirectoryInfo>> resTypeOfDirs;
-        if (ScanModule(input, output, resTypeOfDirs) != RESTOOL_SUCCESS) {
+        if (ScanModule(input, output) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }
+        CheckAllItems(noBaseResource);
+    }
+    if (!noBaseResource.empty()) {
+        ResourceUtil::PrintWarningMsg(noBaseResource);
     }
     return ParseReference(output);
 }
@@ -46,14 +50,12 @@ uint32_t FileManager::MergeResourceItem(const map<int32_t, vector<ResourceItem>>
 }
 
 // below private founction
-uint32_t FileManager::ScanModule(const string &input, const string &output,
-    map<ResType, vector<DirectoryInfo>> &resTypeOfDirs)
+uint32_t FileManager::ScanModule(const string &input, const string &output)
 {
     ResourceModule resourceModule(input, output, moduleName_);
     if (resourceModule.ScanResource() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
-    resTypeOfDirs = resourceModule.GetScanDirectorys();
     MergeResourceItem(resourceModule.GetOwner());
     return RESTOOL_SUCCESS;
 }
@@ -65,6 +67,29 @@ uint32_t FileManager::ParseReference(const string &output)
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
+}
+
+void FileManager::CheckAllItems(vector<pair<ResType, string>> &noBaseResource)
+{
+    for (const auto &item : items_) {
+        bool flag = false;
+        for (const auto &iter : item.second) {
+            if (iter.GetLimitKey() == "base") {
+                flag = true;
+                break;
+            }
+        }
+        if (!flag) {
+            auto firstItem = item.second.front();
+            auto ret = find_if(noBaseResource.begin(), noBaseResource.end(), [firstItem](auto &iterItem) {
+                return (firstItem.GetResType() == iterItem.first)  &&
+                    (firstItem.GetName() == iterItem.second);
+            });
+            if (ret == noBaseResource.end()) {
+                noBaseResource.push_back(make_pair(firstItem.GetResType(), firstItem.GetName()));
+            }
+        }
+    }
 }
 }
 }

@@ -453,6 +453,13 @@ bool ResourceUtil::IsValidName(const string &name)
     return true;
 }
 
+void ResourceUtil::PrintWarningMsg(vector<pair<ResType, string>> &noBaseResource)
+{
+    for (const auto &item : noBaseResource) {
+        cerr << "Warning: the " << ResourceUtil::ResTypeToString(item.first);
+        cerr << " of '" << item.second << "' does not have a base resource." << endl;
+    }
+}
 }
 }
 }
