@@ -38,9 +38,9 @@ public:
     uint32_t MergeResourceItem(const std::map<int32_t, std::vector<ResourceItem>> &resourceInfos);
 
 private:
-    uint32_t ScanModule(const std::string &input, const std::string &output,
-        std::map<ResType, std::vector<DirectoryInfo>> &resTypeOfDirs);
+    uint32_t ScanModule(const std::string &input, const std::string &output);
     uint32_t ParseReference(const std::string &output);
+    void CheckAllItems(std::vector<std::pair<ResType, std::string>> &noBaseResource);
 
     // id, resource items
     std::map<int32_t, std::vector<ResourceItem>> items_;

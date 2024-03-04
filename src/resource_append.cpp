@@ -53,10 +53,15 @@ uint32_t ResourceAppend::Append()
 
 uint32_t ResourceAppend::Combine()
 {
+    vector<pair<ResType, string>> noBaseResource;
     for (const auto &iter : packageParser_.GetInputs()) {
         if (!Combine(iter)) {
             return RESTOOL_ERROR;
         }
+        CheckAllItems(noBaseResource);
+    }
+    if (!noBaseResource.empty()) {
+        ResourceUtil::PrintWarningMsg(noBaseResource);
     }
 
     if (!ParseRef()) {
@@ -669,6 +674,29 @@ bool ResourceAppend::IsBaseIdDefined(const FileInfo &fileInfo)
     return filePath.GetParent().GetParent().GetFilename() == "base" &&
         filePath.GetParent().GetFilename() == "element" &&
         fileInfo.filename == ID_DEFINED_FILE;
+}
+
+void ResourceAppend::CheckAllItems(vector<pair<ResType, string>> &noBaseResource)
+{
+    for (const auto &item : items_) {
+        bool flag = false;
+        for (const auto &iter : item.second) {
+            if (iter->GetLimitKey() == "base") {
+                flag = true;
+                break;
+            }
+        }
+        if (!flag) {
+            auto firstItem = item.second.front();
+            auto ret = find_if(noBaseResource.begin(), noBaseResource.end(), [firstItem](auto &iterItem) {
+                return (firstItem->GetResType() == iterItem.first)  &&
+                    (firstItem->GetName() == iterItem.second);
+            });
+            if (ret == noBaseResource.end()) {
+                noBaseResource.push_back(make_pair(firstItem->GetResType(), firstItem->GetName()));
+            }
+        }
+    }
 }
 }
 }

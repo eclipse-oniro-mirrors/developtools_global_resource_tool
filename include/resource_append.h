@@ -65,6 +65,7 @@ private:
 #ifdef __WIN32
     bool LoadResourceItemWin(const std::string &filePath);
 #endif
+    void CheckAllItems(std::vector<std::pair<ResType, std::string>> &noBaseResource);
     const PackageParser &packageParser_;
     std::map<int32_t, std::vector<std::shared_ptr<ResourceItem>>> items_;
     std::map<int32_t, std::vector<std::shared_ptr<ResourceItem>>> itemsForModule_;
