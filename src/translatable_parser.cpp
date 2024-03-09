@@ -116,7 +116,7 @@ bool TranslatableParse::CheckBaseStringPriority(const cJSON *attrNode)
     string priorityValue = priorityNode->valuestring;
     if (find(PRIORITY_ATTRS.begin(), PRIORITY_ATTRS.end(), priorityValue) == PRIORITY_ATTRS.end()) {
         string message("[ ");
-        for (auto &value : PRIORITY_ATTRS) {
+        for (const auto &value : PRIORITY_ATTRS) {
             message.append("'" + value + "' ");
         }
         message.append("]");
@@ -148,11 +148,9 @@ bool TranslatableParse::GetReplaceStringTranslate(string &str)
         return false;
     }
     size_t startIndex = 0;
-    size_t endIndex = 0;
     string tmp;
     for (size_t index = 0; index < posData.size(); index++) {
-        endIndex = posData[index];
-        tmp.append(str, startIndex, endIndex - startIndex);
+        tmp.append(str, startIndex, posData[index] - startIndex);
         startIndex = posData[++index];
     }
     str = tmp.append(str, posData.back());

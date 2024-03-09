@@ -49,7 +49,6 @@ ohos_executable("restool") {
 
   include_dirs = [
     "include",
-    "//third_party/jsoncpp/include",
     "//third_party/bounds_checking_function/include",
   ]
 

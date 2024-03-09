@@ -72,20 +72,16 @@ uint32_t FileManager::ParseReference(const string &output)
 void FileManager::CheckAllItems(vector<pair<ResType, string>> &noBaseResource)
 {
     for (const auto &item : items_) {
-        bool flag = false;
-        for (const auto &iter : item.second) {
-            if (iter.GetLimitKey() == "base") {
-                flag = true;
-                break;
-            }
-        }
-        if (!flag) {
+        bool found = any_of(item.second.begin(), item.second.end(), [](const auto &iter) {
+            return iter.GetLimitKey() == "base";
+        });
+        if (!found) {
             auto firstItem = item.second.front();
-            auto ret = find_if(noBaseResource.begin(), noBaseResource.end(), [firstItem](auto &iterItem) {
+            bool ret = any_of(noBaseResource.begin(), noBaseResource.end(), [firstItem](const auto &iterItem) {
                 return (firstItem.GetResType() == iterItem.first)  &&
                     (firstItem.GetName() == iterItem.second);
             });
-            if (ret == noBaseResource.end()) {
+            if (!ret) {
                 noBaseResource.push_back(make_pair(firstItem.GetResType(), firstItem.GetName()));
             }
         }
