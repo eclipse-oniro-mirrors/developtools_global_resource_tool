@@ -192,9 +192,8 @@ bool IdDefinedParser::ParseId(const cJSON *origId, ResourceId &resourceId)
     }
     int32_t id = strtol(idStr.c_str(), nullptr, 16);
     if (id < 0x01000000 || (id >= 0x06FFFFFF && id < 0x08000000) || id >= 0x41FFFFFF) {
-        cerr << "Error: id_defined.json seq = "<< resourceId.seq;
+        cerr << "Warning: id_defined.json seq = "<< resourceId.seq;
         cerr << " id must in [0x01000000,0x06FFFFFF),[0x08000000,0x41FFFFFF)." << endl;
-        return false;
     }
     resourceId.id = id;
     return true;
