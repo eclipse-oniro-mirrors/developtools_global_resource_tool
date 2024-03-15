@@ -81,8 +81,7 @@ bool ResourceUtil::OpenJsonFile(const string &path, cJSON **root)
     string jsonString((istreambuf_iterator<char>(ifs)), istreambuf_iterator<char>());
     *root = cJSON_Parse(jsonString.c_str());
     if (!*root) {
-        cerr << "Error: cJSON_Parse failed, please check the JSON file." << NEW_LINE_PATH << path;
-        cerr << "\n" << cJSON_GetErrorPtr() << endl;
+        cerr << "Error: cJSON_Parse failed, please check the JSON file." << NEW_LINE_PATH << path << endl;
         ifs.close();
         return false;
     }

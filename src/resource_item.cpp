@@ -21,7 +21,7 @@ namespace OHOS {
 namespace Global {
 namespace Restool {
 using namespace std;
-ResourceItem::ResourceItem()
+ResourceItem::ResourceItem() : type_(ResType::INVALID_RES_TYPE)
 {
 }
 

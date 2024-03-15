@@ -134,7 +134,7 @@ void CmdParser<T>::ShowUseage()
     std::cout << "    -m/--modules        module name, can add more, split by ','(like entry1,entry2,...).\n";
     std::cout << "    -j/--json           config.json path.\n";
     std::cout << "    -e/--startId        start id mask, e.g 0x01000000,";
-    std::cout << " in [0x01000000, 0x06FFFFFF),[0x08000000, 0x41FFFFFF)\n";
+    std::cout << " in [0x01000000, 0x06FFFFFF),[0x08000000, 0xFFFFFFFF)\n";
     std::cout << "    -x/--append         resources folder path\n";
     std::cout << "    -z/--combine        flag for incremental compilation\n";
     std::cout << "    -h/--help           Displays this help menu\n";

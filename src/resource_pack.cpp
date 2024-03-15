@@ -72,7 +72,7 @@ uint32_t ResourcePack::InitModule()
     moduleName_ = configJson_.GetModuleName();
     vector<string> moduleNames = packageParser_.GetModuleNames();
     IdWorker &idWorker = IdWorker::GetInstance();
-    int32_t startId = packageParser_.GetStartId();
+    int64_t startId = packageParser_.GetStartId();
     if (startId > 0) {
         return idWorker.Init(hapType, startId);
     }
@@ -393,14 +393,14 @@ uint32_t ResourcePack::HandleFeature()
         return RESTOOL_ERROR;
     }
 
-    int32_t labelId = entryJson.GetAbilityLabelId();
-    int32_t iconId = entryJson.GetAbilityIconId();
+    int64_t labelId = entryJson.GetAbilityLabelId();
+    int64_t iconId = entryJson.GetAbilityIconId();
     if (labelId <= 0 || iconId <= 0) {
         cerr << "Error: Entry MainAbility must have 'icon' and 'label'." << endl;
         return RESTOOL_ERROR;
     }
     string path = FileEntry::FilePath(featureDependEntry).Append(RESOURCE_INDEX_FILE).GetPath();
-    map<int32_t, vector<ResourceItem>> resInfoLocal;
+    map<int64_t, vector<ResourceItem>> resInfoLocal;
     ResourceTable resourceTable;
     if (resourceTable.LoadResTable(path, resInfoLocal) != RESTOOL_SUCCESS) {
         cerr << "Error: LoadResTable fail." << endl;
@@ -430,8 +430,8 @@ uint32_t ResourcePack::HandleFeature()
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ResourcePack::FindResourceItems(const map<int32_t, vector<ResourceItem>> &resInfoLocal,
-                                         vector<ResourceItem> &items, int32_t id) const
+uint32_t ResourcePack::FindResourceItems(const map<int64_t, vector<ResourceItem>> &resInfoLocal,
+                                         vector<ResourceItem> &items, int64_t id) const
 {
     auto ret = resInfoLocal.find(id);
     if (ret == resInfoLocal.end()) {
@@ -459,7 +459,7 @@ uint32_t ResourcePack::FindResourceItems(const map<int32_t, vector<ResourceItem>
 
 uint32_t ResourcePack::HandleLabel(vector<ResourceItem> &items, ConfigParser &config) const
 {
-    int32_t nextId = 0;
+    int64_t nextId = 0;
     string idName;
     for (auto it : items) {
         if (it.GetResType() != ResType::STRING) {
@@ -508,7 +508,7 @@ bool ResourcePack::CopyIcon(string &dataPath, const string &idName, string &file
 
 uint32_t ResourcePack::HandleIcon(vector<ResourceItem> &items, ConfigParser &config) const
 {
-    int32_t nextId = 0;
+    int64_t nextId = 0;
     string idName;
     for (auto it : items) {
         if (it.GetResType() != ResType::MEDIA) {
@@ -545,9 +545,9 @@ uint32_t ResourcePack::HandleIcon(vector<ResourceItem> &items, ConfigParser &con
     return RESTOOL_SUCCESS;
 }
 
-void ResourcePack::SaveResourceItem(const ResourceItem &resourceItem, int32_t nextId) const
+void ResourcePack::SaveResourceItem(const ResourceItem &resourceItem, int64_t nextId) const
 {
-    map<int32_t, vector<ResourceItem>> resInfo;
+    map<int64_t, vector<ResourceItem>> resInfo;
     vector<ResourceItem> vet;
     vet.push_back(resourceItem);
     resInfo.insert(make_pair(nextId, vet));

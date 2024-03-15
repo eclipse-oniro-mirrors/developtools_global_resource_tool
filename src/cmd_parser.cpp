@@ -214,8 +214,8 @@ uint32_t PackageParser::AddConfig(const string& argValue)
 
 uint32_t PackageParser::AddStartId(const string& argValue)
 {
-    startId_ = strtol(argValue.c_str(), nullptr, 16); // 16 is hexadecimal number
-    if ((startId_ >= 0x01000000 && startId_ < 0x06ffffff) || (startId_ >= 0x08000000 && startId_ < 0x41ffffff)) {
+    startId_ = strtoll(argValue.c_str(), nullptr, 16); // 16 is hexadecimal number
+    if ((startId_ >= 0x01000000 && startId_ < 0x06ffffff) || (startId_ >= 0x08000000 && startId_ < 0xffffffff)) {
         return RESTOOL_SUCCESS;
     }
     cerr << "Error: invalid start id " << argValue << endl;

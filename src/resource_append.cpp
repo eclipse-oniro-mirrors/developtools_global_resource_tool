@@ -469,7 +469,7 @@ bool ResourceAppend::WriteRawFilesOrResFiles(const string &filePath, const strin
 bool ResourceAppend::Push(const shared_ptr<ResourceItem> &resourceItem)
 {
     string idName = ResourceUtil::GetIdName(resourceItem->GetName(), resourceItem->GetResType());
-    int32_t id = IdWorker::GetInstance().GenerateId(resourceItem->GetResType(), idName);
+    int64_t id = IdWorker::GetInstance().GenerateId(resourceItem->GetResType(), idName);
     if (id < 0) {
         return false;
     }
@@ -611,7 +611,7 @@ int32_t ResourceAppend::ParseInt32(const char buffer[], int32_t length, int32_t 
     return size;
 }
 
-bool ResourceAppend::CheckModuleResourceItem(const shared_ptr<ResourceItem> &resourceItem, int32_t  id)
+bool ResourceAppend::CheckModuleResourceItem(const shared_ptr<ResourceItem> &resourceItem, int64_t id)
 {
     const auto &result = itemsForModule_.find(id);
     if (result == itemsForModule_.end()) {

@@ -73,7 +73,7 @@ uint32_t IResourceCompiler::Compile(const vector<DirectoryInfo> &directoryInfos)
     return PostCommit();
 }
 
-const map<int32_t, vector<ResourceItem>> &IResourceCompiler::GetResult() const
+const map<int64_t, vector<ResourceItem>> &IResourceCompiler::GetResult() const
 {
     return resourceInfos_;
 }
@@ -110,7 +110,7 @@ uint32_t IResourceCompiler::PostCommit()
 {
     IdWorker &idWorker = IdWorker::GetInstance();
     for (const auto &nameInfo : nameInfos_) {
-        int32_t id = idWorker.GenerateId(nameInfo.first.first, nameInfo.first.second);
+        int64_t id = idWorker.GenerateId(nameInfo.first.first, nameInfo.first.second);
         if (id < 0) {
             cerr << "Error: restype='" << ResourceUtil::ResTypeToString(nameInfo.first.first) << "' name='";
             cerr << nameInfo.first.second << "' id not be defined." << endl;

@@ -64,7 +64,7 @@ uint32_t ResourceModule::ScanResource()
     return RESTOOL_SUCCESS;
 }
 
-const map<int32_t, vector<ResourceItem>> &ResourceModule::GetOwner() const
+const map<int64_t, vector<ResourceItem>> &ResourceModule::GetOwner() const
 {
     return owner_;
 }
@@ -74,8 +74,8 @@ const map<ResType, vector<DirectoryInfo>> &ResourceModule::GetScanDirectorys() c
     return scanDirs_;
 }
 
-uint32_t ResourceModule::MergeResourceItem(map<int32_t, vector<ResourceItem>> &alls,
-    const map<int32_t, vector<ResourceItem>> &other, bool tipError)
+uint32_t ResourceModule::MergeResourceItem(map<int64_t, vector<ResourceItem>> &alls,
+    const map<int64_t, vector<ResourceItem>> &other, bool tipError)
 {
     for (const auto &iter : other) {
         auto result = alls.emplace(iter.first, iter.second);
@@ -105,7 +105,7 @@ uint32_t ResourceModule::MergeResourceItem(map<int32_t, vector<ResourceItem>> &a
     return RESTOOL_SUCCESS;
 }
 // below private
-void ResourceModule::Push(const map<int32_t, std::vector<ResourceItem>> &other)
+void ResourceModule::Push(const map<int64_t, std::vector<ResourceItem>> &other)
 {
     for (const auto &iter : other) {
         owner_.emplace(iter.first, iter.second);

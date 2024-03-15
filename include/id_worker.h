@@ -27,27 +27,27 @@ namespace Global {
 namespace Restool {
 class IdWorker : public Singleton<IdWorker> {
 public:
-    uint32_t Init(ResourceIdCluster &type, int32_t start = 0x01000000);
-    int32_t GenerateId(ResType resType, const std::string &name);
+    uint32_t Init(ResourceIdCluster &type, int64_t start = 0x01000000);
+    int64_t GenerateId(ResType resType, const std::string &name);
     std::vector<ResourceId> GetHeaderId() const;
-    int32_t GetId(ResType resType, const std::string &name) const;
-    int32_t GetSystemId(ResType resType, const std::string &name) const;
-    bool PushCache(ResType resType, const std::string &name, int32_t id);
-    void PushDelId(int32_t id);
+    int64_t GetId(ResType resType, const std::string &name) const;
+    int64_t GetSystemId(ResType resType, const std::string &name) const;
+    bool PushCache(ResType resType, const std::string &name, int64_t id);
+    void PushDelId(int64_t id);
 
 private:
-    int32_t GenerateAppId(ResType resType, const std::string &name);
-    int32_t GenerateSysId(ResType resType, const std::string &name);
-    int32_t GetMaxId(int32_t startId) const;
-    int32_t GetCurId();
-    int32_t appId_;
-    int32_t maxId_;
+    int64_t GenerateAppId(ResType resType, const std::string &name);
+    int64_t GenerateSysId(ResType resType, const std::string &name);
+    int64_t GetMaxId(int64_t startId) const;
+    int64_t GetCurId();
+    int64_t appId_;
+    int64_t maxId_;
     ResourceIdCluster type_;
-    std::map<std::pair<ResType, std::string>, int32_t> ids_;
+    std::map<std::pair<ResType, std::string>, int64_t> ids_;
     std::map<std::pair<ResType, std::string>, ResourceId> sysDefinedIds_;
     std::map<std::pair<ResType, std::string>, ResourceId> appDefinedIds_;
-    std::vector<int32_t> delIds_;
-    std::map<std::pair<ResType, std::string>, int32_t> cacheIds_;
+    std::vector<int64_t> delIds_;
+    std::map<std::pair<ResType, std::string>, int64_t> cacheIds_;
 };
 }
 }

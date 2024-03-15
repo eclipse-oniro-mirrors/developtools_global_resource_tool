@@ -52,11 +52,11 @@ private:
     uint32_t PackAppend();
     uint32_t PackCombine();
     uint32_t HandleFeature();
-    uint32_t FindResourceItems(const std::map<int32_t, std::vector<ResourceItem>> &resInfoLocal,
-                               std::vector<ResourceItem> &items, int32_t id) const;
+    uint32_t FindResourceItems(const std::map<int64_t, std::vector<ResourceItem>> &resInfoLocal,
+                               std::vector<ResourceItem> &items, int64_t id) const;
     uint32_t HandleLabel(std::vector<ResourceItem> &items, ConfigParser &config) const;
     uint32_t HandleIcon(std::vector<ResourceItem> &items, ConfigParser &config) const;
-    void SaveResourceItem(const ResourceItem &resourceItem, int32_t nextId) const;
+    void SaveResourceItem(const ResourceItem &resourceItem, int64_t nextId) const;
     void CheckConfigJson();
     void CheckConfigJsonForCombine(ResourceAppend &resourceAppend);
     bool CopyIcon(std::string &dataPath, const std::string &idName, std::string &fileName) const;

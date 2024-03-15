@@ -28,7 +28,7 @@ public:
     IResourceCompiler(ResType type, const std::string &output);
     virtual ~IResourceCompiler();
     uint32_t Compile(const std::vector<DirectoryInfo> &directoryInfos);
-    const std::map<int32_t, std::vector<ResourceItem>> &GetResult() const;
+    const std::map<int64_t, std::vector<ResourceItem>> &GetResult() const;
     uint32_t Compile(const FileInfo &fileInfo);
     void SetModuleName(const std::string &moduleName);
     uint32_t CompileForAppend(const FileInfo &fileInfo);
@@ -43,7 +43,7 @@ protected:
     std::string moduleName_;
 
     // id, resource items
-    std::map<int32_t, std::vector<ResourceItem>> resourceInfos_;
+    std::map<int64_t, std::vector<ResourceItem>> resourceInfos_;
     // ResType, name, resourceItems
     std::map<std::pair<ResType, std::string>, std::vector<ResourceItem>> nameInfos_;
 

@@ -51,12 +51,14 @@ const map<string, string> ConfigParser::JSON_ARRAY_IDS = {
 bool ConfigParser::useModule_ = false;
 
 ConfigParser::ConfigParser()
-    : filePath_(""), packageName_(""), moduleName_(""), moduleType_(ModuleType::NONE), root_(nullptr)
+    : filePath_(""), packageName_(""), moduleName_(""), moduleType_(ModuleType::NONE),
+    abilityIconId_(0), abilityLabelId_(0), root_(nullptr)
 {
 }
 
 ConfigParser::ConfigParser(const string &filePath)
-    : filePath_(filePath), packageName_(""), moduleName_(""), moduleType_(ModuleType::NONE), root_(nullptr)
+    : filePath_(filePath), packageName_(""), moduleName_(""), moduleType_(ModuleType::NONE),
+    abilityIconId_(0), abilityLabelId_(0), root_(nullptr)
 {
 }
 

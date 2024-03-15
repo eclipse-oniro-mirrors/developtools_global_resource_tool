@@ -27,7 +27,7 @@ class ReferenceParser {
 public:
     ReferenceParser();
     virtual ~ReferenceParser();
-    uint32_t ParseRefInResources(std::map<int32_t, std::vector<ResourceItem>> &items, const std::string &output);
+    uint32_t ParseRefInResources(std::map<int64_t, std::vector<ResourceItem>> &items, const std::string &output);
     uint32_t ParseRefInResourceItem(ResourceItem &resourceItem) const;
     uint32_t ParseRefInJsonFile(ResourceItem &resourceItem, const std::string &output, const bool isIncrement = false);
     uint32_t ParseRefInString(std::string &value, bool &update) const;

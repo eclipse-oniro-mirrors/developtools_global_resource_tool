@@ -68,10 +68,10 @@ uint32_t ResourceTable::CreateResourceTable()
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ResourceTable::CreateResourceTable(const map<int32_t, vector<shared_ptr<ResourceItem>>> &items)
+uint32_t ResourceTable::CreateResourceTable(const map<int64_t, vector<shared_ptr<ResourceItem>>> &items)
 {
     map<string, vector<TableData>> configs;
-    map<int32_t, vector<ResourceItem>> allResource;
+    map<int64_t, vector<ResourceItem>> allResource;
     for (const auto &item : items) {
         vector<ResourceItem> resourceItems;
         for (const auto &resourceItemPtr : item.second) {
@@ -99,7 +99,7 @@ uint32_t ResourceTable::CreateResourceTable(const map<int32_t, vector<shared_ptr
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ResourceTable::LoadResTable(const string path, map<int32_t, vector<ResourceItem>> &resInfos)
+uint32_t ResourceTable::LoadResTable(const string path, map<int64_t, vector<ResourceItem>> &resInfos)
 {
     ifstream in(path, ios::binary);
     if (!in.is_open()) {
@@ -108,27 +108,27 @@ uint32_t ResourceTable::LoadResTable(const string path, map<int32_t, vector<Reso
     }
 
     in.seekg(0, ios::end);
-    int32_t length = in.tellg();
+    int64_t length = in.tellg();
     if (length <= 0) {
         in.close();
         return RESTOOL_ERROR;
     }
     in.seekg(0, ios::beg);
 
-    int32_t pos = 0;
+    int64_t pos = 0;
     IndexHeader indexHeader;
     if (!ReadFileHeader(in, indexHeader, pos, length)) {
         in.close();
         return RESTOOL_ERROR;
     }
 
-    map<int32_t, vector<KeyParam>> limitKeys;
+    map<int64_t, vector<KeyParam>> limitKeys;
     if (!ReadLimitKeys(in, limitKeys, indexHeader.limitKeyConfigSize, pos, length)) {
         in.close();
         return RESTOOL_ERROR;
     }
 
-    map<int32_t, pair<int32_t, int32_t>> datas;
+    map<int64_t, pair<int64_t, int64_t>> datas;
     if (!ReadIdTables(in, datas, indexHeader.limitKeyConfigSize, pos, length)) {
         in.close();
         return RESTOOL_ERROR;
@@ -146,7 +146,7 @@ uint32_t ResourceTable::LoadResTable(const string path, map<int32_t, vector<Reso
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ResourceTable::CreateIdDefined(const map<int32_t, vector<ResourceItem>> &allResource) const
+uint32_t ResourceTable::CreateIdDefined(const map<int64_t, vector<ResourceItem>> &allResource) const
 {
     cJSON *root = cJSON_CreateObject();
     cJSON *recordArray = cJSON_CreateArray();
@@ -157,7 +157,7 @@ uint32_t ResourceTable::CreateIdDefined(const map<int32_t, vector<ResourceItem>>
         ResType resType = item.GetResType();
         string type = ResourceUtil::ResTypeToString(resType);
         string name = item.GetName();
-        int32_t id = pairPtr.first;
+        int64_t id = pairPtr.first;
         if (type.empty()) {
             cerr << "Error : name = " << name << " ,ResType must is";
             cerr << ResourceUtil::GetAllRestypeString() << endl;
@@ -328,7 +328,7 @@ void ResourceTable::SaveIdSets(const map<string, IdSet> &idSets, ostringstream &
     }
 }
 
-bool ResourceTable::ReadFileHeader(ifstream &in, IndexHeader &indexHeader, int32_t &pos, int32_t length) const
+bool ResourceTable::ReadFileHeader(ifstream &in, IndexHeader &indexHeader, int64_t &pos, int64_t length) const
 {
     pos += sizeof(indexHeader);
     if (pos > length) {
@@ -341,8 +341,8 @@ bool ResourceTable::ReadFileHeader(ifstream &in, IndexHeader &indexHeader, int32
     return true;
 }
 
-bool ResourceTable::ReadLimitKeys(ifstream &in, map<int32_t, vector<KeyParam>> &limitKeys,
-                                  uint32_t count, int32_t &pos, int32_t length) const
+bool ResourceTable::ReadLimitKeys(ifstream &in, map<int64_t, vector<KeyParam>> &limitKeys,
+                                  uint32_t count, int64_t &pos, int64_t length) const
 {
     for (uint32_t i = 0; i< count; i++) {
         pos = pos + TAG_LEN + INT_TO_BYTES + INT_TO_BYTES;
@@ -377,8 +377,8 @@ bool ResourceTable::ReadLimitKeys(ifstream &in, map<int32_t, vector<KeyParam>> &
     return true;
 }
 
-bool ResourceTable::ReadIdTables(std::ifstream &in, std::map<int32_t, std::pair<int32_t, int32_t>> &datas,
-                                 uint32_t count, int32_t &pos, int32_t length) const
+bool ResourceTable::ReadIdTables(std::ifstream &in, std::map<int64_t, std::pair<int64_t, int64_t>> &datas,
+                                 uint32_t count, int64_t &pos, int64_t length) const
 {
     for (uint32_t i = 0; i< count; i++) {
         pos = pos + TAG_LEN + INT_TO_BYTES;
@@ -387,7 +387,7 @@ bool ResourceTable::ReadIdTables(std::ifstream &in, std::map<int32_t, std::pair<
             return false;
         }
         IdSet idss;
-        int32_t offset = in.tellg();
+        int64_t offset = in.tellg();
         in.read(reinterpret_cast<char *>(idss.idTag), TAG_LEN);
         string idTag(reinterpret_cast<const char *>(idss.idTag), TAG_LEN);
         if (idTag != "IDSS") {
@@ -411,7 +411,7 @@ bool ResourceTable::ReadIdTables(std::ifstream &in, std::map<int32_t, std::pair<
     return true;
 }
 
-bool ResourceTable::ReadDataRecordPrepare(ifstream &in, RecordItem &record, int32_t &pos, int32_t length) const
+bool ResourceTable::ReadDataRecordPrepare(ifstream &in, RecordItem &record, int64_t &pos, int64_t length) const
 {
     pos = pos + INT_TO_BYTES;
     if (pos > length) {
@@ -430,11 +430,11 @@ bool ResourceTable::ReadDataRecordPrepare(ifstream &in, RecordItem &record, int3
 }
 
 bool ResourceTable::ReadDataRecordStart(std::ifstream &in, RecordItem &record,
-                                        const std::map<int32_t, std::vector<KeyParam>> &limitKeys,
-                                        const std::map<int32_t, std::pair<int32_t, int32_t>> &datas,
-                                        std::map<int32_t, std::vector<ResourceItem>> &resInfos) const
+                                        const std::map<int64_t, std::vector<KeyParam>> &limitKeys,
+                                        const std::map<int64_t, std::pair<int64_t, int64_t>> &datas,
+                                        std::map<int64_t, std::vector<ResourceItem>> &resInfos) const
 {
-    int32_t offset = in.tellg();
+    int64_t offset = in.tellg();
     offset = offset - INT_TO_BYTES - INT_TO_BYTES - INT_TO_BYTES;
     uint16_t value_size = 0;
     in.read(reinterpret_cast<char *>(&value_size), sizeof(uint16_t));

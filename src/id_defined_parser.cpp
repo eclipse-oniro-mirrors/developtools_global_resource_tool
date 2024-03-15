@@ -21,7 +21,7 @@ namespace OHOS {
 namespace Global {
 namespace Restool {
 using namespace std;
-const int32_t IdDefinedParser::START_SYS_ID = 0x07800000;
+const int64_t IdDefinedParser::START_SYS_ID = 0x07800000;
 IdDefinedParser::IdDefinedParser(const PackageParser &packageParser, const ResourceIdCluster &type)
     : packageParser_(packageParser), type_(type), root_(nullptr)
 {
@@ -38,7 +38,7 @@ uint32_t IdDefinedParser::Init()
 {
     InitParser();
     string idDefinedInput = packageParser_.GetIdDefinedInputPath();
-    int32_t startId = packageParser_.GetStartId();
+    int64_t startId = packageParser_.GetStartId();
     bool combine = packageParser_.GetCombine();
     bool isSys = type_ == ResourceIdCluster::RES_ID_SYS;
     for (const auto &inputPath : packageParser_.GetInputs()) {
@@ -101,7 +101,7 @@ uint32_t IdDefinedParser::Init(const string &filePath, bool isSystem)
         cerr << NEW_LINE_PATH << filePath << endl;
         return RESTOOL_ERROR;
     }
-    int32_t startSysId = 0;
+    int64_t startSysId = 0;
     if (isSystem) {
         startSysId = GetStartId();
         if (startSysId < 0) {
@@ -124,9 +124,9 @@ void IdDefinedParser::InitParser()
     handles_.emplace("order", bind(&IdDefinedParser::ParseOrder, this, _1, _2));
 }
 
-uint32_t IdDefinedParser::IdDefinedToResourceIds(const cJSON *record, bool isSystem, const int32_t startSysId)
+uint32_t IdDefinedParser::IdDefinedToResourceIds(const cJSON *record, bool isSystem, const int64_t startSysId)
 {
-    int32_t index = -1;
+    int64_t index = -1;
     for (cJSON *item = record->child; item; item = item->next) {
         index++;
         if (!cJSON_IsObject(item)) {
@@ -190,10 +190,11 @@ bool IdDefinedParser::ParseId(const cJSON *origId, ResourceId &resourceId)
         cerr << " id must be a hex string, eg:^0[xX][0-9a-fA-F]{8}" << endl;
         return false;
     }
-    int32_t id = strtol(idStr.c_str(), nullptr, 16);
-    if (id < 0x01000000 || (id >= 0x06FFFFFF && id < 0x08000000) || id >= 0x41FFFFFF) {
-        cerr << "Warning: id_defined.json seq = "<< resourceId.seq;
-        cerr << " id must in [0x01000000,0x06FFFFFF),[0x08000000,0x41FFFFFF)." << endl;
+    int64_t id = strtoll(idStr.c_str(), nullptr, 16);
+    if (id < 0x01000000 || (id > 0x06FFFFFF && id < 0x08000000) || id > 0xFFFFFFFF) {
+        cerr << "Error: id_defined.json seq = "<< resourceId.seq;
+        cerr << " id must in [0x01000000,0x06FFFFFF],[0x08000000,0xFFFFFFFF]." << endl;
+        return false;
     }
     resourceId.id = id;
     return true;
@@ -247,7 +248,7 @@ bool IdDefinedParser::ParseOrder(const cJSON *order, ResourceId &resourceId)
         cerr << "Error: id_defined.json seq =" << resourceId.seq << " order not int." << endl;
         return false;
     }
-    int32_t orderId = order->valueint;
+    int64_t orderId = order->valueint;
     if (orderId != resourceId.seq) {
         cerr << "Error: id_defined.json seq =" << resourceId.seq << " order value ";
         cerr << orderId << " vs expect " << resourceId.seq << endl;
@@ -257,7 +258,7 @@ bool IdDefinedParser::ParseOrder(const cJSON *order, ResourceId &resourceId)
     return true;
 }
 
-int32_t IdDefinedParser::GetStartId() const
+int64_t IdDefinedParser::GetStartId() const
 {
     cJSON *startIdNode = cJSON_GetObjectItem(root_, "startId");
     if (!startIdNode) {
@@ -270,7 +271,7 @@ int32_t IdDefinedParser::GetStartId() const
         return -1;
     }
 
-    int32_t id = strtol(startIdNode->valuestring, nullptr, 16);
+    int64_t id = strtoll(startIdNode->valuestring, nullptr, 16);
     return id;
 }
 
