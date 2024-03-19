@@ -39,7 +39,7 @@ const static std::string NEW_LINE_PATH = "\nat ";
 const static std::string LONG_PATH_HEAD = "\\\\?\\";
 const static int32_t VERSION_MAX_LEN = 128;
 const static int32_t INT_TO_BYTES = sizeof(uint32_t);
-static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 5.003" };
+static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 5.004" };
 const static int32_t TAG_LEN = 4;
 
 enum class KeyType {
@@ -190,8 +190,8 @@ struct IdData {
 };
 
 struct ResourceId {
-    int32_t id;
-    int32_t seq;
+    int64_t id;
+    int64_t seq;
     std::string type;
     std::string name;
 };

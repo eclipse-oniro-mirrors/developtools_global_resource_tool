@@ -30,7 +30,7 @@ public:
     virtual ~ResourceAppend() {};
     uint32_t Append();
     uint32_t Combine();
-    const std::map<int32_t, std::vector<std::shared_ptr<ResourceItem>>> GetItems() const
+    const std::map<int64_t, std::vector<std::shared_ptr<ResourceItem>>> GetItems() const
     {
         return items_;
     }
@@ -60,15 +60,15 @@ private:
     std::string ParseString(const char buffer[], int32_t length, int32_t &offset) const;
     int32_t ParseInt32(const char buffer[], int32_t length, int32_t &offset) const;
     bool ParseRef();
-    bool CheckModuleResourceItem(const std::shared_ptr<ResourceItem> &resourceItem, int32_t  id);
+    bool CheckModuleResourceItem(const std::shared_ptr<ResourceItem> &resourceItem, int64_t  id);
     bool IsBaseIdDefined(const FileInfo &fileInfo);
 #ifdef __WIN32
     bool LoadResourceItemWin(const std::string &filePath);
 #endif
     void CheckAllItems(std::vector<std::pair<ResType, std::string>> &noBaseResource);
     const PackageParser &packageParser_;
-    std::map<int32_t, std::vector<std::shared_ptr<ResourceItem>>> items_;
-    std::map<int32_t, std::vector<std::shared_ptr<ResourceItem>>> itemsForModule_;
+    std::map<int64_t, std::vector<std::shared_ptr<ResourceItem>>> items_;
+    std::map<int64_t, std::vector<std::shared_ptr<ResourceItem>>> itemsForModule_;
     std::vector<std::shared_ptr<ResourceItem>> refs_;
 };
 }

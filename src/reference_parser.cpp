@@ -64,7 +64,7 @@ ReferenceParser::~ReferenceParser()
     }
 }
 
-uint32_t ReferenceParser::ParseRefInResources(map<int32_t, vector<ResourceItem>> &items, const string &output)
+uint32_t ReferenceParser::ParseRefInResources(map<int64_t, vector<ResourceItem>> &items, const string &output)
 {
     for (auto &iter : items) {
         for (auto &resourceItem : iter.second) {

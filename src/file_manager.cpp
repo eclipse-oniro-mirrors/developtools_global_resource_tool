@@ -44,7 +44,7 @@ uint32_t FileManager::ScanModules(const vector<string> &inputs, const string &ou
     return ParseReference(output);
 }
 
-uint32_t FileManager::MergeResourceItem(const map<int32_t, vector<ResourceItem>> &resourceInfos)
+uint32_t FileManager::MergeResourceItem(const map<int64_t, vector<ResourceItem>> &resourceInfos)
 {
     return ResourceModule::MergeResourceItem(items_, resourceInfos);
 }

@@ -28,19 +28,19 @@ public:
     ResourceModule(const std::string &modulePath, const std::string &moduleOutput, const std::string &moduleName);
     virtual ~ResourceModule() {};
     uint32_t ScanResource();
-    const std::map<int32_t, std::vector<ResourceItem>> &GetOwner() const;
+    const std::map<int64_t, std::vector<ResourceItem>> &GetOwner() const;
     const std::map<ResType, std::vector<DirectoryInfo>> &GetScanDirectorys() const;
-    static uint32_t MergeResourceItem(std::map<int32_t, std::vector<ResourceItem>> &alls,
-        const std::map<int32_t, std::vector<ResourceItem>> &other, bool tipError = false);
+    static uint32_t MergeResourceItem(std::map<int64_t, std::vector<ResourceItem>> &alls,
+        const std::map<int64_t, std::vector<ResourceItem>> &other, bool tipError = false);
 
 protected:
     const std::string &modulePath_;
     const std::string &moduleOutput_;
     const std::string &moduleName_;
-    std::map<int32_t, std::vector<ResourceItem>> owner_;
+    std::map<int64_t, std::vector<ResourceItem>> owner_;
     std::map<ResType, std::vector<DirectoryInfo>> scanDirs_;
 private:
-    void Push(const std::map<int32_t, std::vector<ResourceItem>> &other);
+    void Push(const std::map<int64_t, std::vector<ResourceItem>> &other);
     static const std::vector<ResType> SCAN_SEQ;
 };
 }

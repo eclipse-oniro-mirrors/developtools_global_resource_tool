@@ -27,7 +27,7 @@ namespace Restool {
 class FileManager : public Singleton<FileManager> {
 public:
     uint32_t ScanModules(const std::vector<std::string> &inputs, const std::string &output);
-    const std::map<int32_t, std::vector<ResourceItem>> &GetResources() const
+    const std::map<int64_t, std::vector<ResourceItem>> &GetResources() const
     {
         return items_;
     };
@@ -35,7 +35,7 @@ public:
     {
         moduleName_ = moduleName;
     };
-    uint32_t MergeResourceItem(const std::map<int32_t, std::vector<ResourceItem>> &resourceInfos);
+    uint32_t MergeResourceItem(const std::map<int64_t, std::vector<ResourceItem>> &resourceInfos);
 
 private:
     uint32_t ScanModule(const std::string &input, const std::string &output);
@@ -43,7 +43,7 @@ private:
     void CheckAllItems(std::vector<std::pair<ResType, std::string>> &noBaseResource);
 
     // id, resource items
-    std::map<int32_t, std::vector<ResourceItem>> items_;
+    std::map<int64_t, std::vector<ResourceItem>> items_;
     std::string moduleName_;
 };
 }
