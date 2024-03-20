@@ -259,8 +259,8 @@ bool ConfigParser::ParseAbilities(const cJSON *abilities)
 
 bool ConfigParser::ParseAbilitiy(const cJSON *ability, bool &isMainAbility)
 {
-    if (!ability || !cJSON_IsArray(ability)) {
-        cerr << "Error: ability not array." << NEW_LINE_PATH << filePath_ << endl;
+    if (!ability || !cJSON_IsObject(ability)) {
+        cerr << "Error: ability not object." << NEW_LINE_PATH << filePath_ << endl;
         return false;
     }
     if (cJSON_GetArraySize(ability) == 0) {
