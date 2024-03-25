@@ -26,7 +26,7 @@ namespace Global {
 namespace Restool {
 class FileManager : public Singleton<FileManager> {
 public:
-    uint32_t ScanModules(const std::vector<std::string> &inputs, const std::string &output);
+    uint32_t ScanModules(const std::vector<std::string> &inputs, const std::string &output, const bool isHar);
     const std::map<int64_t, std::vector<ResourceItem>> &GetResources() const
     {
         return items_;

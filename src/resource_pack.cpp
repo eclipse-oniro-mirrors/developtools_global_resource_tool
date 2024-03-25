@@ -325,7 +325,7 @@ uint32_t ResourcePack::ScanResources(const vector<string> &inputs, const string 
 {
     auto &fileManager = FileManager::GetInstance();
     fileManager.SetModuleName(moduleName_);
-    if (fileManager.ScanModules(inputs, output) != RESTOOL_SUCCESS) {
+    if (fileManager.ScanModules(inputs, output, configJson_.IsHar()) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;

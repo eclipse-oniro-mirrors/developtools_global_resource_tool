@@ -59,6 +59,10 @@ public:
     {
         return dependEntry;
     }
+    bool IsHar()
+    {
+        return moduleType_ == ModuleType::HAR;
+    }
     static void SetUseModule()
     {
         useModule_ = true;
