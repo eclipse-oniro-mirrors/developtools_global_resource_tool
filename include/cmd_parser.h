@@ -55,6 +55,7 @@ public:
     bool GetIconCheck() const;
     const TargetConfig &GetTargetConfigValues() const;
     bool IsTargetConfig() const;
+    const std::vector<std::string> &GetSysIdDefinedPaths() const;
 
 private:
     void InitCommand();
@@ -78,6 +79,7 @@ private:
     uint32_t ShowHelp() const;
     uint32_t SetIdDefinedOutput(const std::string& argValue);
     uint32_t SetIdDefinedInputPath(const std::string& argValue);
+    uint32_t AddSysIdDefined(const std::string& argValue);
     bool IsAscii(const std::string& argValue) const;
     bool IsLongOpt(char *argv[]) const;
     uint32_t IconCheck();
@@ -105,6 +107,7 @@ private:
     bool isIconCheck_ = false;
     TargetConfig targetConfig_;
     bool isTtargetConfig_;
+    std::vector<std::string> sysIdDefinedPaths_;
 };
 
 template<class T>

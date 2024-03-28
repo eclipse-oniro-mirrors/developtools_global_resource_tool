@@ -40,13 +40,15 @@ private:
     uint32_t Init(const std::string &filePath, bool isSystem);
     using ParseFunction = std::function<bool(const cJSON *, ResourceId&)>;
     void InitParser();
-    uint32_t IdDefinedToResourceIds(const cJSON *record, bool isSystem, const int64_t strtSysId = 0);
+    uint32_t IdDefinedToResourceIds(const std::string &filePath, const cJSON *record,
+        bool isSystem, const int64_t strtSysId = 0);
     bool ParseType(const cJSON *type, ResourceId &resourceId);
     bool ParseName(const cJSON *name, ResourceId &resourceId);
     bool ParseOrder(const cJSON *order, ResourceId &resourceId);
     bool ParseId(const cJSON *id, ResourceId &resourceId);
-    bool PushResourceId(const ResourceId &resourceId, bool isSystem);
+    bool PushResourceId(const std::string &filePath, const ResourceId &resourceId, bool isSystem);
     int64_t GetStartId() const;
+    std::map<std::string, std::vector<std::pair<ResType, std::string>>> checkDefinedIds_;
     std::map<std::pair<ResType, std::string>, ResourceId> sysDefinedIds_;
     std::map<std::pair<ResType, std::string>, ResourceId> appDefinedIds_;
     std::map<int64_t, ResourceId> idDefineds_;
