@@ -39,7 +39,7 @@ const static std::string NEW_LINE_PATH = "\nat ";
 const static std::string LONG_PATH_HEAD = "\\\\?\\";
 const static int32_t VERSION_MAX_LEN = 128;
 const static int32_t INT_TO_BYTES = sizeof(uint32_t);
-static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 5.006" };
+static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 5.007" };
 const static int32_t TAG_LEN = 4;
 
 enum class KeyType {
@@ -126,6 +126,7 @@ enum Option {
     DEPENDENTRY = 3,
     ICON_CHECK = 4,
     TARGET_CONFIG = 5,
+    DEFINED_SYSIDS = 6,
     STARTID = 'e',
     FORCEWRITE = 'f',
     HELP = 'h',

@@ -42,6 +42,7 @@ const struct option PackageParser::CMD_OPTS[] = {
     { "defined-ids", required_argument, nullptr, Option::DEFINED_IDS},
     { "icon-check", no_argument, nullptr, Option::ICON_CHECK},
     { "target-config", required_argument, nullptr, Option::TARGET_CONFIG},
+    { "defined-sysids", required_argument, nullptr, Option::DEFINED_SYSIDS},
     { 0, 0, 0, 0},
 };
 
@@ -110,6 +111,11 @@ const string &PackageParser::GetDependEntry() const
     return dependEntry_;
 }
 
+const vector<std::string> &PackageParser::GetSysIdDefinedPaths() const
+{
+    return sysIdDefinedPaths_;
+}
+
 uint32_t PackageParser::AddInput(const string& argValue)
 {
     string inputPath = ResourceUtil::RealPath(argValue);
@@ -128,6 +134,28 @@ uint32_t PackageParser::AddInput(const string& argValue)
         return RESTOOL_ERROR;
     }
     inputs_.push_back(inputPath);
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t PackageParser::AddSysIdDefined(const std::string& argValue)
+{
+    string sysIdDefinedPath = ResourceUtil::RealPath(argValue);
+    if (sysIdDefinedPath.empty()) {
+        cerr << "Error: invalid system id_defined.json path: '" << argValue << "'" << endl;
+        return RESTOOL_ERROR;
+    }
+
+    auto ret = find_if(sysIdDefinedPaths_.begin(), sysIdDefinedPaths_.end(),
+        [sysIdDefinedPath](auto iter) {return sysIdDefinedPath == iter;});
+    if (ret != sysIdDefinedPaths_.end()) {
+        cerr << "Error: repeat system id_defined.json path: '" << argValue << "'" << endl;
+        return RESTOOL_ERROR;
+    }
+
+    if (!IsAscii(sysIdDefinedPath)) {
+        return RESTOOL_ERROR;
+    }
+    sysIdDefinedPaths_.push_back(sysIdDefinedPath);
     return RESTOOL_SUCCESS;
 }
 
@@ -419,6 +447,7 @@ void PackageParser::InitCommand()
     handles_.emplace(Option::DEFINED_IDS, bind(&PackageParser::SetIdDefinedInputPath, this, _1));
     handles_.emplace(Option::ICON_CHECK, [this](const string &) -> uint32_t { return IconCheck(); });
     handles_.emplace(Option::TARGET_CONFIG, bind(&PackageParser::ParseTargetConfig, this, _1));
+    handles_.emplace(Option::DEFINED_SYSIDS, bind(&PackageParser::AddSysIdDefined, this, _1));
 }
 
 uint32_t PackageParser::HandleProcess(int c, const string& argValue)

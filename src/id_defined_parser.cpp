@@ -56,6 +56,7 @@ uint32_t IdDefinedParser::Init()
             return RESTOOL_ERROR;
         }
     }
+    //SystemResource.hap only defined by base/element/id_defined.json
     if (isSys) {
         return RESTOOL_SUCCESS;
     }
@@ -63,6 +64,11 @@ uint32_t IdDefinedParser::Init()
         appDefinedIds_.clear();
         string idDefinedPath = FileEntry::FilePath(idDefinedInput).GetPath();
         if (Init(idDefinedPath, false) != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
+        }
+    }
+    for (const auto &sysIdDefinedPath : packageParser_.GetSysIdDefinedPaths()) {
+        if (Init(sysIdDefinedPath, true) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }
     }
@@ -109,7 +115,7 @@ uint32_t IdDefinedParser::Init(const string &filePath, bool isSystem)
         }
     }
 
-    if (IdDefinedToResourceIds(recordNode, isSystem, startSysId) != RESTOOL_SUCCESS) {
+    if (IdDefinedToResourceIds(filePath, recordNode, isSystem, startSysId) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
@@ -124,7 +130,8 @@ void IdDefinedParser::InitParser()
     handles_.emplace("order", bind(&IdDefinedParser::ParseOrder, this, _1, _2));
 }
 
-uint32_t IdDefinedParser::IdDefinedToResourceIds(const cJSON *record, bool isSystem, const int64_t startSysId)
+uint32_t IdDefinedParser::IdDefinedToResourceIds(const std::string &filePath, const cJSON *record,
+    bool isSystem, const int64_t startSysId)
 {
     int64_t index = -1;
     for (cJSON *item = record->child; item; item = item->next) {
@@ -143,14 +150,14 @@ uint32_t IdDefinedParser::IdDefinedToResourceIds(const cJSON *record, bool isSys
                 return RESTOOL_ERROR;
             }
         }
-        if (!PushResourceId(resourceId, isSystem)) {
+        if (!PushResourceId(filePath, resourceId, isSystem)) {
             return RESTOOL_ERROR;
         }
     }
     return RESTOOL_SUCCESS;
 }
 
-bool IdDefinedParser::PushResourceId(const ResourceId &resourceId, bool isSystem)
+bool IdDefinedParser::PushResourceId(const std::string &filePath, const ResourceId &resourceId, bool isSystem)
 {
     ResType resType = ResourceUtil::GetResTypeFromString(resourceId.type);
     auto ret = idDefineds_.emplace(resourceId.id, resourceId);
@@ -158,18 +165,26 @@ bool IdDefinedParser::PushResourceId(const ResourceId &resourceId, bool isSystem
         cerr << "Error: '" << ret.first->second.name << "' and '" << resourceId.name << "' defind the same ID." << endl;
         return false;
     }
-    if (isSystem) {
-        auto ret1 = sysDefinedIds_.emplace(make_pair(resType, resourceId.name), resourceId);
-        if (!ret1.second) {
-            cerr << "Error: the same type of '" << resourceId.name << "' exists in the id_defined.json. " << endl;
+    auto checkRet = checkDefinedIds_.find(filePath);
+    if (checkRet != checkDefinedIds_.end()) {
+        bool found = any_of(checkRet->second.begin(), checkRet->second.end(),
+            [resType, resourceId](const auto &iterItem) {
+            return (resType == iterItem.first)  && (resourceId.name == iterItem.second);
+        });
+        if (found) {
+            cerr << "Error: the same resource of '" << resourceId.name << "' exists in the " << filePath << endl;
             return false;
         }
+        checkRet->second.push_back(make_pair(resType, resourceId.name));
     } else {
-        auto ret2 = appDefinedIds_.emplace(make_pair(resType, resourceId.name), resourceId);
-        if (!ret2.second) {
-            cerr << "Error: the same type of '" << resourceId.name << "' exists in the id_defined.json. " << endl;
-            return false;
-        }
+        std::vector<std::pair<ResType, std::string>> vects;
+        vects.push_back(make_pair(resType, resourceId.name));
+        checkDefinedIds_.emplace(filePath, vects);
+    }
+    if (isSystem) {
+        sysDefinedIds_.emplace(make_pair(resType, resourceId.name), resourceId);
+    } else {
+        appDefinedIds_.emplace(make_pair(resType, resourceId.name), resourceId);
     }
     return true;
 }

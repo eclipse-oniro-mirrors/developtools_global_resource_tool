@@ -88,6 +88,8 @@ void ResConfigParser::InitFileListCommand(HandleBack callback)
         Option::MODULES, callback));
     fileListHandles_.emplace("iconCheck", bind(&ResConfigParser::GetBool, this, _1,
         Option::ICON_CHECK, callback));
+    fileListHandles_.emplace("definedSysIds", bind(&ResConfigParser::GetString, this, _1,
+        Option::DEFINED_SYSIDS, callback));
 }
 
 uint32_t ResConfigParser::GetString(const cJSON *node, int c, HandleBack callback)
