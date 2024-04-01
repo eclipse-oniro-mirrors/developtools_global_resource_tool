@@ -60,8 +60,9 @@ uint32_t IdDefinedParser::Init()
     if (isSys) {
         return RESTOOL_SUCCESS;
     }
-    if (!idDefinedInput.empty()) {
+    if (!idDefinedInput.empty() && ResourceUtil::FileExist(idDefinedInput)) {
         appDefinedIds_.clear();
+        idDefineds_.clear();
         string idDefinedPath = FileEntry::FilePath(idDefinedInput).GetPath();
         if (Init(idDefinedPath, false) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
