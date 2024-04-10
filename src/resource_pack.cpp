@@ -295,6 +295,7 @@ uint32_t ResourcePack::CopyRawFileOrResFileImpl(const string &src, const string 
             }
         } else {
             if (ResourceUtil::FileExist(subPath)) {
+                cerr << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly." << endl;
                 continue;
             }
             if (!ResourceUtil::CopyFleInner(entry->GetFilePath().GetPath(), subPath)) {
