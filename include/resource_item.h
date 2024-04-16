@@ -48,7 +48,7 @@ private:
     void ReleaseData();
     void CopyFrom(const ResourceItem &other);
     int8_t *data_ = nullptr;
-    uint32_t dataLen_;
+    uint32_t dataLen_ = 0;
     std::string name_;
     std::vector<KeyParam> keyparams_;
     ResType type_;

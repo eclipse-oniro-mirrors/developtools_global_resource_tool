@@ -357,7 +357,7 @@ bool ResourceAppend::WriteFileInner(ostringstream &outStream, const string &outp
 
 bool ResourceAppend::WriteResourceItem(const ResourceItem &resourceItem, ostringstream &out)
 {
-    int32_t size = resourceItem.GetName().length();
+    uint32_t size = resourceItem.GetName().length();
     out.write(reinterpret_cast<const char *>(&size), sizeof(int32_t));
     out.write(reinterpret_cast<const char *>(resourceItem.GetName().c_str()), size);
 
@@ -540,7 +540,11 @@ bool ResourceAppend::LoadResourceItemFromMem(const char buffer[], int32_t length
         for (int i = 0; i < keyParamSize; i++) {
             KeyParam keyParam;
             keyParam.keyType = static_cast<KeyType>(ParseInt32(buffer, length, offset));
-            keyParam.value = ParseInt32(buffer, length, offset);
+            int32_t value = ParseInt32(buffer, length, offset);
+            if (value == -1) {
+                return false;
+            }
+            keyParam.value = static_cast<uint32_t>(value);
             keyParams.push_back(keyParam);
         }
         if (limitKeyStr != "base" && !limitKeyStr.empty() && !SelectCompileParse::IsSelectCompile(keyParams)) {

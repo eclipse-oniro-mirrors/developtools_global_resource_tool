@@ -74,12 +74,12 @@ private:
     void SaveLimitKeyConfigs(const std::map<std::string, LimitKeyConfig> &limitKeyConfigs,
                              std::ostringstream &out) const;
     void SaveIdSets(const std::map<std::string, IdSet> &idSets, std::ostringstream &out) const;
-    bool ReadFileHeader(std::ifstream &in, IndexHeader &indexHeader, int64_t &pos, int64_t length) const;
+    bool ReadFileHeader(std::ifstream &in, IndexHeader &indexHeader, uint64_t &pos, int64_t length) const;
     bool ReadLimitKeys(std::ifstream &in, std::map<int64_t, std::vector<KeyParam>> &limitKeys,
-                       uint32_t count, int64_t &pos, int64_t length) const;
+                       uint32_t count, uint64_t &pos, int64_t length) const;
     bool ReadIdTables(std::ifstream &in, std::map<int64_t, std::pair<int64_t, int64_t>> &datas,
-                      uint32_t count, int64_t &pos, int64_t length) const;
-    bool ReadDataRecordPrepare(std::ifstream &in, RecordItem &record, int64_t &pos, int64_t length) const;
+                      uint32_t count, uint64_t &pos, int64_t length) const;
+    bool ReadDataRecordPrepare(std::ifstream &in, RecordItem &record, uint64_t &pos, int64_t length) const;
     bool ReadDataRecordStart(std::ifstream &in, RecordItem &record,
                              const std::map<int64_t, std::vector<KeyParam>> &limitKeys,
                              const std::map<int64_t, std::pair<int64_t, int64_t>> &datas,

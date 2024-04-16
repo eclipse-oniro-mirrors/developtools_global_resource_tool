@@ -182,9 +182,9 @@ int64_t IdWorker::GenerateSysId(ResType resType, const string &name)
     return -1;
 }
 
-int64_t IdWorker::GetMaxId(int64_t startId) const
+uint64_t IdWorker::GetMaxId(uint64_t startId) const
 {
-    int64_t flag = 1;
+    uint64_t flag = 1;
     while ((flag & startId) == 0) {
         flag = flag << 1;
     }

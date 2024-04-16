@@ -177,8 +177,11 @@ bool JsonCompiler::HandleInteger(const cJSON *objectNode, ResourceItem &resource
     }
     if (cJSON_IsString(valueNode)) {
         return PushString(valueNode->valuestring, resourceItem);
+    } else if (cJSON_IsNumber(valueNode)) {
+        return PushString(to_string(valueNode->valueint), resourceItem);
+    } else {
+        return false;
     }
-    return PushString(to_string(valueNode->valueint), resourceItem);
 }
 
 bool JsonCompiler::HandleBoolean(const cJSON *objectNode, ResourceItem &resourceItem) const
@@ -274,6 +277,9 @@ bool JsonCompiler::HandlePlural(const cJSON *objectNode, ResourceItem &resourceI
                 return false;
             }
             cJSON *quantityNode = cJSON_GetObjectItem(arrayItem, TAG_QUANTITY.c_str());
+            if (!quantityNode || !cJSON_IsString(quantityNode)) {
+                return false;
+            }
             string quantityValue = quantityNode->valuestring;
             if (find(attrs.begin(), attrs.end(), quantityValue) != attrs.end()) {
                 cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity '" << quantityValue;
@@ -283,6 +289,9 @@ bool JsonCompiler::HandlePlural(const cJSON *objectNode, ResourceItem &resourceI
             attrs.push_back(quantityValue);
             values.push_back(quantityValue);
             cJSON *valueNode = cJSON_GetObjectItem(arrayItem, TAG_VALUE.c_str());
+            if (!valueNode || !cJSON_IsString(valueNode)) {
+                return false;
+            }
             values.push_back(valueNode->valuestring);
             return true;
         });

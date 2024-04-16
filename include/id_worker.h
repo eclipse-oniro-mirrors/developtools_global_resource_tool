@@ -38,10 +38,10 @@ public:
 private:
     int64_t GenerateAppId(ResType resType, const std::string &name);
     int64_t GenerateSysId(ResType resType, const std::string &name);
-    int64_t GetMaxId(int64_t startId) const;
+    uint64_t GetMaxId(uint64_t startId) const;
     int64_t GetCurId();
     int64_t appId_;
-    int64_t maxId_;
+    uint64_t maxId_;
     ResourceIdCluster type_;
     std::map<std::pair<ResType, std::string>, int64_t> ids_;
     std::map<std::pair<ResType, std::string>, ResourceId> sysDefinedIds_;
