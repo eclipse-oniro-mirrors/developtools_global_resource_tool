@@ -282,7 +282,7 @@ void KeyParser::PushMccMnc(const string &folderName, KeyType type, vector<KeyPar
 {
     KeyParam keyParam;
     keyParam.keyType = type;
-    keyParam.value = atoi(folderName.substr(MCC_MNC_KEY_LENGHT).c_str());
+    keyParam.value = static_cast<uint32_t>(atoi(folderName.substr(MCC_MNC_KEY_LENGHT).c_str()));
     keyparams.push_back(keyParam);
 }
 

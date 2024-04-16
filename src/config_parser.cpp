@@ -367,12 +367,14 @@ bool ConfigParser::ParseJsonArrayRef(cJSON *parent, const string &key, cJSON *no
     for (cJSON *item = node->child; item; item = item->next) {
         if (!cJSON_IsString(item)) {
             cerr << "Error: '" << key << "' invalid value." << NEW_LINE_PATH << filePath_ << endl;
+            cJSON_Delete(array);
             return false;
         }
         string value = item->valuestring;
         bool update = false;
         if (!GetRefIdFromString(value, update, JSON_ARRAY_IDS.at(key))) {
             cerr << "Error: '" << key << "' value " << value << " invalid." << NEW_LINE_PATH << filePath_ << endl;
+            cJSON_Delete(array);
             return false;
         }
         if (update) {
@@ -380,6 +382,7 @@ bool ConfigParser::ParseJsonArrayRef(cJSON *parent, const string &key, cJSON *no
         }
     }
     cJSON_AddItemToObject(parent, (key + "Id").c_str(), array);
+    cJSON_Delete(array);
     return true;
 }
 

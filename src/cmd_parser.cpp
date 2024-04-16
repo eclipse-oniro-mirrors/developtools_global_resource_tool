@@ -464,7 +464,7 @@ uint32_t PackageParser::ParseFileList(const string& fileListPath)
 {
     isFileList_ = true;
     ResConfigParser resConfigParser;
-    if (resConfigParser.Init(fileListPath, [this](int c, const string &argValue) -> int32_t {
+    if (resConfigParser.Init(fileListPath, [this](int c, const string &argValue) -> uint32_t {
         return HandleProcess(c, argValue);
     }) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
@@ -480,6 +480,10 @@ uint32_t PackageParser::ParseCommand(int argc, char *argv[])
         opterr = 0;
         int c = getopt_long(argc, argv, CMD_PARAMS.c_str(), CMD_OPTS, &optIndex);
         if (optIndex != -1) {
+            // 1 or 2 menas optind offset value
+            if ((optarg == nullptr && optind - 1 < 0) || (optarg != nullptr && optind - 2 < 0)) {
+                return RESTOOL_ERROR;
+            }
             string curOpt = (optarg == nullptr) ? argv[optind - 1] : argv[optind - 2];
             if (curOpt != ("--" + string(CMD_OPTS[optIndex].name))) {
                 cerr << "Error: unknown option " << curOpt << endl;
@@ -523,6 +527,9 @@ uint32_t PackageParser::ParseCommand(int argc, char *argv[])
 
 bool PackageParser::IsLongOpt(char *argv[]) const
 {
+    if (optind - 1 < 0) {
+        return false;
+    }
     for (auto iter : CMD_OPTS) {
         if (optopt == iter.val && argv[optind - 1] == ("--" + string(iter.name))) {
             return true;

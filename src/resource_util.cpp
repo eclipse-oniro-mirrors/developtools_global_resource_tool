@@ -178,7 +178,7 @@ vector<string> ResourceUtil::DecomposeStrings(const string &content)
             result.clear();
             return result;
         }
-        uint16_t size = (content[pos] & 0xff) | ((content[pos + 1] & 0xff) << 8);
+        uint16_t size = (content[pos] & 0xff) | ((content[pos + 1] & 0xff) << 8); // Move 8 bits to the left
         pos += HEAD_LENGTH;
 
         if (pos + size >= length) {

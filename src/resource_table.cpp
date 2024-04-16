@@ -115,7 +115,7 @@ uint32_t ResourceTable::LoadResTable(const string path, map<int64_t, vector<Reso
     }
     in.seekg(0, ios::beg);
 
-    int64_t pos = 0;
+    uint64_t pos = 0;
     IndexHeader indexHeader;
     if (!ReadFileHeader(in, indexHeader, pos, length)) {
         in.close();
@@ -150,9 +150,24 @@ uint32_t ResourceTable::CreateIdDefined(const map<int64_t, vector<ResourceItem>>
 {
     cJSON *root = cJSON_CreateObject();
     cJSON *recordArray = cJSON_CreateArray();
+    if (recordArray == nullptr) {
+        cerr << "Error: failed to create cJSON object for record array." << endl;
+        cJSON_Delete(root);
+        return RESTOOL_ERROR;
+    }
     cJSON_AddItemToObject(root, "record", recordArray);
     for (const auto &pairPtr : allResource) {
+        if (pairPtr.second.empty()) {
+            cerr << "Error: resource item vector is empty." << endl;
+            cJSON_Delete(root);
+            return RESTOOL_ERROR;
+        }
         cJSON *jsonItem = cJSON_CreateObject();
+        if (jsonItem == nullptr) {
+            cerr << "Error: failed to create cJSON object for resource item." << endl;
+            cJSON_Delete(root);
+            return RESTOOL_ERROR;
+        }
         ResourceItem item = pairPtr.second.front();
         ResType resType = item.GetResType();
         string type = ResourceUtil::ResTypeToString(resType);
@@ -161,6 +176,8 @@ uint32_t ResourceTable::CreateIdDefined(const map<int64_t, vector<ResourceItem>>
         if (type.empty()) {
             cerr << "Error : name = " << name << " ,ResType must is";
             cerr << ResourceUtil::GetAllRestypeString() << endl;
+            cJSON_Delete(jsonItem);
+            cJSON_Delete(root);
             return RESTOOL_ERROR;
         }
         cJSON_AddStringToObject(jsonItem, "type", type.c_str());
@@ -169,8 +186,10 @@ uint32_t ResourceTable::CreateIdDefined(const map<int64_t, vector<ResourceItem>>
         cJSON_AddItemToArray(recordArray, jsonItem);
     }
     if (!ResourceUtil::SaveToJsonFile(idDefinedPath_, root)) {
+        cJSON_Delete(root);
         return RESTOOL_ERROR;
     }
+    cJSON_Delete(root);
     return RESTOOL_SUCCESS;
 }
 
@@ -328,7 +347,7 @@ void ResourceTable::SaveIdSets(const map<string, IdSet> &idSets, ostringstream &
     }
 }
 
-bool ResourceTable::ReadFileHeader(ifstream &in, IndexHeader &indexHeader, int64_t &pos, int64_t length) const
+bool ResourceTable::ReadFileHeader(ifstream &in, IndexHeader &indexHeader, uint64_t &pos, int64_t length) const
 {
     pos += sizeof(indexHeader);
     if (pos > length) {
@@ -342,7 +361,7 @@ bool ResourceTable::ReadFileHeader(ifstream &in, IndexHeader &indexHeader, int64
 }
 
 bool ResourceTable::ReadLimitKeys(ifstream &in, map<int64_t, vector<KeyParam>> &limitKeys,
-                                  uint32_t count, int64_t &pos, int64_t length) const
+                                  uint32_t count, uint64_t &pos, int64_t length) const
 {
     for (uint32_t i = 0; i< count; i++) {
         pos = pos + TAG_LEN + INT_TO_BYTES + INT_TO_BYTES;
@@ -378,7 +397,7 @@ bool ResourceTable::ReadLimitKeys(ifstream &in, map<int64_t, vector<KeyParam>> &
 }
 
 bool ResourceTable::ReadIdTables(std::ifstream &in, std::map<int64_t, std::pair<int64_t, int64_t>> &datas,
-                                 uint32_t count, int64_t &pos, int64_t length) const
+                                 uint32_t count, uint64_t &pos, int64_t length) const
 {
     for (uint32_t i = 0; i< count; i++) {
         pos = pos + TAG_LEN + INT_TO_BYTES;
@@ -411,7 +430,7 @@ bool ResourceTable::ReadIdTables(std::ifstream &in, std::map<int64_t, std::pair<
     return true;
 }
 
-bool ResourceTable::ReadDataRecordPrepare(ifstream &in, RecordItem &record, int64_t &pos, int64_t length) const
+bool ResourceTable::ReadDataRecordPrepare(ifstream &in, RecordItem &record, uint64_t &pos, int64_t length) const
 {
     pos = pos + INT_TO_BYTES;
     if (pos > length) {

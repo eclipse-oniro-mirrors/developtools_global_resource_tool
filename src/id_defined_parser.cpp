@@ -247,7 +247,8 @@ bool IdDefinedParser::ParseName(const cJSON *name, ResourceId &resourceId)
     }
     resourceId.name = name->valuestring;
     if (type_ == ResourceIdCluster::RES_ID_SYS &&
-        (resourceId.id & START_SYS_ID) == START_SYS_ID && !ResourceUtil::IsValidName(resourceId.name)) {
+        (static_cast<uint64_t>(resourceId.id) & static_cast<uint64_t>(START_SYS_ID)) == START_SYS_ID &&
+        !ResourceUtil::IsValidName(resourceId.name)) {
         cerr << "Error: id_defined.json."<< endl;
         return false;
     }
