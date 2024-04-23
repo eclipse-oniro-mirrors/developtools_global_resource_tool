@@ -38,7 +38,7 @@ uint32_t IdDefinedParser::Init()
 {
     InitParser();
     string idDefinedInput = packageParser_.GetIdDefinedInputPath();
-    int64_t startId = packageParser_.GetStartId();
+    int64_t startId = static_cast<int64_t>(packageParser_.GetStartId());
     bool combine = packageParser_.GetCombine();
     bool isSys = type_ == ResourceIdCluster::RES_ID_SYS;
     for (const auto &inputPath : packageParser_.GetInputs()) {

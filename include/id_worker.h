@@ -32,15 +32,13 @@ public:
     std::vector<ResourceId> GetHeaderId() const;
     int64_t GetId(ResType resType, const std::string &name) const;
     int64_t GetSystemId(ResType resType, const std::string &name) const;
-    bool PushCache(ResType resType, const std::string &name, int64_t id);
-    void PushDelId(int64_t id);
 
 private:
     int64_t GenerateAppId(ResType resType, const std::string &name);
     int64_t GenerateSysId(ResType resType, const std::string &name);
     uint64_t GetMaxId(uint64_t startId) const;
     int64_t GetCurId();
-    int64_t appId_;
+    uint64_t appId_;
     uint64_t maxId_;
     ResourceIdCluster type_;
     std::map<std::pair<ResType, std::string>, int64_t> ids_;
