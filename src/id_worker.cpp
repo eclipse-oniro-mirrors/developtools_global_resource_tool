@@ -34,7 +34,7 @@ uint32_t IdWorker::Init(ResourceIdCluster &type, int64_t startId)
     sysDefinedIds_ = idDefinedParser.GetSysDefinedIds();
     appDefinedIds_ = idDefinedParser.GetAppDefinedIds();
     if (type == ResourceIdCluster::RES_ID_APP) {
-        appId_ = startId;
+        appId_ = static_cast<uint64_t>(startId);
         maxId_ = GetMaxId(startId);
     }
     return RESTOOL_SUCCESS;
@@ -84,33 +84,6 @@ int64_t IdWorker::GetSystemId(ResType resType, const string &name) const
     return result->second.id;
 }
 
-bool IdWorker::PushCache(ResType resType, const string &name, int64_t id)
-{
-    auto result = cacheIds_.emplace(make_pair(resType, name), id);
-    if (!result.second) {
-        return false;
-    }
-    if (appId_ == id) {
-        appId_ = id + 1;
-        return true;
-    }
-
-    if (id < appId_) {
-        return false;
-    }
-
-    for (int64_t i = appId_; i < id; i++) {
-        delIds_.push_back(i);
-    }
-    appId_ = id + 1;
-    return true;
-}
-
-void IdWorker::PushDelId(int64_t id)
-{
-    delIds_.push_back(id);
-}
-
 int64_t IdWorker::GenerateAppId(ResType resType, const string &name)
 {
     auto result = ids_.find(make_pair(resType, name));
@@ -151,15 +124,15 @@ int64_t IdWorker::GenerateAppId(ResType resType, const string &name)
 int64_t IdWorker::GetCurId()
 {
     if (appDefinedIds_.size() == 0) {
-        return appId_++;
+        return static_cast<int64_t>(appId_++);
     }
     while (appId_ <= maxId_) {
-        int64_t id = appId_;
+        uint64_t id = appId_;
         auto ret = find_if(appDefinedIds_.begin(), appDefinedIds_.end(), [id](const auto &iter) {
             return id == iter.second.id;
         });
         if (ret == appDefinedIds_.end()) {
-            return appId_++;
+            return static_cast<int64_t>(appId_++);
         }
         appId_++;
     }
@@ -188,7 +161,7 @@ uint64_t IdWorker::GetMaxId(uint64_t startId) const
     while ((flag & startId) == 0) {
         flag = flag << 1;
     }
-    return (startId + flag - 1);
+    return (startId + flag - 1) > 0 ? (startId + flag - 1) : 0;
 }
 }
 }

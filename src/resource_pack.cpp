@@ -72,7 +72,7 @@ uint32_t ResourcePack::InitModule()
     moduleName_ = configJson_.GetModuleName();
     vector<string> moduleNames = packageParser_.GetModuleNames();
     IdWorker &idWorker = IdWorker::GetInstance();
-    int64_t startId = packageParser_.GetStartId();
+    int64_t startId = static_cast<int64_t>(packageParser_.GetStartId());
     if (startId > 0) {
         return idWorker.Init(hapType, startId);
     }
@@ -474,8 +474,7 @@ uint32_t ResourcePack::HandleLabel(vector<ResourceItem> &items, ConfigParser &co
         if (it.GetDataLength() - 1 < 0) {
             return RESTOOL_ERROR;
         }
-        if (!it.SetData(reinterpret_cast<const int8_t *>(data.c_str()),
-            static_cast<uint32_t>(it.GetDataLength() - 1))) {
+        if (!it.SetData(reinterpret_cast<const int8_t *>(data.c_str()), it.GetDataLength() - 1)) {
             return RESTOOL_ERROR;
         }
         if (nextId <= 0) {

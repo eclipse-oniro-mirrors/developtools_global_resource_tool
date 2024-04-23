@@ -117,26 +117,26 @@ uint32_t ResourceTable::LoadResTable(const string path, map<int64_t, vector<Reso
 
     uint64_t pos = 0;
     IndexHeader indexHeader;
-    if (!ReadFileHeader(in, indexHeader, pos, length)) {
+    if (!ReadFileHeader(in, indexHeader, pos, static_cast<uint64_t>(length))) {
         in.close();
         return RESTOOL_ERROR;
     }
 
     map<int64_t, vector<KeyParam>> limitKeys;
-    if (!ReadLimitKeys(in, limitKeys, indexHeader.limitKeyConfigSize, pos, length)) {
+    if (!ReadLimitKeys(in, limitKeys, indexHeader.limitKeyConfigSize, pos, static_cast<uint64_t>(length))) {
         in.close();
         return RESTOOL_ERROR;
     }
 
     map<int64_t, pair<int64_t, int64_t>> datas;
-    if (!ReadIdTables(in, datas, indexHeader.limitKeyConfigSize, pos, length)) {
+    if (!ReadIdTables(in, datas, indexHeader.limitKeyConfigSize, pos, static_cast<uint64_t>(length))) {
         in.close();
         return RESTOOL_ERROR;
     }
 
     while (in.tellg() < length) {
         RecordItem record;
-        if (!ReadDataRecordPrepare(in, record, pos, length) ||
+        if (!ReadDataRecordPrepare(in, record, pos, static_cast<uint64_t>(length)) ||
             !ReadDataRecordStart(in, record, limitKeys, datas, resInfos)) {
             in.close();
             return RESTOOL_ERROR;
@@ -347,7 +347,7 @@ void ResourceTable::SaveIdSets(const map<string, IdSet> &idSets, ostringstream &
     }
 }
 
-bool ResourceTable::ReadFileHeader(ifstream &in, IndexHeader &indexHeader, uint64_t &pos, int64_t length) const
+bool ResourceTable::ReadFileHeader(ifstream &in, IndexHeader &indexHeader, uint64_t &pos, uint64_t length) const
 {
     pos += sizeof(indexHeader);
     if (pos > length) {
@@ -361,7 +361,7 @@ bool ResourceTable::ReadFileHeader(ifstream &in, IndexHeader &indexHeader, uint6
 }
 
 bool ResourceTable::ReadLimitKeys(ifstream &in, map<int64_t, vector<KeyParam>> &limitKeys,
-                                  uint32_t count, uint64_t &pos, int64_t length) const
+                                  uint32_t count, uint64_t &pos, uint64_t length) const
 {
     for (uint32_t i = 0; i< count; i++) {
         pos = pos + TAG_LEN + INT_TO_BYTES + INT_TO_BYTES;
@@ -397,7 +397,7 @@ bool ResourceTable::ReadLimitKeys(ifstream &in, map<int64_t, vector<KeyParam>> &
 }
 
 bool ResourceTable::ReadIdTables(std::ifstream &in, std::map<int64_t, std::pair<int64_t, int64_t>> &datas,
-                                 uint32_t count, uint64_t &pos, int64_t length) const
+                                 uint32_t count, uint64_t &pos, uint64_t length) const
 {
     for (uint32_t i = 0; i< count; i++) {
         pos = pos + TAG_LEN + INT_TO_BYTES;
@@ -430,7 +430,7 @@ bool ResourceTable::ReadIdTables(std::ifstream &in, std::map<int64_t, std::pair<
     return true;
 }
 
-bool ResourceTable::ReadDataRecordPrepare(ifstream &in, RecordItem &record, uint64_t &pos, int64_t length) const
+bool ResourceTable::ReadDataRecordPrepare(ifstream &in, RecordItem &record, uint64_t &pos, uint64_t length) const
 {
     pos = pos + INT_TO_BYTES;
     if (pos > length) {

@@ -101,7 +101,7 @@ const string &PackageParser::GetRestoolPath() const
     return restoolPath_;
 }
 
-int32_t PackageParser::GetStartId() const
+uint32_t PackageParser::GetStartId() const
 {
     return startId_;
 }
@@ -472,23 +472,49 @@ uint32_t PackageParser::ParseFileList(const string& fileListPath)
     return RESTOOL_SUCCESS;
 }
 
+uint32_t PackageParser::CheckError(int argc, char *argv[], int c, int optIndex)
+{
+    if (optIndex != -1) {
+        if ((optarg == nullptr && (optind - 1 < 0 || optind - 1 >= argc)) ||
+            (optarg != nullptr && (optind - 2 < 0 || optind - 2 >= argc))) { // 1 or 2 menas optind offset value
+            return RESTOOL_ERROR;
+        }
+        string curOpt = (optarg == nullptr) ? argv[optind - 1] : argv[optind - 2];
+        if (curOpt != ("--" + string(CMD_OPTS[optIndex].name))) {
+            cerr << "Error: unknown option " << curOpt << endl;
+            return RESTOOL_ERROR;
+        }
+    }
+    if (c == Option::UNKNOWN) {
+        if (optopt == 0 && (optind - 1 < 0 || optind - 1 >= argc)) {
+            return RESTOOL_ERROR;
+        }
+        string optUnknown = (optopt == 0) ? argv[optind - 1] : ("-" + string(1, optopt));
+        cerr << "Error: unknown option " << optUnknown << endl;
+        return RESTOOL_ERROR;
+    }
+    if (c == Option::NO_ARGUMENT) {
+        if (optind - 1 < 0 || optind - 1 >= argc) {
+            return RESTOOL_ERROR;
+        }
+        if (IsLongOpt(argc, argv)) {
+            cerr << "Error: option " << argv[optind - 1] << " must have argument" << endl;
+        } else {
+            cerr << "Error: unknown option " << argv[optind - 1] << endl;
+        }
+        return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
+}
+
 uint32_t PackageParser::ParseCommand(int argc, char *argv[])
 {
     restoolPath_ = string(argv[0]);
     while (true) {
         int optIndex = -1;
-        opterr = 0;
         int c = getopt_long(argc, argv, CMD_PARAMS.c_str(), CMD_OPTS, &optIndex);
-        if (optIndex != -1) {
-            // 1 or 2 menas optind offset value
-            if ((optarg == nullptr && optind - 1 < 0) || (optarg != nullptr && optind - 2 < 0)) {
-                return RESTOOL_ERROR;
-            }
-            string curOpt = (optarg == nullptr) ? argv[optind - 1] : argv[optind - 2];
-            if (curOpt != ("--" + string(CMD_OPTS[optIndex].name))) {
-                cerr << "Error: unknown option " << curOpt << endl;
-                return RESTOOL_ERROR;
-            }
+        if (CheckError(argc, argv, c, optIndex) != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
         }
         if (c == Option::END) {
             if (argc == optind) {
@@ -501,19 +527,7 @@ uint32_t PackageParser::ParseCommand(int argc, char *argv[])
             cerr << errmsg << endl;
             return RESTOOL_ERROR;
         }
-        if (c == Option::UNKNOWN) {
-            string optUnknown = (optopt == 0) ? argv[optind - 1] : ("-" + string(1, optopt));
-            cerr << "Error: unknown option " << optUnknown << endl;
-            return RESTOOL_ERROR;
-        }
-        if (c == Option::NO_ARGUMENT) {
-            if (IsLongOpt(argv)) {
-                cerr << "Error: option " << argv[optind - 1] << " must have argument" << endl;
-            } else {
-                cerr << "Error: unknown option " << argv[optind - 1] << endl;
-            }
-            return RESTOOL_ERROR;
-        }
+
         string argValue = (optarg != nullptr) ? optarg : "";
         if (c == Option::FILELIST) {
             return ParseFileList(argValue);
@@ -525,9 +539,9 @@ uint32_t PackageParser::ParseCommand(int argc, char *argv[])
     return RESTOOL_SUCCESS;
 }
 
-bool PackageParser::IsLongOpt(char *argv[]) const
+bool PackageParser::IsLongOpt(int argc, char *argv[]) const
 {
-    if (optind - 1 < 0) {
+    if (optind - 1 < 0 || optind - 1 >= argc) {
         return false;
     }
     for (auto iter : CMD_OPTS) {

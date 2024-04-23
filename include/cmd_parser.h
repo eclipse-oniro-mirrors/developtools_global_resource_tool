@@ -45,7 +45,7 @@ public:
     const std::vector<std::string> &GetModuleNames() const;
     const std::string &GetConfig() const;
     const std::string &GetRestoolPath() const;
-    int32_t GetStartId() const;
+    uint32_t GetStartId() const;
     bool IsFileList() const;
     const std::vector<std::string> &GetAppend() const;
     bool GetCombine() const;
@@ -60,6 +60,7 @@ public:
 private:
     void InitCommand();
     uint32_t ParseCommand(int argc, char *argv[]);
+    uint32_t CheckError(int argc, char *argv[], int c, int optIndex);
     uint32_t AddInput(const std::string& argValue);
     uint32_t AddPackageName(const std::string& argValue);
     uint32_t AddOutput(const std::string& argValue);
@@ -81,7 +82,7 @@ private:
     uint32_t SetIdDefinedInputPath(const std::string& argValue);
     uint32_t AddSysIdDefined(const std::string& argValue);
     bool IsAscii(const std::string& argValue) const;
-    bool IsLongOpt(char *argv[]) const;
+    bool IsLongOpt(int argc, char *argv[]) const;
     uint32_t IconCheck();
     uint32_t ParseTargetConfig(const std::string& argValue);
 
@@ -97,7 +98,7 @@ private:
     std::vector<std::string> moduleNames_;
     std::string configPath_;
     std::string restoolPath_;
-    int32_t startId_ = 0;
+    uint32_t startId_ = 0;
     bool isFileList_ = false;
     std::vector<std::string> append_;
     bool combine_ = false;
