@@ -161,7 +161,10 @@ uint64_t IdWorker::GetMaxId(uint64_t startId) const
     while ((flag & startId) == 0) {
         flag = flag << 1;
     }
-    return (startId + flag - 1) > 0 ? (startId + flag - 1) : 0;
+    if (startId + flag < 1) {
+        return 0;
+    }
+    return startId + flag - 1;
 }
 }
 }
