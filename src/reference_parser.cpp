@@ -88,7 +88,7 @@ uint32_t ReferenceParser::ParseRefInResourceItem(ResourceItem &resourceItem) con
     if (IsStringOfResourceItem(resType)) {
         data = string(reinterpret_cast<const char *>(resourceItem.GetData()), resourceItem.GetDataLength());
         if (!ParseRefString(data, update)) {
-            cerr << "Error: " << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+            cerr << "Error: please check JSON file." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
             return RESTOOL_ERROR;
         }
         if (!update) {
@@ -149,6 +149,7 @@ bool ReferenceParser::ParseRefJson(const string &from, const string &to)
     }
     bool needSave = false;
     if (!ParseRefJsonImpl(root_, needSave)) {
+        cerr << "Error: please check JSON file." << NEW_LINE_PATH << from << endl;
         return false;
     }
 
@@ -179,7 +180,7 @@ bool ReferenceParser::ParseRefResourceItemData(const ResourceItem &resourceItem,
     for (auto &content : contents) {
         bool flag = false;
         if (!ParseRefString(content, flag)) {
-            cerr << "Error: " << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+            cerr << "Error: please check JSON file." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
             return false;
         }
         update = (update || flag);
