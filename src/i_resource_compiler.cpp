@@ -126,6 +126,8 @@ bool IResourceCompiler::MergeResourceItem(const ResourceItem &resourceItem)
     string idName = ResourceUtil::GetIdName(resourceItem.GetName(), resourceItem.GetResType());
     if (!ResourceUtil::IsValidName(idName)) {
         cerr << "Error: invalid idName '" << idName << "'."<< NEW_LINE_PATH <<  resourceItem.GetFilePath() << endl;
+        cerr << SOLUTIONS << endl;
+        cerr << SOLUTIONS_ARROW << "Modify the name '" << idName << "' to match [a-zA-Z0-9_]." << endl;
         return false;
     }
     auto item = nameInfos_.find(make_pair(resourceItem.GetResType(), idName));

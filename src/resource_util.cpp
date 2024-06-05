@@ -82,6 +82,9 @@ bool ResourceUtil::OpenJsonFile(const string &path, cJSON **root)
     *root = cJSON_Parse(jsonString.c_str());
     if (!*root) {
         cerr << "Error: cJSON_Parse failed, please check the JSON file." << NEW_LINE_PATH << path << endl;
+        cerr << SOLUTIONS << endl;
+        cerr << SOLUTIONS_ARROW << "Check the JSON file and delete unnecessary commas (,)." << endl;
+        cerr << SOLUTIONS_ARROW << "Check the JSON file to make sure the root bracket is {}" << endl;
         ifs.close();
         return false;
     }
@@ -216,7 +219,7 @@ bool ResourceUtil::CreateDirs(const string &filePath)
     if (FileExist(filePath)) {
         return true;
     }
-    
+
     if (!FileEntry::CreateDirs(filePath)) {
         cerr << "Error: create dir '" << filePath << "' failed, reason:" << strerror(errno) << endl;
         return false;
@@ -446,7 +449,7 @@ bool ResourceUtil::IsIntValue(const cJSON *node)
 bool ResourceUtil::IsValidName(const string &name)
 {
     if (!regex_match(name, regex("[a-zA-Z0-9_]+"))) {
-        cerr << "Error: '" << name << "' only contain [a-zA-Z0-9_]." << endl;
+        cerr << "Error: the name '" << name << "' can only contain [a-zA-Z0-9_]." << endl;
         return false;
     }
     return true;
