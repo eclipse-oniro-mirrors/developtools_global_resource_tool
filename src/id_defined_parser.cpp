@@ -250,6 +250,8 @@ bool IdDefinedParser::ParseName(const cJSON *name, ResourceId &resourceId)
         (static_cast<uint64_t>(resourceId.id) & static_cast<uint64_t>(START_SYS_ID)) == START_SYS_ID &&
         !ResourceUtil::IsValidName(resourceId.name)) {
         cerr << "Error: id_defined.json."<< endl;
+        cerr << SOLUTIONS << endl;
+        cerr << SOLUTIONS_ARROW << "Modify the name '" << resourceId.name << "' to match [a-zA-Z0-9_]." << endl;
         return false;
     }
     return true;
