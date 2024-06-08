@@ -22,6 +22,7 @@
 #include "resource_check.h"
 #include "resource_merge.h"
 #include "resource_table.h"
+#include "compression_parser.h"
 
 namespace OHOS {
 namespace Global {
@@ -36,7 +37,12 @@ uint32_t ResourcePack::Package()
     if (!packageParser_.GetAppend().empty()) {
         return PackAppend();
     }
-
+    if (!packageParser_.GetCompressionPath().empty()) {
+        auto compressionMgr = CompressionParser::GetCompressionParser(packageParser_.GetCompressionPath());
+        if (compressionMgr->Init() != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
+        }
+    }
     if (packageParser_.GetCombine()) {
         return PackCombine();
     }

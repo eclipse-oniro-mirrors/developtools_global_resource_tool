@@ -43,6 +43,7 @@ const struct option PackageParser::CMD_OPTS[] = {
     { "icon-check", no_argument, nullptr, Option::ICON_CHECK},
     { "target-config", required_argument, nullptr, Option::TARGET_CONFIG},
     { "defined-sysids", required_argument, nullptr, Option::DEFINED_SYSIDS},
+    { "compressed-config", required_argument, nullptr, Option::COMPRESSED_CONFIG},
     { 0, 0, 0, 0},
 };
 
@@ -427,6 +428,21 @@ bool PackageParser::IsAscii(const string& argValue) const
     return true;
 }
 
+uint32_t PackageParser::AddCompressionPath(const std::string& argValue)
+{
+    if (!compressionPath_.empty()) {
+        cerr << "Error: double opt-compression.json " << compressionPath_ << " vs " << argValue << endl;
+        return RESTOOL_ERROR;
+    }
+    compressionPath_ = argValue;
+    return RESTOOL_SUCCESS;
+}
+
+const std::string &PackageParser::GetCompressionPath() const
+{
+    return compressionPath_;
+}
+
 void PackageParser::InitCommand()
 {
     using namespace placeholders;
@@ -448,6 +464,7 @@ void PackageParser::InitCommand()
     handles_.emplace(Option::ICON_CHECK, [this](const string &) -> uint32_t { return IconCheck(); });
     handles_.emplace(Option::TARGET_CONFIG, bind(&PackageParser::ParseTargetConfig, this, _1));
     handles_.emplace(Option::DEFINED_SYSIDS, bind(&PackageParser::AddSysIdDefined, this, _1));
+    handles_.emplace(Option::COMPRESSED_CONFIG, bind(&PackageParser::AddCompressionPath, this, _1));
 }
 
 uint32_t PackageParser::HandleProcess(int c, const string& argValue)
