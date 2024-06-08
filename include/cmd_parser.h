@@ -56,6 +56,7 @@ public:
     const TargetConfig &GetTargetConfigValues() const;
     bool IsTargetConfig() const;
     const std::vector<std::string> &GetSysIdDefinedPaths() const;
+    const std::string &GetCompressionPath() const;
 
 private:
     void InitCommand();
@@ -85,6 +86,7 @@ private:
     bool IsLongOpt(int argc, char *argv[]) const;
     uint32_t IconCheck();
     uint32_t ParseTargetConfig(const std::string& argValue);
+    uint32_t AddCompressionPath(const std::string& argValue);
 
     static const struct option CMD_OPTS[];
     static const std::string CMD_PARAMS;
@@ -109,6 +111,7 @@ private:
     TargetConfig targetConfig_;
     bool isTtargetConfig_;
     std::vector<std::string> sysIdDefinedPaths_;
+    std::string compressionPath_;
 };
 
 template<class T>
@@ -150,6 +153,7 @@ void CmdParser<T>::ShowUseage()
     std::cout << " module resources are independently built in the FA model.\n";
     std::cout << "    --icon-check        Enable the PNG image verification function for icons and startwindows.\n";
     std::cout << "    --target-config     When used with '-i', selective compilation is supported.\n";
+    std::cout << "    --compressed-config opt-compression.json path.\n";
 }
 
 template<class T>

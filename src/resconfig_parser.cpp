@@ -90,6 +90,8 @@ void ResConfigParser::InitFileListCommand(HandleBack callback)
         Option::ICON_CHECK, callback));
     fileListHandles_.emplace("definedSysIds", bind(&ResConfigParser::GetString, this, _1,
         Option::DEFINED_SYSIDS, callback));
+    fileListHandles_.emplace("compression", bind(&ResConfigParser::GetString, this, _1,
+        Option::COMPRESSED_CONFIG, callback));
 }
 
 uint32_t ResConfigParser::GetString(const cJSON *node, int c, HandleBack callback)
