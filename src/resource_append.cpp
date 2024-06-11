@@ -263,7 +263,7 @@ bool ResourceAppend::ScanFile(const FileInfo &fileInfo, const string &outputPath
     if (ResourceAppend::IsBaseIdDefined(fileInfo)) {
         cout << "Warning: id_defined.json does not compile to generate intermediate files" << endl;
         FileEntry::FilePath outPath(outputPath);
-        return ResourceUtil::CopyFleInner(fileInfo.filePath, outPath.Append(ID_DEFINED_FILE).GetPath());
+        return ResourceUtil::CopyFileInner(fileInfo.filePath, outPath.Append(ID_DEFINED_FILE).GetPath());
     }
 
     unique_ptr<IResourceCompiler> resourceCompiler =
@@ -565,7 +565,7 @@ bool ResourceAppend::LoadResourceItemFromMem(const char buffer[], int32_t length
                 continue;
             }
 
-            if (!ResourceUtil::CopyFleInner(filePathStr, outPath.Append(data).GetPath())) {
+            if (!ResourceUtil::CopyFileInner(filePathStr, outPath.Append(data).GetPath())) {
                 return false;
             }
             continue;

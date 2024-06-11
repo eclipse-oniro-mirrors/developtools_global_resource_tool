@@ -33,6 +33,11 @@ const static std::string RES_FILE_DIR = "resfile";
 const static std::string ID_DEFINED_FILE = "id_defined.json";
 const static std::string RESOURCE_INDEX_FILE = "resources.index";
 const static std::string JSON_EXTENSION = ".json";
+#ifdef __WIN32
+const static std::string SEPARATOR_FILE = "\\";
+#else
+const static std::string SEPARATOR_FILE = "/";
+#endif
 const static std::string SEPARATOR = "/";
 const static std::string WIN_SEPARATOR = "\\";
 const static std::string NEW_LINE_PATH = "\nat ";
@@ -198,6 +203,14 @@ struct ResourceId {
     int64_t seq;
     std::string type;
     std::string name;
+};
+
+struct CompressFilter {
+    std::vector<std::string> path;
+    std::vector<std::string> excludePath;
+    std::vector<std::string> rules;
+    std::vector<std::string> expandRules;
+    std::string method;
 };
 
 const std::map<std::string, ResType> g_copyFileMap = {

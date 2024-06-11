@@ -209,7 +209,7 @@ ResType ResourceUtil::GetResTypeFromString(const string &type)
     return ResType::INVALID_RES_TYPE;
 }
 
-bool ResourceUtil::CopyFleInner(const string &src, const string &dst)
+bool ResourceUtil::CopyFileInner(const string &src, const string &dst)
 {
     return FileEntry::CopyFileInner(src, dst);
 }

@@ -304,7 +304,8 @@ uint32_t ResourcePack::CopyRawFileOrResFileImpl(const string &src, const string 
                 cerr << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly." << endl;
                 continue;
             }
-            if (!ResourceUtil::CopyFleInner(entry->GetFilePath().GetPath(), subPath)) {
+            string path = entry->GetFilePath().GetPath();
+            if (!CompressionParser::GetCompressionParser()->CopyAndTranscode(path, subPath)) {
                 return RESTOOL_ERROR;
             }
         }
@@ -509,7 +510,7 @@ bool ResourcePack::CopyIcon(string &dataPath, const string &idName, string &file
         cerr << "Error: Create Dirs fail '" << dstDir << "'."<< endl;
         return false;
     }
-    if (!ResourceUtil::CopyFleInner(source, dst)) {
+    if (!ResourceUtil::CopyFileInner(source, dst)) {
         cerr << "Error: copy file fail from '" << source << "' to '" << dst << "'." << endl;
         return false;
     }
