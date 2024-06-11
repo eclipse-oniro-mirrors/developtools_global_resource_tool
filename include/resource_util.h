@@ -122,7 +122,7 @@ public:
      * @param dst: destination file path
      * @return true if success, other false
      */
-    static bool CopyFleInner(const std::string &src, const std::string &dst);
+    static bool CopyFileInner(const std::string &src, const std::string &dst);
 
     /**
      * @brief create directories

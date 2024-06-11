@@ -27,11 +27,11 @@ public:
     virtual ~GenericCompiler();
 protected:
     uint32_t CompileSingleFile(const FileInfo &fileInfo) override;
-    bool PostFile(const FileInfo &fileInfo);
+    bool PostMediaFile(const FileInfo &fileInfo, const std::string &output);
 private:
     std::string GetOutputFilePath(const FileInfo &fileInfo) const;
     bool IsIgnore(const FileInfo &fileInfo) const;
-    bool CopyFile(const FileInfo &fileInfo) const;
+    bool CopyMediaFile(const FileInfo &fileInfo, std::string &output);
 };
 }
 }

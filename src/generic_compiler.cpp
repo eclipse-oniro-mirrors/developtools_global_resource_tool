@@ -18,6 +18,7 @@
 #include "file_entry.h"
 #include "resource_util.h"
 #include "restool_errors.h"
+#include "compression_parser.h"
 
 namespace OHOS {
 namespace Global {
@@ -37,23 +38,29 @@ uint32_t GenericCompiler::CompileSingleFile(const FileInfo &fileInfo)
         return RESTOOL_SUCCESS;
     }
 
-    if (!CopyFile(fileInfo)) {
+    string output = "";
+    if (!CopyMediaFile(fileInfo, output)) {
         return RESTOOL_ERROR;
     }
 
-    if (!PostFile(fileInfo)) {
+    if (!PostMediaFile(fileInfo, output)) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
 }
 
-bool GenericCompiler::PostFile(const FileInfo &fileInfo)
+bool GenericCompiler::PostMediaFile(const FileInfo &fileInfo, const std::string &output)
 {
     ResourceItem resourceItem(fileInfo.filename, fileInfo.keyParams, type_);
     resourceItem.SetFilePath(fileInfo.filePath);
     resourceItem.SetLimitKey(fileInfo.limitKey);
 
-    string data = fileInfo.filename;
+    auto index = output.find_last_of(SEPARATOR_FILE);
+    if (index == string::npos) {
+        cerr << "Error: invalid output path." << NEW_LINE_PATH << output << endl;
+        return false;
+    }
+    string data = output.substr(index + 1);
     data = moduleName_ + SEPARATOR + RESOURCES_DIR + SEPARATOR + \
         fileInfo.limitKey + SEPARATOR + fileInfo.fileCluster + SEPARATOR + data;
     if (!resourceItem.SetData(reinterpret_cast<const int8_t *>(data.c_str()), data.length())) {
@@ -75,13 +82,14 @@ bool GenericCompiler::IsIgnore(const FileInfo &fileInfo) const
     return ResourceUtil::FileExist(GetOutputFilePath(fileInfo));
 }
 
-bool GenericCompiler::CopyFile(const FileInfo &fileInfo) const
+bool GenericCompiler::CopyMediaFile(const FileInfo &fileInfo, std::string &output)
 {
     string outputFolder = GetOutputFolder(fileInfo);
     if (!ResourceUtil::CreateDirs(outputFolder)) {
         return false;
     }
-    return ResourceUtil::CopyFleInner(fileInfo.filePath, GetOutputFilePath(fileInfo));
+    output = GetOutputFilePath(fileInfo);
+    return CompressionParser::GetCompressionParser()->CopyAndTranscode(fileInfo.filePath, output);
 }
 }
 }
