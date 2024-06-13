@@ -34,11 +34,14 @@ constexpr int OPT_SIZE_ONE = 1;
 constexpr int OPT_SIZE_TWO = 2;
 const map<TranscodeError, string> ERRORCODEMAP = {
     { TranscodeError::SUCCESS, "SUCCESS" },
-    { TranscodeError::IMAGE_RESOLUTION_NOT_MATCH, "IMAGE_RESOLUTION_NOT_MATCH" },
+    { TranscodeError::INVALID_PARAMETERS, "ANIMATED_IMAGE_SKIP" },
+    { TranscodeError::IMAGE_ERROR, "IMAGE_ERROR" },
     { TranscodeError::ANIMATED_IMAGE_SKIP, "ANIMATED_IMAGE_SKIP" },
     { TranscodeError::MALLOC_FAILED, "MALLOC_FAILED" },
     { TranscodeError::ENCODE_ASTC_FAILED, "ENCODE_ASTC_FAILED" },
     { TranscodeError::SUPER_COMPRESS_FAILED, "SUPER_COMPRESS_FAILED" },
+    { TranscodeError::IMAGE_SIZE_NOT_MATCH, "IMAGE_SIZE_NOT_MATCH" },
+    { TranscodeError::IMAGE_RESOLUTION_NOT_MATCH, "IMAGE_RESOLUTION_NOT_MATCH" },
     { TranscodeError::LOAD_COMPRESS_FAILED, "LOAD_COMPRESS_FAILED" },
 };
 
@@ -210,7 +213,7 @@ bool CompressionParser::ParseFilters(const cJSON *filtersNode)
         compressFilter->path = ParsePath(pathNode);
         cJSON *excludePathNode = cJSON_GetObjectItem(item, "exclude_path");
         compressFilter->excludePath = ParsePath(excludePathNode);
-        cJSON *rulesNode = cJSON_GetObjectItem(item, "rules_orignal");
+        cJSON *rulesNode = cJSON_GetObjectItem(item, "rules_origin");
         compressFilter->rules = ParseRules(rulesNode);
         cJSON *expandRulesNode = cJSON_GetObjectItem(item, "rules_union");
         compressFilter->expandRules = ParseRules(expandRulesNode);
@@ -223,7 +226,7 @@ vector<string> CompressionParser::ParseRules(const cJSON *rulesNode)
 {
     vector<string> res;
     if (!rulesNode || !cJSON_IsObject(rulesNode)) {
-        cerr << "Error: ParseRules fail.";
+        cerr << "Error: ParseRules fail." << endl;
         return res;
     }
     for (cJSON *item = rulesNode->child; item; item = item->next) {
@@ -240,7 +243,7 @@ vector<string> CompressionParser::ParsePath(const cJSON *pathNode)
 {
     vector<string> res;
     if (!pathNode || !cJSON_IsArray(pathNode)) {
-        cerr << "Error: ParsePath fail.";
+        cerr << "Error: ParsePath fail." << endl;
         return res;
     }
     for (cJSON *item = pathNode->child; item; item = item->next) {
@@ -290,7 +293,7 @@ bool CompressionParser::LoadImageTranscoder()
 bool CompressionParser::SetTranscodeOptions(const string &optionJson)
 {
     if (!handle_) {
-        cerr << "Error: handle_ is nullptr."<< endl;
+        cerr << "Error: handle_ is nullptr." << endl;
         return false;
     }
 #ifdef __WIN32
@@ -299,12 +302,12 @@ bool CompressionParser::SetTranscodeOptions(const string &optionJson)
     ISetTranscodeOptions iSetTranscodeOptions = (ISetTranscodeOptions)dlsym(handle_, "SetTranscodeOptions");
 #endif
     if (!iSetTranscodeOptions) {
-        cerr << "Error: Failed to get the 'SetTranscodeOptions'."<< endl;
+        cerr << "Error: Failed to get the 'SetTranscodeOptions'." << endl;
         return false;
     }
     bool ret = (*iSetTranscodeOptions)(optionJson);
     if (!ret) {
-        cerr << "Error: SetTranscodeOptions failed."<< endl;
+        cerr << "Error: SetTranscodeOptions failed." << endl;
         return false;
     }
     return true;
@@ -313,7 +316,7 @@ bool CompressionParser::SetTranscodeOptions(const string &optionJson)
 TranscodeError CompressionParser::TranscodeImages(const string &imagePath, string &outputPath, TranscodeResult &result)
 {
     if (!handle_) {
-        cerr << "Error: handle_ is nullptr."<< endl;
+        cerr << "Error: handle_ is nullptr." << endl;
         return TranscodeError::LOAD_COMPRESS_FAILED;
     }
 #ifdef __WIN32
@@ -322,16 +325,17 @@ TranscodeError CompressionParser::TranscodeImages(const string &imagePath, strin
     ITranscodeImages iTranscodeImages = (ITranscodeImages)dlsym(handle_, "Transcode");
 #endif
     if (!iTranscodeImages) {
-        cerr << "Error: Failed to get the 'Transcode'."<< endl;
+        cerr << "Error: Failed to get the 'Transcode'." << endl;
         return TranscodeError::LOAD_COMPRESS_FAILED;
     }
     TranscodeError ret = (*iTranscodeImages)(imagePath, outputPath, result);
     if (ret != TranscodeError::SUCCESS) {
         auto iter = ERRORCODEMAP.find(ret);
         if (iter != ERRORCODEMAP.end()) {
-            cerr << "Error: TranscodeImages failed, error message: " << iter->second << endl;
+            cerr << "Error: TranscodeImages failed, error message: " << iter->second << ", file path = " <<
+                imagePath << endl;
         } else {
-            cerr << "Error: TranscodeImages failed." << endl;
+            cerr << "Error: TranscodeImages failed" << ", file path = " << imagePath << endl;
         }
         return ret;
     }
@@ -359,7 +363,7 @@ string CompressionParser::GetOptionsString(const shared_ptr<CompressFilter> &com
     if (compressFilter->rules.size() == 0 || compressFilter->expandRules.size() == 0) {
         return "{" + compressFilter->method + "}";
     }
-    string res = "{" + compressFilter->method + "}";
+    string res = "{" + compressFilter->method + ",";
     switch (type) {
         case OPT_TYPE_ONE:
             if (compressFilter->rules.size() == OPT_SIZE_ONE) {
@@ -388,10 +392,99 @@ string CompressionParser::GetOptionsString(const shared_ptr<CompressFilter> &com
     return res;
 }
 
+void CompressionParser::CollectTime(uint32_t &count, unsigned long long &time,
+    std::chrono::time_point<std::chrono::steady_clock> &start)
+{
+    time += std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count();
+    count++;
+}
+
+void CompressionParser::CollectTimeAndSize(TranscodeError res,
+    std::chrono::time_point<std::chrono::steady_clock> &start, TranscodeResult &result)
+{
+    auto costTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start)
+        .count();
+    if (res == TranscodeError::SUCCESS) {
+        totalTime_ += costTime;
+        totalCounts_++;
+        compressTime_ += costTime;
+        compressCounts_++;
+        successTime_ += costTime;
+        successCounts_++;
+        originalSize_ += result.originSize;
+        successSize_ += result.size;
+    } else if (res < TranscodeError::NOT_MATCH_BASE) {
+        totalTime_ += costTime;
+        compressTime_ += costTime;
+        compressCounts_++;
+    } else {
+        totalTime_ += costTime;
+    }
+}
+
+string CompressionParser::PrintTransMessage()
+{
+    std::string res = "Processing report:\n";
+    res.append("total:").append(to_string(totalCounts_)).append(", ").append(to_string(totalTime_)).append(" us.\n");
+    res.append("compressed:").append(to_string(compressCounts_)).append(", ").append(to_string(compressTime_))
+        .append(" us.\n");
+    res.append("success:").append(to_string(successCounts_)).append(", ").append(to_string(successTime_))
+        .append(" us, ").append(to_string(originalSize_)).append(" Bytes to ").append(to_string(successSize_))
+        .append(" Bytes.");
+    return res;
+}
+
+bool CompressionParser::GetMediaSwitch()
+{
+    return mediaSwitch_;
+}
+
+bool CompressionParser::CheckAndTranscode(const string &src, string &dst, string &output,
+    const shared_ptr<CompressFilter> &compressFilter)
+{
+    auto t1 = std::chrono::steady_clock::now();
+    TranscodeResult result = {0, 0, 0, 0};
+    if (!IsInPath(src, compressFilter)) {
+        return false;
+    }
+    if (IsInExcludePath(src, compressFilter)) {
+        if (!SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_ONE))) {
+            return false;
+        }
+        auto res = TranscodeImages(src, output, result);
+        CollectTimeAndSize(res, t1, result);
+        if (res != TranscodeError::SUCCESS) {
+            return false;
+        }
+        dst = output;
+        return true;
+    }
+    if (SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_THREE))) {
+        auto res = TranscodeImages(src, output, result);
+        CollectTimeAndSize(res, t1, result);
+        if (res == TranscodeError::SUCCESS) {
+            dst = output;
+            return true;
+        }
+    }
+    if (SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_TWO))) {
+        auto res = TranscodeImages(src, output, result);
+        CollectTimeAndSize(res, t1, result);
+        if (res == TranscodeError::SUCCESS) {
+            dst = output;
+            return true;
+        }
+    }
+    return false;
+}
+
 bool CompressionParser::CopyAndTranscode(const string &src, string &dst)
 {
+    auto t0 = std::chrono::steady_clock::now();
     if (!mediaSwitch_) {
-        return ResourceUtil::CopyFileInner(src, dst);
+        auto res = ResourceUtil::CopyFileInner(src, dst);
+        CollectTime(totalCounts_, totalTime_, t0);
+        return res;
     }
 
     auto index = dst.find_last_of(SEPARATOR_FILE);
@@ -400,30 +493,16 @@ bool CompressionParser::CopyAndTranscode(const string &src, string &dst)
         return false;
     }
     string output = dst.substr(0, index);
-    TranscodeResult result = {0, 0, 0, 0, 0};
     for (const auto &compressFilter : compressFilters_) {
-        if (!IsInPath(src, compressFilter)) {
+        if (!CheckAndTranscode(src, dst, output, compressFilter)) {
             continue;
         }
-        if (IsInExcludePath(src, compressFilter)) {
-            if (!SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_ONE)) ||
-                TranscodeImages(src, output, result) != TranscodeError::SUCCESS) {
-                continue;
-            }
-            dst = output;
-            return true;
-        } else {
-            if ((!SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_THREE)) ||
-                TranscodeImages(src, output, result) != TranscodeError::SUCCESS) &&
-                (!SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_TWO)) ||
-                TranscodeImages(src, output, result) != TranscodeError::SUCCESS)) {
-                continue;
-            }
-            dst = output;
-            return true;
-        }
+        return true;
     }
-    return ResourceUtil::CopyFileInner(src, dst);
+    auto t2 = std::chrono::steady_clock::now();
+    auto ret = ResourceUtil::CopyFileInner(src, dst);
+    CollectTime(totalCounts_, totalTime_, t2);
+    return ret;
 }
 }
 }
