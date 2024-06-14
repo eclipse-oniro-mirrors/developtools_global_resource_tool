@@ -16,6 +16,7 @@
 #ifndef OHOS_RESTOOL_COMPRESSION_PARSER_H
 #define OHOS_RESTOOL_COMPRESSION_PARSER_H
 
+#include <chrono>
 #include <cJSON.h>
 #ifdef __WIN32
 #include <windows.h>
@@ -30,17 +31,20 @@ namespace Restool {
 
 enum class TranscodeError {
     SUCCESS = 0,
+    INVALID_PARAMETERS,
     IMAGE_ERROR,
-    IMAGE_RESOLUTION_NOT_MATCH,
     ANIMATED_IMAGE_SKIP,
     MALLOC_FAILED,
     ENCODE_ASTC_FAILED,
     SUPER_COMPRESS_FAILED,
+    NOT_MATCH_BASE = 100,
+    IMAGE_SIZE_NOT_MATCH = 100,
+    IMAGE_RESOLUTION_NOT_MATCH,
+    NOT_MATCH_BUTT = 199,
     LOAD_COMPRESS_FAILED
 };
 
 struct TranscodeResult {
-    int64_t timeCostMs;
     size_t originSize;
     int32_t size;
     int32_t width;
@@ -60,6 +64,8 @@ public:
     virtual ~CompressionParser();
     uint32_t Init();
     bool CopyAndTranscode(const std::string &src, std::string &dst);
+    bool GetMediaSwitch();
+    std::string PrintTransMessage();
 private:
     bool ParseContext(const cJSON *contextNode);
     bool ParseCompression(const cJSON *compressionNode);
@@ -73,12 +79,26 @@ private:
     bool CheckPath(const std::string &src, const std::vector<std::string> &paths);
     bool IsInPath(const std::string &src, const std::shared_ptr<CompressFilter> &compressFilter);
     bool IsInExcludePath(const std::string &src, const std::shared_ptr<CompressFilter> &compressFilter);
+    void CollectTime(uint32_t &count, unsigned long long &time,
+        std::chrono::time_point<std::chrono::steady_clock> &start);
+    void CollectTimeAndSize(TranscodeError res, std::chrono::time_point<std::chrono::steady_clock> &start,
+        TranscodeResult &result);
     std::string GetOptionsString(const std::shared_ptr<CompressFilter> &compressFilter, int type);
+    bool CheckAndTranscode(const std::string &src, std::string &dst, std::string &output,
+        const std::shared_ptr<CompressFilter> &compressFilter);
     std::string filePath_;
     std::string extensionPath_;
     std::vector<std::shared_ptr<CompressFilter>> compressFilters_;
     bool mediaSwitch_;
     cJSON *root_;
+    unsigned long long totalTime_ = 0;
+    uint32_t totalCounts_ = 0;
+    unsigned long long compressTime_ = 0;
+    uint32_t compressCounts_ = 0;
+    unsigned long long successTime_ = 0;
+    uint32_t successCounts_ = 0;
+    unsigned long long originalSize_ = 0;
+    unsigned long long successSize_ = 0;
 #ifdef __WIN32
     HMODULE handle_ = nullptr;
 #else

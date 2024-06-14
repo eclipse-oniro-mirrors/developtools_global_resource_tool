@@ -15,6 +15,7 @@
 
 #include "cmd_parser.h"
 #include "task_handle.h"
+#include "compression_parser.h"
 
 using namespace std;
 using namespace OHOS::Global::Restool;
@@ -43,5 +44,8 @@ int main(int argc, char *argv[])
         return RESTOOL_ERROR;
     }
     cout << "Info: restool resources compile success." << endl;
+    if (CompressionParser::GetCompressionParser()->GetMediaSwitch()) {
+        cerr << CompressionParser::GetCompressionParser()->PrintTransMessage() << endl;
+    }
     return RESTOOL_SUCCESS;
 }
