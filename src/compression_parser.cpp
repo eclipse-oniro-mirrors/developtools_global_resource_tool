@@ -34,7 +34,7 @@ constexpr int OPT_SIZE_ONE = 1;
 constexpr int OPT_SIZE_TWO = 2;
 const map<TranscodeError, string> ERRORCODEMAP = {
     { TranscodeError::SUCCESS, "SUCCESS" },
-    { TranscodeError::INVALID_PARAMETERS, "ANIMATED_IMAGE_SKIP" },
+    { TranscodeError::INVALID_PARAMETERS, "INVALID_PARAMETERS" },
     { TranscodeError::IMAGE_ERROR, "IMAGE_ERROR" },
     { TranscodeError::ANIMATED_IMAGE_SKIP, "ANIMATED_IMAGE_SKIP" },
     { TranscodeError::MALLOC_FAILED, "MALLOC_FAILED" },
@@ -293,7 +293,7 @@ bool CompressionParser::LoadImageTranscoder()
 bool CompressionParser::SetTranscodeOptions(const string &optionJson)
 {
     if (!handle_) {
-        cerr << "Error: handle_ is nullptr." << endl;
+        cerr << "Warning: SetTranscodeOptions handle_ is nullptr." << endl;
         return false;
     }
 #ifdef __WIN32
@@ -302,12 +302,12 @@ bool CompressionParser::SetTranscodeOptions(const string &optionJson)
     ISetTranscodeOptions iSetTranscodeOptions = (ISetTranscodeOptions)dlsym(handle_, "SetTranscodeOptions");
 #endif
     if (!iSetTranscodeOptions) {
-        cerr << "Error: Failed to get the 'SetTranscodeOptions'." << endl;
+        cerr << "Warning: Failed to get the 'SetTranscodeOptions'." << endl;
         return false;
     }
     bool ret = (*iSetTranscodeOptions)(optionJson);
     if (!ret) {
-        cerr << "Error: SetTranscodeOptions failed." << endl;
+        cerr << "Warning: SetTranscodeOptions failed." << endl;
         return false;
     }
     return true;
@@ -316,7 +316,7 @@ bool CompressionParser::SetTranscodeOptions(const string &optionJson)
 TranscodeError CompressionParser::TranscodeImages(const string &imagePath, string &outputPath, TranscodeResult &result)
 {
     if (!handle_) {
-        cerr << "Error: handle_ is nullptr." << endl;
+        cerr << "Warning: TranscodeImages handle_ is nullptr." << endl;
         return TranscodeError::LOAD_COMPRESS_FAILED;
     }
 #ifdef __WIN32
@@ -325,17 +325,17 @@ TranscodeError CompressionParser::TranscodeImages(const string &imagePath, strin
     ITranscodeImages iTranscodeImages = (ITranscodeImages)dlsym(handle_, "Transcode");
 #endif
     if (!iTranscodeImages) {
-        cerr << "Error: Failed to get the 'Transcode'." << endl;
+        cerr << "Warning: Failed to get the 'Transcode'." << endl;
         return TranscodeError::LOAD_COMPRESS_FAILED;
     }
     TranscodeError ret = (*iTranscodeImages)(imagePath, outputPath, result);
     if (ret != TranscodeError::SUCCESS) {
         auto iter = ERRORCODEMAP.find(ret);
         if (iter != ERRORCODEMAP.end()) {
-            cerr << "Error: TranscodeImages failed, error message: " << iter->second << ", file path = " <<
+            cerr << "Warning: TranscodeImages failed, error message: " << iter->second << ", file path = " <<
                 imagePath << endl;
         } else {
-            cerr << "Error: TranscodeImages failed" << ", file path = " << imagePath << endl;
+            cerr << "Warning: TranscodeImages failed" << ", file path = " << imagePath << endl;
         }
         return ret;
     }
@@ -358,6 +358,7 @@ bool CompressionParser::IsInExcludePath(const string &src, const shared_ptr<Comp
 {
     return CheckPath(src, compressFilter->excludePath);
 }
+
 string CompressionParser::GetOptionsString(const shared_ptr<CompressFilter> &compressFilter, int type)
 {
     if (compressFilter->rules.size() == 0 || compressFilter->expandRules.size() == 0) {
@@ -447,7 +448,7 @@ bool CompressionParser::CheckAndTranscode(const string &src, string &dst, string
     if (!IsInPath(src, compressFilter)) {
         return false;
     }
-    if (IsInExcludePath(src, compressFilter)) {
+    if (!IsInExcludePath(src, compressFilter)) {
         if (!SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_ONE))) {
             return false;
         }
