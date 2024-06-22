@@ -37,16 +37,22 @@ uint32_t ResourcePack::Package()
     if (!packageParser_.GetAppend().empty()) {
         return PackAppend();
     }
+
+    if (packageParser_.GetCombine()) {
+        return PackCombine();
+    }
+    return PackNormal();
+}
+
+uint32_t ResourcePack::InitCompression()
+{
     if (!packageParser_.GetCompressionPath().empty()) {
         auto compressionMgr = CompressionParser::GetCompressionParser(packageParser_.GetCompressionPath());
         if (compressionMgr->Init() != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }
     }
-    if (packageParser_.GetCombine()) {
-        return PackCombine();
-    }
-    return PackNormal();
+    return RESTOOL_SUCCESS;
 }
 
 // below private founction
@@ -244,7 +250,7 @@ uint32_t ResourcePack::GenerateJsHeader(const std::string &headerPath) const
     return result;
 }
 
-uint32_t ResourcePack::CopyRawFileOrResFile(const string &filePath, const string &fileType) const
+uint32_t ResourcePack::CopyRawFileOrResFile(const string &filePath, const string &fileType)
 {
     if (!ResourceUtil::FileExist(filePath)) {
         return RESTOOL_SUCCESS;
@@ -263,7 +269,7 @@ uint32_t ResourcePack::CopyRawFileOrResFile(const string &filePath, const string
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ResourcePack::CopyRawFileOrResFile(const vector<string> &inputs) const
+uint32_t ResourcePack::CopyRawFileOrResFile(const vector<string> &inputs)
 {
     for (const auto &input : inputs) {
         string rawfilePath = FileEntry::FilePath(input).Append(RAW_FILE_DIR).GetPath();
@@ -278,7 +284,7 @@ uint32_t ResourcePack::CopyRawFileOrResFile(const vector<string> &inputs) const
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ResourcePack::CopyRawFileOrResFileImpl(const string &src, const string &dst) const
+uint32_t ResourcePack::CopyRawFileOrResFileImpl(const string &src, const string &dst)
 {
     if (!ResourceUtil::CreateDirs(dst)) {
         return RESTOOL_ERROR;
@@ -299,15 +305,22 @@ uint32_t ResourcePack::CopyRawFileOrResFileImpl(const string &src, const string 
             if (CopyRawFileOrResFileImpl(entry->GetFilePath().GetPath(), subPath) != RESTOOL_SUCCESS) {
                 return RESTOOL_ERROR;
             }
-        } else {
-            if (ResourceUtil::FileExist(subPath)) {
-                cerr << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly." << endl;
-                continue;
-            }
-            string path = entry->GetFilePath().GetPath();
-            if (!CompressionParser::GetCompressionParser()->CopyAndTranscode(path, subPath)) {
+            continue;
+        }
+
+        if (!g_resourceSet.emplace(subPath).second) {
+            cerr << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly." << endl;
+            continue;
+        }
+        string path = entry->GetFilePath().GetPath();
+        if (moduleName_ == "har" || CompressionParser::GetCompressionParser()->GetDefaultCompress()) {
+            if (!ResourceUtil::CopyFileInner(path, subPath)) {
                 return RESTOOL_ERROR;
             }
+            continue;
+        }
+        if (!CompressionParser::GetCompressionParser()->CopyAndTranscode(path, subPath)) {
+            return RESTOOL_ERROR;
         }
     }
     return RESTOOL_SUCCESS;
@@ -341,6 +354,10 @@ uint32_t ResourcePack::ScanResources(const vector<string> &inputs, const string 
 
 uint32_t ResourcePack::PackNormal()
 {
+    if (InitCompression() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
     if (Init() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }

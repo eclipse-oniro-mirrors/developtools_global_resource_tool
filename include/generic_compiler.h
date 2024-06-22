@@ -30,7 +30,7 @@ protected:
     bool PostMediaFile(const FileInfo &fileInfo, const std::string &output);
 private:
     std::string GetOutputFilePath(const FileInfo &fileInfo) const;
-    bool IsIgnore(const FileInfo &fileInfo) const;
+    bool IsIgnore(const FileInfo &fileInfo);
     bool CopyMediaFile(const FileInfo &fileInfo, std::string &output);
 };
 }

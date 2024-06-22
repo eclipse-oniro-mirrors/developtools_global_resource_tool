@@ -37,14 +37,15 @@ private:
     uint32_t InitModule();
     void InitHeaderCreater();
     uint32_t InitOutput() const;
+    uint32_t InitCompression();
     uint32_t GenerateHeader() const;
     uint32_t InitConfigJson();
     uint32_t GenerateTextHeader(const std::string &headerPath) const;
     uint32_t GenerateCplusHeader(const std::string &headerPath) const;
     uint32_t GenerateJsHeader(const std::string &headerPath) const;
-    uint32_t CopyRawFileOrResFile(const std::string &filePath, const std::string &fileType) const;
-    uint32_t CopyRawFileOrResFile(const std::vector<std::string> &inputs) const;
-    uint32_t CopyRawFileOrResFileImpl(const std::string &src, const std::string &dst) const;
+    uint32_t CopyRawFileOrResFile(const std::string &filePath, const std::string &fileType);
+    uint32_t CopyRawFileOrResFile(const std::vector<std::string> &inputs);
+    uint32_t CopyRawFileOrResFileImpl(const std::string &src, const std::string &dst);
     uint32_t GenerateConfigJson();
     uint32_t ScanResources(const std::vector<std::string> &inputs, const std::string &output);
     uint32_t PackNormal();
