@@ -46,12 +46,12 @@ const map<TranscodeError, string> ERRORCODEMAP = {
 };
 
 CompressionParser::CompressionParser()
-    : filePath_(""), extensionPath_(""), mediaSwitch_(false), root_(nullptr)
+    : filePath_(""), extensionPath_(""), mediaSwitch_(false), root_(nullptr), defaultCompress_(false)
 {
 }
 
 CompressionParser::CompressionParser(const string &filePath)
-    : filePath_(filePath), extensionPath_(""), mediaSwitch_(false), root_(nullptr)
+    : filePath_(filePath), extensionPath_(""), mediaSwitch_(false), root_(nullptr), defaultCompress_(false)
 {
 }
 
@@ -219,14 +219,25 @@ bool CompressionParser::ParseFilters(const cJSON *filtersNode)
         compressFilter->expandRules = ParseRules(expandRulesNode);
         compressFilters_.emplace_back(compressFilter);
     }
+    defaultCompress_ = IsDefaultCompress();
     return true;
+}
+
+bool CompressionParser::IsDefaultCompress()
+{
+    if (compressFilters_.size() != 1) {
+        return false;
+    }
+    auto compressFilter = compressFilters_[0];
+    return (compressFilter->path.size() == 0) && (compressFilter->excludePath.size() == 0) &&
+        (compressFilter->rules.size() == 0) && (compressFilter->expandRules.size() == 0);
 }
 
 vector<string> CompressionParser::ParseRules(const cJSON *rulesNode)
 {
     vector<string> res;
     if (!rulesNode || !cJSON_IsObject(rulesNode)) {
-        cerr << "Error: ParseRules fail." << endl;
+        cerr << "Warning: rules is not exist." << endl;
         return res;
     }
     for (cJSON *item = rulesNode->child; item; item = item->next) {
@@ -243,7 +254,7 @@ vector<string> CompressionParser::ParsePath(const cJSON *pathNode)
 {
     vector<string> res;
     if (!pathNode || !cJSON_IsArray(pathNode)) {
-        cerr << "Error: ParsePath fail." << endl;
+        cerr << "Warning: path is not exist." << endl;
         return res;
     }
     for (cJSON *item = pathNode->child; item; item = item->next) {
@@ -440,11 +451,28 @@ bool CompressionParser::GetMediaSwitch()
     return mediaSwitch_;
 }
 
+bool CompressionParser::GetDefaultCompress()
+{
+    return defaultCompress_;
+}
+
 bool CompressionParser::CheckAndTranscode(const string &src, string &dst, string &output,
     const shared_ptr<CompressFilter> &compressFilter)
 {
     auto t1 = std::chrono::steady_clock::now();
     TranscodeResult result = {0, 0, 0, 0};
+    if (defaultCompress_) {
+        if (!SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_ONE))) {
+            return false;
+        }
+        auto res = TranscodeImages(src, output, result);
+        CollectTimeAndSize(res, t1, result);
+        if (res != TranscodeError::SUCCESS) {
+            return false;
+        }
+        dst = output;
+        return true;
+    }
     if (!IsInPath(src, compressFilter)) {
         return false;
     }

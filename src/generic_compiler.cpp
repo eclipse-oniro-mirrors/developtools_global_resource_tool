@@ -77,9 +77,14 @@ string GenericCompiler::GetOutputFilePath(const FileInfo &fileInfo) const
     return outputFilePath;
 }
 
-bool GenericCompiler::IsIgnore(const FileInfo &fileInfo) const
+bool GenericCompiler::IsIgnore(const FileInfo &fileInfo)
 {
-    return ResourceUtil::FileExist(GetOutputFilePath(fileInfo));
+    string output = GetOutputFilePath(fileInfo);
+    if (!g_resourceSet.emplace(output).second) {
+        cerr << "Warning: '" << fileInfo.filePath << "' is defined repeatedly." << endl;
+        return true;
+    }
+    return false;
 }
 
 bool GenericCompiler::CopyMediaFile(const FileInfo &fileInfo, std::string &output)
@@ -89,7 +94,11 @@ bool GenericCompiler::CopyMediaFile(const FileInfo &fileInfo, std::string &outpu
         return false;
     }
     output = GetOutputFilePath(fileInfo);
-    return CompressionParser::GetCompressionParser()->CopyAndTranscode(fileInfo.filePath, output);
+    if (moduleName_ == "har" || type_ != ResType::MEDIA) {
+        return ResourceUtil::CopyFileInner(fileInfo.filePath, output);
+    } else {
+        return CompressionParser::GetCompressionParser()->CopyAndTranscode(fileInfo.filePath, output);
+    }
 }
 }
 }
