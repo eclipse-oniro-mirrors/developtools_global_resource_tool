@@ -237,7 +237,7 @@ vector<string> CompressionParser::ParseRules(const cJSON *rulesNode)
 {
     vector<string> res;
     if (!rulesNode || !cJSON_IsObject(rulesNode)) {
-        cerr << "Warning: rules is not exist." << endl;
+        cout << "Warning: rules is not exist." << endl;
         return res;
     }
     for (cJSON *item = rulesNode->child; item; item = item->next) {
@@ -254,7 +254,7 @@ vector<string> CompressionParser::ParsePath(const cJSON *pathNode)
 {
     vector<string> res;
     if (!pathNode || !cJSON_IsArray(pathNode)) {
-        cerr << "Warning: path is not exist." << endl;
+        cout << "Warning: path is not exist." << endl;
         return res;
     }
     for (cJSON *item = pathNode->child; item; item = item->next) {
@@ -304,7 +304,7 @@ bool CompressionParser::LoadImageTranscoder()
 bool CompressionParser::SetTranscodeOptions(const string &optionJson)
 {
     if (!handle_) {
-        cerr << "Warning: SetTranscodeOptions handle_ is nullptr." << endl;
+        cout << "Warning: SetTranscodeOptions handle_ is nullptr." << endl;
         return false;
     }
 #ifdef __WIN32
@@ -313,21 +313,22 @@ bool CompressionParser::SetTranscodeOptions(const string &optionJson)
     ISetTranscodeOptions iSetTranscodeOptions = (ISetTranscodeOptions)dlsym(handle_, "SetTranscodeOptions");
 #endif
     if (!iSetTranscodeOptions) {
-        cerr << "Warning: Failed to get the 'SetTranscodeOptions'." << endl;
+        cout << "Warning: Failed to get the 'SetTranscodeOptions'." << endl;
         return false;
     }
     bool ret = (*iSetTranscodeOptions)(optionJson);
     if (!ret) {
-        cerr << "Warning: SetTranscodeOptions failed." << endl;
+        cout << "Warning: SetTranscodeOptions failed." << endl;
         return false;
     }
     return true;
 }
 
-TranscodeError CompressionParser::TranscodeImages(const string &imagePath, string &outputPath, TranscodeResult &result)
+TranscodeError CompressionParser::TranscodeImages(const string &imagePath, const bool extAppend,
+    string &outputPath, TranscodeResult &result)
 {
     if (!handle_) {
-        cerr << "Warning: TranscodeImages handle_ is nullptr." << endl;
+        cout << "Warning: TranscodeImages handle_ is nullptr." << endl;
         return TranscodeError::LOAD_COMPRESS_FAILED;
     }
 #ifdef __WIN32
@@ -336,17 +337,17 @@ TranscodeError CompressionParser::TranscodeImages(const string &imagePath, strin
     ITranscodeImages iTranscodeImages = (ITranscodeImages)dlsym(handle_, "Transcode");
 #endif
     if (!iTranscodeImages) {
-        cerr << "Warning: Failed to get the 'Transcode'." << endl;
+        cout << "Warning: Failed to get the 'Transcode'." << endl;
         return TranscodeError::LOAD_COMPRESS_FAILED;
     }
-    TranscodeError ret = (*iTranscodeImages)(imagePath, outputPath, result);
+    TranscodeError ret = (*iTranscodeImages)(imagePath, extAppend, outputPath, result);
     if (ret != TranscodeError::SUCCESS) {
         auto iter = ERRORCODEMAP.find(ret);
         if (iter != ERRORCODEMAP.end()) {
-            cerr << "Warning: TranscodeImages failed, error message: " << iter->second << ", file path = " <<
+            cout << "Warning: TranscodeImages failed, error message: " << iter->second << ", file path = " <<
                 imagePath << endl;
         } else {
-            cerr << "Warning: TranscodeImages failed" << ", file path = " << imagePath << endl;
+            cout << "Warning: TranscodeImages failed" << ", file path = " << imagePath << endl;
         }
         return ret;
     }
@@ -457,7 +458,7 @@ bool CompressionParser::GetDefaultCompress()
 }
 
 bool CompressionParser::CheckAndTranscode(const string &src, string &dst, string &output,
-    const shared_ptr<CompressFilter> &compressFilter)
+    const shared_ptr<CompressFilter> &compressFilter, const bool extAppend)
 {
     auto t1 = std::chrono::steady_clock::now();
     TranscodeResult result = {0, 0, 0, 0};
@@ -465,7 +466,7 @@ bool CompressionParser::CheckAndTranscode(const string &src, string &dst, string
         if (!SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_ONE))) {
             return false;
         }
-        auto res = TranscodeImages(src, output, result);
+        auto res = TranscodeImages(src, extAppend, output, result);
         CollectTimeAndSize(res, t1, result);
         if (res != TranscodeError::SUCCESS) {
             return false;
@@ -480,7 +481,7 @@ bool CompressionParser::CheckAndTranscode(const string &src, string &dst, string
         if (!SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_ONE))) {
             return false;
         }
-        auto res = TranscodeImages(src, output, result);
+        auto res = TranscodeImages(src, extAppend, output, result);
         CollectTimeAndSize(res, t1, result);
         if (res != TranscodeError::SUCCESS) {
             return false;
@@ -489,7 +490,7 @@ bool CompressionParser::CheckAndTranscode(const string &src, string &dst, string
         return true;
     }
     if (SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_THREE))) {
-        auto res = TranscodeImages(src, output, result);
+        auto res = TranscodeImages(src, extAppend, output, result);
         CollectTimeAndSize(res, t1, result);
         if (res == TranscodeError::SUCCESS) {
             dst = output;
@@ -497,7 +498,7 @@ bool CompressionParser::CheckAndTranscode(const string &src, string &dst, string
         }
     }
     if (SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_TWO))) {
-        auto res = TranscodeImages(src, output, result);
+        auto res = TranscodeImages(src, extAppend, output, result);
         CollectTimeAndSize(res, t1, result);
         if (res == TranscodeError::SUCCESS) {
             dst = output;
@@ -507,7 +508,7 @@ bool CompressionParser::CheckAndTranscode(const string &src, string &dst, string
     return false;
 }
 
-bool CompressionParser::CopyAndTranscode(const string &src, string &dst)
+bool CompressionParser::CopyAndTranscode(const string &src, string &dst, const bool extAppend)
 {
     auto t0 = std::chrono::steady_clock::now();
     if (!mediaSwitch_) {
@@ -523,7 +524,7 @@ bool CompressionParser::CopyAndTranscode(const string &src, string &dst)
     }
     string output = dst.substr(0, index);
     for (const auto &compressFilter : compressFilters_) {
-        if (!CheckAndTranscode(src, dst, output, compressFilter)) {
+        if (!CheckAndTranscode(src, dst, output, compressFilter, extAppend)) {
             continue;
         }
         return true;

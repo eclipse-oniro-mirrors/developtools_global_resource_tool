@@ -319,7 +319,7 @@ uint32_t ResourcePack::CopyRawFileOrResFileImpl(const string &src, const string 
             }
             continue;
         }
-        if (!CompressionParser::GetCompressionParser()->CopyAndTranscode(path, subPath)) {
+        if (!CompressionParser::GetCompressionParser()->CopyAndTranscode(path, subPath, true)) {
             return RESTOOL_ERROR;
         }
     }

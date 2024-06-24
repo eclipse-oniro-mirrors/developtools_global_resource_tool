@@ -51,7 +51,7 @@ struct TranscodeResult {
     int32_t height;
 };
 
-typedef TranscodeError (*ITranscodeImages) (const std::string &imagePath,
+typedef TranscodeError (*ITranscodeImages) (const std::string &imagePath, const bool extAppend,
     std::string &outputPath, TranscodeResult &result);
 typedef bool (*ISetTranscodeOptions) (const std::string &optionJson);
 
@@ -63,7 +63,7 @@ public:
     explicit CompressionParser(const std::string &filePath);
     virtual ~CompressionParser();
     uint32_t Init();
-    bool CopyAndTranscode(const std::string &src, std::string &dst);
+    bool CopyAndTranscode(const std::string &src, std::string &dst, const bool extAppend = false);
     bool GetMediaSwitch();
     std::string PrintTransMessage();
     bool GetDefaultCompress();
@@ -73,7 +73,8 @@ private:
     bool ParseFilters(const cJSON *filtersNode);
     bool LoadImageTranscoder();
     bool SetTranscodeOptions(const std::string &optionJson);
-    TranscodeError TranscodeImages(const std::string &imagePath, std::string &outputPath, TranscodeResult &result);
+    TranscodeError TranscodeImages(const std::string &imagePath, const bool extAppend,
+        std::string &outputPath, TranscodeResult &result);
     std::vector<std::string> ParsePath(const cJSON *pathNode);
     std::vector<std::string> ParseRules(const cJSON *rulesNode);
     std::string ParseJsonStr(const cJSON *node);
@@ -86,7 +87,7 @@ private:
         TranscodeResult &result);
     std::string GetOptionsString(const std::shared_ptr<CompressFilter> &compressFilter, int type);
     bool CheckAndTranscode(const std::string &src, std::string &dst, std::string &output,
-        const std::shared_ptr<CompressFilter> &compressFilter);
+        const std::shared_ptr<CompressFilter> &compressFilter, const bool extAppend);
     bool IsDefaultCompress();
     std::string filePath_;
     std::string extensionPath_;
