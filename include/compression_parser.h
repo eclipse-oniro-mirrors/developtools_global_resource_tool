@@ -67,6 +67,7 @@ public:
     bool GetMediaSwitch();
     std::string PrintTransMessage();
     bool GetDefaultCompress();
+    void SetOutPath(const std::string &path);
 private:
     bool ParseContext(const cJSON *contextNode);
     bool ParseCompression(const cJSON *compressionNode);
@@ -88,6 +89,7 @@ private:
     std::string GetOptionsString(const std::shared_ptr<CompressFilter> &compressFilter, int type);
     bool CheckAndTranscode(const std::string &src, std::string &dst, std::string &output,
         const std::shared_ptr<CompressFilter> &compressFilter, const bool extAppend);
+    bool CopyForTrans(const std::string &src, const std::string &originDst, const std::string &dst);
     bool IsDefaultCompress();
     std::string filePath_;
     std::string extensionPath_;
@@ -95,6 +97,7 @@ private:
     bool mediaSwitch_;
     cJSON *root_;
     bool defaultCompress_;
+    std::string outPath_;
     unsigned long long totalTime_ = 0;
     uint32_t totalCounts_ = 0;
     unsigned long long compressTime_ = 0;

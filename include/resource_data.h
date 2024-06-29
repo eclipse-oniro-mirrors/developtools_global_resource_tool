@@ -27,6 +27,7 @@ namespace Global {
 namespace Restool {
 const static std::string TOOL_NAME = "restool";
 const static std::string RESOURCES_DIR = "resources";
+const static std::string CACHES_DIR = ".caches";
 const static std::string CONFIG_JSON = "config.json";
 const static std::string MODULE_JSON = "module.json";
 const static std::string RAW_FILE_DIR = "rawfile";

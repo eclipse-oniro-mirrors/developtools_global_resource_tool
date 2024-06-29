@@ -46,12 +46,13 @@ const map<TranscodeError, string> ERRORCODEMAP = {
 };
 
 CompressionParser::CompressionParser()
-    : filePath_(""), extensionPath_(""), mediaSwitch_(false), root_(nullptr), defaultCompress_(false)
+    : filePath_(""), extensionPath_(""), mediaSwitch_(false), root_(nullptr), defaultCompress_(false), outPath_("")
 {
 }
 
 CompressionParser::CompressionParser(const string &filePath)
-    : filePath_(filePath), extensionPath_(""), mediaSwitch_(false), root_(nullptr), defaultCompress_(false)
+    : filePath_(filePath), extensionPath_(""), mediaSwitch_(false), root_(nullptr), defaultCompress_(false),
+    outPath_("")
 {
 }
 
@@ -112,6 +113,12 @@ uint32_t CompressionParser::Init()
         return RESTOOL_ERROR;
     }
     if (!LoadImageTranscoder()) {
+        return RESTOOL_ERROR;
+    }
+    string caches = outPath_;
+    caches.append(SEPARATOR_FILE).append(CACHES_DIR);
+    if (!ResourceUtil::CreateDirs(caches)) {
+        cerr << "Error: create caches dir failed. dir = " << caches << endl;
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
@@ -231,6 +238,11 @@ bool CompressionParser::IsDefaultCompress()
     auto compressFilter = compressFilters_[0];
     return (compressFilter->path.size() == 0) && (compressFilter->excludePath.size() == 0) &&
         (compressFilter->rules.size() == 0) && (compressFilter->expandRules.size() == 0);
+}
+
+void CompressionParser::SetOutPath(const std::string &path)
+{
+    outPath_ = path;
 }
 
 vector<string> CompressionParser::ParseRules(const cJSON *rulesNode)
@@ -508,6 +520,27 @@ bool CompressionParser::CheckAndTranscode(const string &src, string &dst, string
     return false;
 }
 
+bool CompressionParser::CopyForTrans(const string &src, const string &originDst, const string &dst)
+{
+    auto srcIndex = src.find_last_of(".");
+    auto dstIndex = dst.find_last_of(".");
+    if (srcIndex == string::npos || dstIndex == string::npos) {
+        cerr << "Error: invalid copy path." << endl;
+        return false;
+    }
+    string srcSuffix = src.substr(srcIndex + 1);
+    string dstSuffix = dst.substr(dstIndex + 1);
+    auto ret = false;
+    if (srcSuffix == dstSuffix) {
+        ret = ResourceUtil::CopyFileInner(src, dst);
+    } else {
+        uint32_t startIndex = outPath_.size() + CACHES_DIR.size() + 1;
+        string dstPath = outPath_ + SEPARATOR_FILE + RESOURCES_DIR + dst.substr(startIndex);
+        ret = ResourceUtil::CopyFileInner(dst, dstPath);
+    }
+    return ret;
+}
+
 bool CompressionParser::CopyAndTranscode(const string &src, string &dst, const bool extAppend)
 {
     auto t0 = std::chrono::steady_clock::now();
@@ -522,15 +555,22 @@ bool CompressionParser::CopyAndTranscode(const string &src, string &dst, const b
         cerr << "Error: invalid output path." << NEW_LINE_PATH << dst << endl;
         return false;
     }
-    string output = dst.substr(0, index);
+    uint32_t startIndex = outPath_.size() + RESOURCES_DIR.size() + 1;
+    string endStr = dst.substr(startIndex, index - startIndex);
+    string output = outPath_ + SEPARATOR_FILE + CACHES_DIR + endStr;
+    string originDst = dst;
+    if (!ResourceUtil::CreateDirs(output)) {
+        cerr << "Error: create output dir failed. dir = " << output << endl;
+        return false;
+    }
     for (const auto &compressFilter : compressFilters_) {
         if (!CheckAndTranscode(src, dst, output, compressFilter, extAppend)) {
             continue;
         }
-        return true;
+        break;
     }
     auto t2 = std::chrono::steady_clock::now();
-    auto ret = ResourceUtil::CopyFileInner(src, dst);
+    auto ret = CopyForTrans(src, originDst, dst);
     CollectTime(totalCounts_, totalTime_, t2);
     return ret;
 }
