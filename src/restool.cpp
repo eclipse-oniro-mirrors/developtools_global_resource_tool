@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
     }
     cout << "Info: restool resources compile success." << endl;
     if (CompressionParser::GetCompressionParser()->GetMediaSwitch()) {
-        cerr << CompressionParser::GetCompressionParser()->PrintTransMessage() << endl;
+        cout << CompressionParser::GetCompressionParser()->PrintTransMessage() << endl;
     }
     return RESTOOL_SUCCESS;
 }

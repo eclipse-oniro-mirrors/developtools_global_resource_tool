@@ -48,6 +48,7 @@ uint32_t ResourcePack::InitCompression()
 {
     if (!packageParser_.GetCompressionPath().empty()) {
         auto compressionMgr = CompressionParser::GetCompressionParser(packageParser_.GetCompressionPath());
+        compressionMgr->SetOutPath(packageParser_.GetOutput());
         if (compressionMgr->Init() != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }
