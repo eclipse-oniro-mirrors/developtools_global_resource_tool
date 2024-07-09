@@ -211,8 +211,8 @@ struct ResourceId {
 struct CompressFilter {
     std::vector<std::string> path;
     std::vector<std::string> excludePath;
-    std::vector<std::string> rules;
-    std::vector<std::string> expandRules;
+    std::string rules;
+    std::string excludeRules;
     std::string method;
 };
 

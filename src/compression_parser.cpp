@@ -27,11 +27,6 @@ using namespace std;
 static shared_ptr<CompressionParser> compressionParseMgr = nullptr;
 static once_flag compressionParserMgrFlag;
 
-constexpr int OPT_TYPE_ONE = 1;
-constexpr int OPT_TYPE_TWO = 2;
-constexpr int OPT_TYPE_THREE = 3;
-constexpr int OPT_SIZE_ONE = 1;
-constexpr int OPT_SIZE_TWO = 2;
 const map<TranscodeError, string> ERRORCODEMAP = {
     { TranscodeError::SUCCESS, "SUCCESS" },
     { TranscodeError::INVALID_PARAMETERS, "INVALID_PARAMETERS" },
@@ -42,6 +37,7 @@ const map<TranscodeError, string> ERRORCODEMAP = {
     { TranscodeError::SUPER_COMPRESS_FAILED, "SUPER_COMPRESS_FAILED" },
     { TranscodeError::IMAGE_SIZE_NOT_MATCH, "IMAGE_SIZE_NOT_MATCH" },
     { TranscodeError::IMAGE_RESOLUTION_NOT_MATCH, "IMAGE_RESOLUTION_NOT_MATCH" },
+    { TranscodeError::EXCLUDE_MATCH, "EXCLUDE_MATCH" },
     { TranscodeError::LOAD_COMPRESS_FAILED, "LOAD_COMPRESS_FAILED" },
 };
 
@@ -222,8 +218,8 @@ bool CompressionParser::ParseFilters(const cJSON *filtersNode)
         compressFilter->excludePath = ParsePath(excludePathNode);
         cJSON *rulesNode = cJSON_GetObjectItem(item, "rules_origin");
         compressFilter->rules = ParseRules(rulesNode);
-        cJSON *expandRulesNode = cJSON_GetObjectItem(item, "rules_union");
-        compressFilter->expandRules = ParseRules(expandRulesNode);
+        cJSON *excludeRulesNode = cJSON_GetObjectItem(item, "rules_exclude");
+        compressFilter->excludeRules = ParseRules(excludeRulesNode);
         compressFilters_.emplace_back(compressFilter);
     }
     defaultCompress_ = IsDefaultCompress();
@@ -236,20 +232,21 @@ bool CompressionParser::IsDefaultCompress()
         return false;
     }
     auto compressFilter = compressFilters_[0];
-    return (compressFilter->path.size() == 0) && (compressFilter->excludePath.size() == 0) &&
-        (compressFilter->rules.size() == 0) && (compressFilter->expandRules.size() == 0);
+    bool pathEmpty = (compressFilter->path.size() == 1) && (compressFilter->path[0] == "true");
+    bool excludePathEmpty = (compressFilter->excludePath.size() == 1) && (compressFilter->excludePath[0] == "true");
+    return pathEmpty && excludePathEmpty && (compressFilter->rules.empty()) && (compressFilter->excludeRules.empty());
 }
 
-void CompressionParser::SetOutPath(const std::string &path)
+void CompressionParser::SetOutPath(const string &path)
 {
     outPath_ = path;
 }
 
-vector<string> CompressionParser::ParseRules(const cJSON *rulesNode)
+string CompressionParser::ParseRules(const cJSON *rulesNode)
 {
-    vector<string> res;
+    string res = "";
     if (!rulesNode || !cJSON_IsObject(rulesNode)) {
-        cout << "Warning: rules is not exist." << endl;
+        cout << "Warning: rules is not exist or node type is wrong" << endl;
         return res;
     }
     for (cJSON *item = rulesNode->child; item; item = item->next) {
@@ -257,16 +254,20 @@ vector<string> CompressionParser::ParseRules(const cJSON *rulesNode)
             continue;
         }
         string name(item->string);
-        res.emplace_back("\"" + name + "\":" + ParseJsonStr(item));
+        res.append("\"").append(name).append("\":").append(ParseJsonStr(item)).append(",");
     }
-    return res;
+    return res.substr(0, res.size() - 1);
 }
 
 vector<string> CompressionParser::ParsePath(const cJSON *pathNode)
 {
     vector<string> res;
-    if (!pathNode || !cJSON_IsArray(pathNode)) {
-        cout << "Warning: path is not exist." << endl;
+    if (!pathNode) {
+        res.emplace_back("true");
+        return res;
+    }
+    if (!cJSON_IsArray(pathNode)) {
+        cout << "Warning: pathnode is not array." << endl;
         return res;
     }
     for (cJSON *item = pathNode->child; item; item = item->next) {
@@ -313,7 +314,7 @@ bool CompressionParser::LoadImageTranscoder()
     return true;
 }
 
-bool CompressionParser::SetTranscodeOptions(const string &optionJson)
+bool CompressionParser::SetTranscodeOptions(const string &optionJson, const string &optionJsonExclude)
 {
     if (!handle_) {
         cout << "Warning: SetTranscodeOptions handle_ is nullptr." << endl;
@@ -328,7 +329,7 @@ bool CompressionParser::SetTranscodeOptions(const string &optionJson)
         cout << "Warning: Failed to get the 'SetTranscodeOptions'." << endl;
         return false;
     }
-    bool ret = (*iSetTranscodeOptions)(optionJson);
+    bool ret = (*iSetTranscodeOptions)(optionJson, optionJsonExclude);
     if (!ret) {
         cout << "Warning: SetTranscodeOptions failed." << endl;
         return false;
@@ -368,6 +369,9 @@ TranscodeError CompressionParser::TranscodeImages(const string &imagePath, const
 
 bool CompressionParser::CheckPath(const string &src, const vector<string> &paths)
 {
+    if (paths.size() == 1 && paths[0] == "true") {
+        return true;
+    }
     return any_of(paths.begin(), paths.end(), [src](const auto &iter) {
         return iter == src;
     });
@@ -383,38 +387,28 @@ bool CompressionParser::IsInExcludePath(const string &src, const shared_ptr<Comp
     return CheckPath(src, compressFilter->excludePath);
 }
 
-string CompressionParser::GetOptionsString(const shared_ptr<CompressFilter> &compressFilter, int type)
+string CompressionParser::GetMethod(const shared_ptr<CompressFilter> &compressFilter)
 {
-    if (compressFilter->rules.size() == 0 || compressFilter->expandRules.size() == 0) {
-        return "{" + compressFilter->method + "}";
+    return "{" + compressFilter->method + "}";
+}
+
+string CompressionParser::GetRules(const shared_ptr<CompressFilter> &compressFilter)
+{
+    return GetFileRules(compressFilter->rules, compressFilter->method);
+}
+
+string CompressionParser::GetExcludeRules(const shared_ptr<CompressFilter> &compressFilter)
+{
+    return GetFileRules(compressFilter->excludeRules, compressFilter->method);
+}
+
+string CompressionParser::GetFileRules(const string &rules, const string &method)
+{
+    if (rules.empty()) {
+        return "{" + method + "}";
     }
-    string res = "{" + compressFilter->method + ",";
-    switch (type) {
-        case OPT_TYPE_ONE:
-            if (compressFilter->rules.size() == OPT_SIZE_ONE) {
-                res.append(compressFilter->rules[0]).append("}");
-            } else {
-                res.append(compressFilter->rules[0]).append(",").append(compressFilter->rules[1]).append("}");
-            }
-            break;
-        case OPT_TYPE_TWO:
-            if (compressFilter->rules.size() == OPT_SIZE_ONE) {
-                res.append(compressFilter->rules[0]).append("}");
-            } else if (compressFilter->expandRules.size() == OPT_SIZE_TWO) {
-                res.append(compressFilter->rules[0]).append(",").append(compressFilter->expandRules[1]).append("}");
-            }
-            break;
-        case OPT_TYPE_THREE:
-            if (compressFilter->expandRules.size() == OPT_SIZE_ONE) {
-                res.append(compressFilter->expandRules[0]).append("}");
-            } else if (compressFilter->rules.size() == OPT_SIZE_TWO) {
-                res.append(compressFilter->expandRules[0]).append(",").append(compressFilter->rules[1]).append("}");
-            }
-            break;
-        default:
-            break;
-    }
-    return res;
+    string res = "{";
+    return res.append(method).append(",").append(rules).append("}");
 }
 
 void CompressionParser::CollectTime(uint32_t &count, unsigned long long &time,
@@ -449,7 +443,7 @@ void CompressionParser::CollectTimeAndSize(TranscodeError res,
 
 string CompressionParser::PrintTransMessage()
 {
-    std::string res = "Processing report:\n";
+    string res = "Processing report:\n";
     res.append("total:").append(to_string(totalCounts_)).append(", ").append(to_string(totalTime_)).append(" us.\n");
     res.append("compressed:").append(to_string(compressCounts_)).append(", ").append(to_string(compressTime_))
         .append(" us.\n");
@@ -475,7 +469,7 @@ bool CompressionParser::CheckAndTranscode(const string &src, string &dst, string
     auto t1 = std::chrono::steady_clock::now();
     TranscodeResult result = {0, 0, 0, 0};
     if (defaultCompress_) {
-        if (!SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_ONE))) {
+        if (!SetTranscodeOptions(GetMethod(compressFilter), "")) {
             return false;
         }
         auto res = TranscodeImages(src, extAppend, output, result);
@@ -489,8 +483,8 @@ bool CompressionParser::CheckAndTranscode(const string &src, string &dst, string
     if (!IsInPath(src, compressFilter)) {
         return false;
     }
-    if (!IsInExcludePath(src, compressFilter)) {
-        if (!SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_ONE))) {
+    if (IsInExcludePath(src, compressFilter)) {
+        if (!SetTranscodeOptions(GetRules(compressFilter), GetExcludeRules(compressFilter))) {
             return false;
         }
         auto res = TranscodeImages(src, extAppend, output, result);
@@ -501,23 +495,16 @@ bool CompressionParser::CheckAndTranscode(const string &src, string &dst, string
         dst = output;
         return true;
     }
-    if (SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_THREE))) {
-        auto res = TranscodeImages(src, extAppend, output, result);
-        CollectTimeAndSize(res, t1, result);
-        if (res == TranscodeError::SUCCESS) {
-            dst = output;
-            return true;
-        }
+    if (!SetTranscodeOptions(GetRules(compressFilter), "")) {
+        return false;
     }
-    if (SetTranscodeOptions(GetOptionsString(compressFilter, OPT_TYPE_TWO))) {
-        auto res = TranscodeImages(src, extAppend, output, result);
-        CollectTimeAndSize(res, t1, result);
-        if (res == TranscodeError::SUCCESS) {
-            dst = output;
-            return true;
-        }
+    auto res = TranscodeImages(src, extAppend, output, result);
+    CollectTimeAndSize(res, t1, result);
+    if (res != TranscodeError::SUCCESS) {
+        return false;
     }
-    return false;
+    dst = output;
+    return true;
 }
 
 bool CompressionParser::CopyForTrans(const string &src, const string &originDst, const string &dst)

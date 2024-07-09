@@ -40,6 +40,7 @@ enum class TranscodeError {
     NOT_MATCH_BASE = 100,
     IMAGE_SIZE_NOT_MATCH = 100,
     IMAGE_RESOLUTION_NOT_MATCH,
+    EXCLUDE_MATCH,
     NOT_MATCH_BUTT = 199,
     LOAD_COMPRESS_FAILED
 };
@@ -53,7 +54,7 @@ struct TranscodeResult {
 
 typedef TranscodeError (*ITranscodeImages) (const std::string &imagePath, const bool extAppend,
     std::string &outputPath, TranscodeResult &result);
-typedef bool (*ISetTranscodeOptions) (const std::string &optionJson);
+typedef bool (*ISetTranscodeOptions) (const std::string &optionJson, const std::string &optionJsonExclude);
 
 class CompressionParser {
 public:
@@ -73,11 +74,11 @@ private:
     bool ParseCompression(const cJSON *compressionNode);
     bool ParseFilters(const cJSON *filtersNode);
     bool LoadImageTranscoder();
-    bool SetTranscodeOptions(const std::string &optionJson);
+    bool SetTranscodeOptions(const std::string &optionJson, const std::string &optionJsonExclude);
     TranscodeError TranscodeImages(const std::string &imagePath, const bool extAppend,
         std::string &outputPath, TranscodeResult &result);
     std::vector<std::string> ParsePath(const cJSON *pathNode);
-    std::vector<std::string> ParseRules(const cJSON *rulesNode);
+    std::string ParseRules(const cJSON *rulesNode);
     std::string ParseJsonStr(const cJSON *node);
     bool CheckPath(const std::string &src, const std::vector<std::string> &paths);
     bool IsInPath(const std::string &src, const std::shared_ptr<CompressFilter> &compressFilter);
@@ -86,7 +87,10 @@ private:
         std::chrono::time_point<std::chrono::steady_clock> &start);
     void CollectTimeAndSize(TranscodeError res, std::chrono::time_point<std::chrono::steady_clock> &start,
         TranscodeResult &result);
-    std::string GetOptionsString(const std::shared_ptr<CompressFilter> &compressFilter, int type);
+    std::string GetMethod(const std::shared_ptr<CompressFilter> &compressFilter);
+    std::string GetRules(const std::shared_ptr<CompressFilter> &compressFilter);
+    std::string GetExcludeRules(const std::shared_ptr<CompressFilter> &compressFilter);
+    std::string GetFileRules(const std::string &rules, const std::string &method);
     bool CheckAndTranscode(const std::string &src, std::string &dst, std::string &output,
         const std::shared_ptr<CompressFilter> &compressFilter, const bool extAppend);
     bool CopyForTrans(const std::string &src, const std::string &originDst, const std::string &dst);
