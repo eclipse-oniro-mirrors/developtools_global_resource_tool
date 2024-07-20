@@ -273,7 +273,7 @@ bool ReferenceParser::ParseRefImpl(string &key, const map<string, ResType> &refs
         smatch result;
         if (regex_search(key, result, regex(ref.first))) {
             string name = key.substr(result[0].str().length());
-            int32_t id = idWorker_.GetId(ref.second, name);
+            int64_t id = idWorker_.GetId(ref.second, name);
             if (isSystem) {
                 id = idWorker_.GetSystemId(ref.second, name);
             }

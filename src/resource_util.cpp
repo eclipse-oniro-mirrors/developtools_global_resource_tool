@@ -355,7 +355,7 @@ string ResourceUtil::PaserKeyParam(const vector<KeyParam> &keyParams)
     return result;
 }
 
-string ResourceUtil::DecToHexStr(const int32_t i)
+string ResourceUtil::DecToHexStr(const uint32_t i)
 {
     stringstream ot;
     string result;

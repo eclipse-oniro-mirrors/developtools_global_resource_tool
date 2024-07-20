@@ -34,7 +34,7 @@ public:
     uint32_t LoadResTable(const std::string path, std::map<int64_t, std::vector<ResourceItem>> &resInfos);
 private:
     struct TableData {
-        int32_t id;
+        uint32_t id;
         ResourceItem resourceItem;
     };
 
@@ -54,13 +54,13 @@ private:
     struct IdSet {
         int8_t idTag[TAG_LEN] = {'I', 'D', 'S', 'S'};
         uint32_t idCount;
-        std::map<int32_t, uint32_t> data; // pair id and offset
+        std::map<uint32_t, uint32_t> data; // pair id and offset
     };
 
     struct RecordItem {
         uint32_t size;
         int32_t resType;
-        int32_t id;
+        uint32_t id;
     };
     uint32_t SaveToResouorceIndex(const std::map<std::string, std::vector<TableData>> &configs) const;
     uint32_t CreateIdDefined(const std::map<int64_t, std::vector<ResourceItem>> &allResource) const;

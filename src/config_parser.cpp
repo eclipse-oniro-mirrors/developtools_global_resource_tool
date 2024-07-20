@@ -98,12 +98,12 @@ const string &ConfigParser::GetModuleName() const
     return moduleName_;
 }
 
-int32_t ConfigParser::GetAbilityIconId() const
+int64_t ConfigParser::GetAbilityIconId() const
 {
     return abilityIconId_;
 }
 
-int32_t ConfigParser::GetAbilityLabelId() const
+int64_t ConfigParser::GetAbilityLabelId() const
 {
     return abilityLabelId_;
 }
@@ -129,7 +129,7 @@ uint32_t ConfigParser::Save(const string &filePath) const
     return RESTOOL_ERROR;
 }
 
-bool ConfigParser::SetAppIcon(string &icon, int32_t id)
+bool ConfigParser::SetAppIcon(string &icon, int64_t id)
 {
     cJSON *appNode = cJSON_GetObjectItem(root_, "app");
     if (!appNode || !cJSON_IsObject(appNode)) {
@@ -141,7 +141,7 @@ bool ConfigParser::SetAppIcon(string &icon, int32_t id)
     return true;
 }
 
-bool ConfigParser::SetAppLabel(string &label, int32_t id)
+bool ConfigParser::SetAppLabel(string &label, int64_t id)
 {
     cJSON *appNode = cJSON_GetObjectItem(root_, "app");
     if (!appNode || !cJSON_IsObject(appNode)) {

@@ -40,10 +40,10 @@ public:
     uint32_t Init();
     const std::string &GetPackageName() const;
     const std::string &GetModuleName() const;
-    int32_t GetAbilityIconId() const;
-    int32_t GetAbilityLabelId() const;
-    bool SetAppIcon(std::string &icon, int32_t id);
-    bool SetAppLabel(std::string &label, int32_t id);
+    int64_t GetAbilityIconId() const;
+    int64_t GetAbilityLabelId() const;
+    bool SetAppIcon(std::string &icon, int64_t id);
+    bool SetAppLabel(std::string &label, int64_t id);
     ModuleType GetModuleType() const;
     uint32_t ParseRefence();
     uint32_t Save(const std::string &filePath) const;
