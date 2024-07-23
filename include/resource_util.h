@@ -172,7 +172,7 @@ public:
      * @param int32_t Decimal
      * @return Hexadecimal string
      */
-    static std::string DecToHexStr(const int32_t id);
+    static std::string DecToHexStr(const uint32_t id);
 
     /**
      * @brief Check hexadecimal string

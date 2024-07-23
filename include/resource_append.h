@@ -60,7 +60,7 @@ private:
     std::string ParseString(const char buffer[], int32_t length, int32_t &offset) const;
     int32_t ParseInt32(const char buffer[], int32_t length, int32_t &offset) const;
     bool ParseRef();
-    bool CheckModuleResourceItem(const std::shared_ptr<ResourceItem> &resourceItem, int64_t  id);
+    bool CheckModuleResourceItem(const std::shared_ptr<ResourceItem> &resourceItem, int64_t id);
     bool IsBaseIdDefined(const FileInfo &fileInfo);
 #ifdef __WIN32
     bool LoadResourceItemWin(const std::string &filePath);
