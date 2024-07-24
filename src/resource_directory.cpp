@@ -14,7 +14,7 @@
  */
 
 #include "resource_directory.h"
-#include<iostream>
+#include <iostream>
 #include "file_entry.h"
 #include "resource_util.h"
 #include "select_compile_parse.h"

@@ -16,8 +16,8 @@
 #ifndef OHOS_RESTOOL_RESOURCE_MERGE_H
 #define OHOS_RESTOOL_RESOURCE_MERGE_H
 
-#include<string>
-#include<vector>
+#include <string>
+#include <vector>
 #include "config_parser.h"
 #include "restool_errors.h"
 

@@ -16,7 +16,7 @@
 #ifndef OHOS_RESTOOL_FACTORY_RESOURCE_COMPILER_H
 #define OHOS_RESTOOL_FACTORY_RESOURCE_COMPILER_H
 
-#include<memory>
+#include <memory>
 #include "i_resource_compiler.h"
 
 namespace OHOS {
