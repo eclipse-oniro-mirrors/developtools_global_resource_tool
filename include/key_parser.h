@@ -16,7 +16,7 @@
 #ifndef OHOS_RESTOOL_KEY_PARSER_H
 #define OHOS_RESTOOL_KEY_PARSER_H
 
-#include<vector>
+#include <vector>
 #include "resource_data.h"
 
 namespace OHOS {
