@@ -256,6 +256,9 @@ string CompressionParser::ParseRules(const cJSON *rulesNode)
         string name(item->string);
         res.append("\"").append(name).append("\":").append(ParseJsonStr(item)).append(",");
     }
+    if (res.size() - 1 < 0) {
+        return res;
+    }
     return res.substr(0, res.size() - 1);
 }
 
@@ -303,9 +306,14 @@ bool CompressionParser::LoadImageTranscoder()
     }
 #else
     if (!handle_) {
-        handle_ = dlopen(extensionPath_.c_str(), RTLD_LAZY);
+        string realPath = ResourceUtil::RealPath(extensionPath_);
+        if (realPath.empty()) {
+            cerr << "Error: open '" << extensionPath_.c_str() << "' fail, real path empty." << endl;
+            return false;
+        }
+        handle_ = dlopen(realPath.c_str(), RTLD_LAZY);
         if (!handle_) {
-            cerr << "Error: open '" << extensionPath_.c_str() << "' fail." << endl;
+            cerr << "Error: open '" << realPath.c_str() << "' fail." << endl;
             cerr << "Error: dlopen failed with error: " << dlerror() << endl;
             return false;
         }
@@ -414,15 +422,17 @@ string CompressionParser::GetFileRules(const string &rules, const string &method
 void CompressionParser::CollectTime(uint32_t &count, unsigned long long &time,
     std::chrono::time_point<std::chrono::steady_clock> &start)
 {
-    time += std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count();
+    unsigned long long costTime = static_cast<unsigned long long>(
+        std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count());
+    time += costTime;
     count++;
 }
 
 void CompressionParser::CollectTimeAndSize(TranscodeError res,
     std::chrono::time_point<std::chrono::steady_clock> &start, TranscodeResult &result)
 {
-    auto costTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start)
-        .count();
+    unsigned long long costTime = static_cast<unsigned long long>(
+        std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count());
     if (res == TranscodeError::SUCCESS) {
         totalTime_ += costTime;
         totalCounts_++;
@@ -431,7 +441,7 @@ void CompressionParser::CollectTimeAndSize(TranscodeError res,
         successTime_ += costTime;
         successCounts_++;
         originalSize_ += result.originSize;
-        successSize_ += result.size;
+        successSize_ += static_cast<unsigned long long>(result.size);
     } else if (res < TranscodeError::NOT_MATCH_BASE) {
         totalTime_ += costTime;
         compressTime_ += costTime;
