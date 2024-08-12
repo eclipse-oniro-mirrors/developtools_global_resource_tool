@@ -54,9 +54,9 @@ bool ResourceItem::SetData(const int8_t *data, uint32_t length)
     ReleaseData();
     if (length == 0) {
         // the string in the element directory can be empty
-        data_ = new (nothrow) int8_t[0];
+        data_ = reinterpret_cast<int8_t *>(new (nothrow) int8_t[0]);
         dataLen_ = 0;
-        return true;
+        return data_ != nullptr;
     }
     int8_t *buffer = reinterpret_cast<int8_t *>(new (nothrow) int8_t[length]);
     if (buffer == nullptr) {
