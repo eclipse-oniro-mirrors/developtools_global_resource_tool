@@ -36,6 +36,7 @@ public:
 
 protected:
     virtual uint32_t CompileSingleFile(const FileInfo &fileInfo);
+    virtual uint32_t CompileFiles(const std::vector<FileInfo> &fileInfos);
     bool MergeResourceItem(const ResourceItem &resourceItem);
     std::string GetOutputFolder(const DirectoryInfo &directoryInfo) const;
     ResType type_;
