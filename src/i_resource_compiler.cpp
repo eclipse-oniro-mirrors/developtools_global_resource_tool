@@ -65,12 +65,20 @@ uint32_t IResourceCompiler::Compile(const vector<DirectoryInfo> &directoryInfos)
     sort(fileInfos.begin(), fileInfos.end(), [](const auto &a, const auto &b) {
         return a.filePath < b.filePath;
     });
+    if (CompileFiles(fileInfos) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    return PostCommit();
+}
+
+uint32_t IResourceCompiler::CompileFiles(const std::vector<FileInfo> &fileInfos)
+{
     for (const auto &fileInfo : fileInfos) {
         if (CompileSingleFile(fileInfo) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }
     }
-    return PostCommit();
+    return RESTOOL_SUCCESS;
 }
 
 const map<int64_t, vector<ResourceItem>> &IResourceCompiler::GetResult() const

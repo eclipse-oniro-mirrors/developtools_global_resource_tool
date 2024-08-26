@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <fstream>
+#include <mutex>
 #include <iostream>
 #include <iomanip>
 #include <regex>
@@ -39,6 +40,8 @@ const map<string, ResourceUtil::IgnoreType> ResourceUtil::IGNORE_FILE_REGEX = {
     { "thumbs\\.db", IgnoreType::IGNORE_ALL },
     { ".+~", IgnoreType::IGNORE_ALL }
 };
+
+static std::mutex fileMutex_;
 
 void ResourceUtil::Split(const string &str, vector<string> &out, const string &splitter)
 {
@@ -216,6 +219,7 @@ bool ResourceUtil::CopyFileInner(const string &src, const string &dst)
 
 bool ResourceUtil::CreateDirs(const string &filePath)
 {
+    std::lock_guard<std::mutex> lock(fileMutex_);
     if (FileExist(filePath)) {
         return true;
     }
