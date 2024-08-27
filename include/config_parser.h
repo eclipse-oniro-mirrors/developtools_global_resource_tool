@@ -91,8 +91,8 @@ private:
     std::string moduleName_;
     ModuleType moduleType_;
     std::string mainAbility_;
-    int32_t abilityIconId_;
-    int32_t abilityLabelId_;
+    int64_t abilityIconId_;
+    int64_t abilityLabelId_;
     std::map<std::string, std::set<uint32_t>> jsonCheckIds_;
     static const std::map<std::string, ModuleType> MODULE_TYPES;
     static const std::map<std::string, std::string> JSON_STRING_IDS;
