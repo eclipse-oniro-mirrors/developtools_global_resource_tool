@@ -379,7 +379,7 @@ bool ConfigParser::ParseJsonArrayRef(cJSON *parent, const string &key, cJSON *no
             return false;
         }
         if (update) {
-            cJSON_AddItemToArray(array, cJSON_CreateNumber(atoi(value.c_str())));
+            cJSON_AddItemToArray(array, cJSON_CreateNumber(atoll(value.c_str())));
         }
     }
     cJSON_AddItemToObject(parent, (key + "Id").c_str(), array);
@@ -407,8 +407,8 @@ bool ConfigParser::ParseJsonStringRef(cJSON *parent, const string &key, cJSON *n
         return false;
     }
     if (update) {
-        cJSON_AddItemToObject(parent, (key + "Id").c_str(), cJSON_CreateNumber(atoi(value.c_str())));
-        AddCheckNode(key, static_cast<uint32_t>(atoi(value.c_str())));
+        cJSON_AddItemToObject(parent, (key + "Id").c_str(), cJSON_CreateNumber(atoll(value.c_str())));
+        AddCheckNode(key, static_cast<uint32_t>(atoll(value.c_str())));
     }
     return true;
 }
