@@ -23,7 +23,6 @@
 #include "resource_merge.h"
 #include "resource_table.h"
 #include "compression_parser.h"
-#include "rawfile_resfile_packer.h"
 
 namespace OHOS {
 namespace Global {
@@ -252,6 +251,82 @@ uint32_t ResourcePack::GenerateJsHeader(const std::string &headerPath) const
     return result;
 }
 
+uint32_t ResourcePack::CopyRawFileOrResFile(const string &filePath, const string &fileType)
+{
+    if (!ResourceUtil::FileExist(filePath)) {
+        return RESTOOL_SUCCESS;
+    }
+
+    if (!FileEntry::IsDirectory(filePath)) {
+        cerr << "Error: '" << filePath << "' not directory." << endl;
+        return RESTOOL_ERROR;
+    }
+
+    string dst = FileEntry::FilePath(packageParser_.GetOutput())
+        .Append(RESOURCES_DIR).Append(fileType).GetPath();
+    if (CopyRawFileOrResFileImpl(filePath, dst) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t ResourcePack::CopyRawFileOrResFile(const vector<string> &inputs)
+{
+    for (const auto &input : inputs) {
+        string rawfilePath = FileEntry::FilePath(input).Append(RAW_FILE_DIR).GetPath();
+        if (CopyRawFileOrResFile(rawfilePath, RAW_FILE_DIR) == RESTOOL_ERROR) {
+            return RESTOOL_ERROR;
+        }
+        string resfilePath = FileEntry::FilePath(input).Append(RES_FILE_DIR).GetPath();
+        if (CopyRawFileOrResFile(resfilePath, RES_FILE_DIR) == RESTOOL_ERROR) {
+            return RESTOOL_ERROR;
+        }
+    }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t ResourcePack::CopyRawFileOrResFileImpl(const string &src, const string &dst)
+{
+    if (!ResourceUtil::CreateDirs(dst)) {
+        return RESTOOL_ERROR;
+    }
+
+    FileEntry f(src);
+    if (!f.Init()) {
+        return RESTOOL_ERROR;
+    }
+    for (const auto &entry : f.GetChilds()) {
+        string filename = entry->GetFilePath().GetFilename();
+        if (ResourceUtil::IsIgnoreFile(filename, entry->IsFile())) {
+            continue;
+        }
+
+        string subPath = FileEntry::FilePath(dst).Append(filename).GetPath();
+        if (!entry->IsFile()) {
+            if (CopyRawFileOrResFileImpl(entry->GetFilePath().GetPath(), subPath) != RESTOOL_SUCCESS) {
+                return RESTOOL_ERROR;
+            }
+            continue;
+        }
+
+        if (!g_resourceSet.emplace(subPath).second) {
+            cerr << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly." << endl;
+            continue;
+        }
+        string path = entry->GetFilePath().GetPath();
+        if (moduleName_ == "har" || CompressionParser::GetCompressionParser()->GetDefaultCompress()) {
+            if (!ResourceUtil::CopyFileInner(path, subPath)) {
+                return RESTOOL_ERROR;
+            }
+            continue;
+        }
+        if (!CompressionParser::GetCompressionParser()->CopyAndTranscode(path, subPath, true)) {
+            return RESTOOL_ERROR;
+        }
+    }
+    return RESTOOL_SUCCESS;
+}
+
 uint32_t ResourcePack::GenerateConfigJson()
 {
     if (configJson_.ParseRefence() != RESTOOL_SUCCESS) {
@@ -293,14 +368,15 @@ uint32_t ResourcePack::PackNormal()
         return RESTOOL_ERROR;
     }
 
-    RawFileResFilePacker rawFilePacker(packageParser_, moduleName_);
-    std::future<uint32_t> copyFuture = rawFilePacker.CopyRawFileOrResFileAsync(resourceMerge.GetInputs());
-
     if (ScanResources(resourceMerge.GetInputs(), packageParser_.GetOutput()) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
 
     if (GenerateHeader() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
+    if (CopyRawFileOrResFile(resourceMerge.GetInputs()) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
 
@@ -325,8 +401,7 @@ uint32_t ResourcePack::PackNormal()
     if (resourceTable.CreateResourceTable() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
-    uint32_t copyRet = copyFuture.get();
-    return copyRet == RESTOOL_SUCCESS ? RESTOOL_SUCCESS : RESTOOL_ERROR;
+    return RESTOOL_SUCCESS;
 }
 
 uint32_t ResourcePack::HandleFeature()

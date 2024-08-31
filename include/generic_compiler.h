@@ -17,7 +17,6 @@
 #define OHOS_RESTOOL_GENERIC_COMPILER_H
 
 #include "i_resource_compiler.h"
-#include <mutex>
 
 namespace OHOS {
 namespace Global {
@@ -28,13 +27,11 @@ public:
     virtual ~GenericCompiler();
 protected:
     uint32_t CompileSingleFile(const FileInfo &fileInfo) override;
-    uint32_t CompileFiles(const std::vector<FileInfo> &fileInfos) override;
     bool PostMediaFile(const FileInfo &fileInfo, const std::string &output);
 private:
     std::string GetOutputFilePath(const FileInfo &fileInfo) const;
     bool IsIgnore(const FileInfo &fileInfo);
     bool CopyMediaFile(const FileInfo &fileInfo, std::string &output);
-    std::mutex mutex_;
 };
 }
 }
