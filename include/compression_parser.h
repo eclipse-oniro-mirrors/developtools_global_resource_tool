@@ -18,6 +18,7 @@
 
 #include <chrono>
 #include <cJSON.h>
+#include <mutex>
 #ifdef __WIN32
 #include <windows.h>
 #else
@@ -110,6 +111,7 @@ private:
     uint32_t successCounts_ = 0;
     unsigned long long originalSize_ = 0;
     unsigned long long successSize_ = 0;
+    std::mutex mutex_;
 #ifdef __WIN32
     HMODULE handle_ = nullptr;
 #else

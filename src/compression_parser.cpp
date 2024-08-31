@@ -17,7 +17,6 @@
 
 #include <algorithm>
 #include <iostream>
-#include <mutex>
 #include "restool_errors.h"
 
 namespace OHOS {
@@ -556,9 +555,13 @@ bool CompressionParser::CopyAndTranscode(const string &src, string &dst, const b
     string endStr = dst.substr(startIndex, index - startIndex);
     string output = outPath_ + SEPARATOR_FILE + CACHES_DIR + endStr;
     string originDst = dst;
-    if (!ResourceUtil::CreateDirs(output)) {
-        cerr << "Error: create output dir failed. dir = " << output << endl;
-        return false;
+    {
+        // lock for multi-thread create the same dirs
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (!ResourceUtil::CreateDirs(output)) {
+            cerr << "Error: create output dir failed. dir = " << output << endl;
+            return false;
+        }
     }
     for (const auto &compressFilter : compressFilters_) {
         if (!CheckAndTranscode(src, dst, output, compressFilter, extAppend)) {

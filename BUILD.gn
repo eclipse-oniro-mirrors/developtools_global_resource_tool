@@ -31,6 +31,7 @@ ohos_executable("restool") {
     "src/id_worker.cpp",
     "src/json_compiler.cpp",
     "src/key_parser.cpp",
+    "src/rawfile_resfile_packer.cpp",
     "src/reference_parser.cpp",
     "src/resconfig_parser.cpp",
     "src/resource_append.cpp",
@@ -45,6 +46,7 @@ ohos_executable("restool") {
     "src/restool.cpp",
     "src/select_compile_parse.cpp",
     "src/task_handle.cpp",
+    "src/thread_pool.cpp",
     "src/translatable_parser.cpp",
   ]
 
