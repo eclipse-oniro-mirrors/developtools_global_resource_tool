@@ -19,6 +19,10 @@ resource tool is used in computer.In OpenHarmony SDK toolchain.Provide to IDE.Su
 
 ## Instructions
 
+### SDK Build
+
+[SDK build refer](https://gitee.com/openharmony/build/blob/master/README.md)
+
 ### Test
 
 In PC, run `python test.py ./restool ./out`  
