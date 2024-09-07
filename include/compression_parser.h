@@ -52,9 +52,15 @@ struct TranscodeResult {
     int32_t height;
 };
 
+struct ImageSize {
+    size_t width;
+    size_t height;
+};
+
 typedef TranscodeError (*ITranscodeImages) (const std::string &imagePath, const bool extAppend,
     std::string &outputPath, TranscodeResult &result);
 typedef bool (*ISetTranscodeOptions) (const std::string &optionJson, const std::string &optionJsonExclude);
+typedef TranscodeError (*IScaleImage) (const std::string &imagePath, std::string &outputPath, ImageSize size);
 
 class CompressionParser {
 public:
@@ -69,6 +75,8 @@ public:
     std::string PrintTransMessage();
     bool GetDefaultCompress();
     void SetOutPath(const std::string &path);
+    bool ScaleIconEnable();
+    bool CheckAndScaleIcon(const std::string &src, const std::string &originDst, std::string &scaleDst);
 private:
     bool ParseContext(const cJSON *contextNode);
     bool ParseCompression(const cJSON *compressionNode);
@@ -77,6 +85,7 @@ private:
     bool SetTranscodeOptions(const std::string &optionJson, const std::string &optionJsonExclude);
     TranscodeError TranscodeImages(const std::string &imagePath, const bool extAppend,
         std::string &outputPath, TranscodeResult &result);
+    TranscodeError ScaleImage(const std::string &imagePath, std::string &outputPath);
     std::vector<std::string> ParsePath(const cJSON *pathNode);
     std::string ParseRules(const cJSON *rulesNode);
     std::string ParseJsonStr(const cJSON *node);

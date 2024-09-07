@@ -95,6 +95,14 @@ uint32_t CompressionParser::Init()
         cerr << "Error: JSON file parsing failed, please check the JSON file." << NEW_LINE_PATH << filePath_ << endl;
         return RESTOOL_ERROR;
     }
+    cJSON *contextNode = cJSON_GetObjectItem(root_, "context");
+    if (!ParseContext(contextNode)) {
+        cerr << NEW_LINE_PATH << filePath_ << endl;
+        return RESTOOL_ERROR;
+    }
+    if (!LoadImageTranscoder()) {
+        return RESTOOL_ERROR;
+    }
     cJSON *compressionNode = cJSON_GetObjectItem(root_, "compression");
     if (!ParseCompression(compressionNode)) {
         return RESTOOL_ERROR;
@@ -102,13 +110,9 @@ uint32_t CompressionParser::Init()
     if (!mediaSwitch_) {
         return RESTOOL_SUCCESS;
     }
-    cJSON *contextNode = cJSON_GetObjectItem(root_, "context");
     cJSON *filtersNode = cJSON_GetObjectItem(compressionNode, "filters");
-    if (!ParseContext(contextNode) || !ParseFilters(filtersNode)) {
+    if (!ParseFilters(filtersNode)) {
         cerr << NEW_LINE_PATH << filePath_ << endl;
-        return RESTOOL_ERROR;
-    }
-    if (!LoadImageTranscoder()) {
         return RESTOOL_ERROR;
     }
     string caches = outPath_;
@@ -375,6 +379,35 @@ TranscodeError CompressionParser::TranscodeImages(const string &imagePath, const
     return TranscodeError::SUCCESS;
 }
 
+TranscodeError CompressionParser::ScaleImage(const std::string &imagePath, std::string &outputPath)
+{
+    if (!handle_) {
+        cout << "Warning: ScaleImage handle_ is nullptr." << endl;
+        return TranscodeError::LOAD_COMPRESS_FAILED;
+    }
+#ifdef __WIN32
+    IScaleImage iScaleImage = (IScaleImage)GetProcAddress(handle_, "TranscodeSLR");
+#else
+    IScaleImage iScaleImage = (IScaleImage)dlsym(handle_, "TranscodeSLR");
+#endif
+    if (!iScaleImage) {
+        cout << "Warning: Failed to get the 'TranscodeSLR'." << endl;
+        return TranscodeError::LOAD_COMPRESS_FAILED;
+    }
+    TranscodeError ret = (*iScaleImage)(imagePath, outputPath, { 512, 512 });
+    if (ret != TranscodeError::SUCCESS) {
+        auto iter = ERRORCODEMAP.find(ret);
+        if (iter != ERRORCODEMAP.end()) {
+            cout << "Warning: ScaleImage failed, error message: " << iter->second << ", file path = " << imagePath
+                 << endl;
+        } else {
+            cout << "Warning: ScaleImage failed" << ", file path = " << imagePath << endl;
+        }
+        return ret;
+    }
+    return TranscodeError::SUCCESS;
+}
+
 bool CompressionParser::CheckPath(const string &src, const vector<string> &paths)
 {
     if (paths.size() == 1 && paths[0] == "true") {
@@ -519,14 +552,14 @@ bool CompressionParser::CheckAndTranscode(const string &src, string &dst, string
 
 bool CompressionParser::CopyForTrans(const string &src, const string &originDst, const string &dst)
 {
+    string srcSuffix;
+    string dstSuffix;
     auto srcIndex = src.find_last_of(".");
     auto dstIndex = dst.find_last_of(".");
-    if (srcIndex == string::npos || dstIndex == string::npos) {
-        cerr << "Error: invalid copy path." << endl;
-        return false;
+    if (srcIndex != string::npos && dstIndex != string::npos) {
+        srcSuffix = src.substr(srcIndex + 1);
+        dstSuffix = dst.substr(dstIndex + 1);
     }
-    string srcSuffix = src.substr(srcIndex + 1);
-    string dstSuffix = dst.substr(dstIndex + 1);
     auto ret = false;
     if (srcSuffix == dstSuffix) {
         ret = ResourceUtil::CopyFileInner(src, dst);
@@ -570,6 +603,40 @@ bool CompressionParser::CopyAndTranscode(const string &src, string &dst, const b
     auto ret = CopyForTrans(src, originDst, dst);
     CollectTime(totalCounts_, totalTime_, t2);
     return ret;
+}
+
+bool CompressionParser::CheckAndScaleIcon(const std::string &src, const std::string &originDst, std::string &scaleDst)
+{
+    scaleDst = src;
+    if (filePath_.empty() || outPath_.empty()) {
+        cout << "Info: compression path or out path is empty, unable to scale icon." << endl;
+        return true;
+    }
+    auto index = originDst.find_last_of(SEPARATOR_FILE);
+    if (index == string::npos) {
+        cerr << "Error: invalid output path." << NEW_LINE_PATH << originDst << endl;
+        return false;
+    }
+    uint32_t startIndex = outPath_.size() + RESOURCES_DIR.size() + 1;
+    string qualifierDir = originDst.substr(startIndex, index - startIndex);
+    string outputCache = outPath_ + SEPARATOR_FILE + CACHES_DIR + qualifierDir;
+    if (!ResourceUtil::CreateDirs(outputCache)) {
+        cerr << "Error: scale icon create output dir failed. dir = " << outputCache << endl;
+        return false;
+    }
+    string fileName = originDst.substr(index + 1);
+    string outputFile = outputCache + SEPARATOR_FILE + fileName;
+    auto ret = ScaleImage(src, outputFile);
+    if (ret == TranscodeError::SUCCESS) {
+        // if scale success, change src file to scale image
+        scaleDst = outputFile;
+    }
+    return true;
+}
+
+bool CompressionParser::ScaleIconEnable()
+{
+    return !filePath_.empty() && !outPath_.empty() && handle_ != nullptr;
 }
 }
 }
