@@ -15,6 +15,7 @@
 
 #include "file_manager.h"
 #include <algorithm>
+#include "compression_parser.h"
 #include <iostream>
 #include "factory_resource_compiler.h"
 #include "file_entry.h"
@@ -86,6 +87,85 @@ void FileManager::CheckAllItems(vector<pair<ResType, string>> &noBaseResource)
             }
         }
     }
+}
+
+bool FileManager::ScaleIcons(const string &output, const std::map<std::string, std::set<uint32_t>> &iconMap)
+{
+    if (!CompressionParser::GetCompressionParser()->ScaleIconEnable()) {
+        cout << "Info: scale icon is not enable." << endl;
+        return true;
+    }
+    std::set<int64_t> allIconIds;
+    for (auto &it : iconMap) {
+        if (it.first != "icon") {
+            continue;
+        }
+        allIconIds.insert(it.second.begin(), it.second.end());
+    }
+    if (allIconIds.size() == 0) {
+        cout << "Info: no icons need to scale, icon ids size is 0." << endl;
+        return true;
+    }
+    for (auto &id : allIconIds) {
+        std::map<int64_t, std::vector<ResourceItem>>::iterator iter = items_.find(id);
+        if (iter == items_.end()) {
+            continue;
+        }
+        for (auto &item : iter->second) {
+            if (!ScaleIcon(output, item)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool FileManager::ScaleIcon(const string &output, ResourceItem &item)
+{
+    std::string media = "media";
+    // item's data is short path for icon file, such as "entry/resources/base/media/app_icon.png"
+    const string currentData(reinterpret_cast<const char *>(item.GetData()), item.GetDataLength());
+    auto outIndex = currentData.find_last_of(SEPARATOR);
+    if (outIndex == string::npos) {
+        cerr << "Error: ScaleIcon invalid output name: " << currentData << endl;
+        return false;
+    }
+    // get current output file name and full path
+    string fileName = currentData.substr(outIndex + 1);
+    FileEntry::FilePath fullFilePath = FileEntry::FilePath(output).Append(RESOURCES_DIR).Append(item.GetLimitKey())
+        .Append(media).Append(fileName);
+    if (fullFilePath.GetExtension() == JSON_EXTENSION) {
+        cout << "Info: can't scale media json file." << endl;
+        return true;
+    }
+    const string fullOutPath = fullFilePath.GetPath();
+    // delete current output file
+    if (!ResourceUtil::RmoveFile(fullOutPath)) {
+        cout << "Error: ScaleIcon RmoveFile failed: " << fullOutPath << endl;
+        return false;
+    }
+    // get origin icon output full path with the origin icon file name in src
+    std::string dst = FileEntry::FilePath(output).Append(RESOURCES_DIR).Append(item.GetLimitKey()).Append(media)
+        .Append(item.GetName()).GetPath();
+    // the origin full file in src
+    std::string scaleDst = item.GetFilePath();
+    // scale icon
+    if (!CompressionParser::GetCompressionParser()->CheckAndScaleIcon(item.GetFilePath(), dst, scaleDst)) {
+        return false;
+    }
+    // compress scaled icon
+    if (!CompressionParser::GetCompressionParser()->CopyAndTranscode(scaleDst, dst)) {
+        return false;
+    }
+    string newFileName = FileEntry::FilePath(dst).GetFilename();
+    std::string newData = moduleName_ + SEPARATOR + RESOURCES_DIR + SEPARATOR + item.GetLimitKey() + SEPARATOR + media
+        + SEPARATOR + newFileName;
+    if (!item.SetData(reinterpret_cast<const int8_t *>(newData.c_str()), newData.length())) {
+        cerr << "Error: ScaleIcon resource item set data fail, data: " << newData << NEW_LINE_PATH
+             << item.GetFilePath() << endl;
+        return false;
+    }
+    return true;
 }
 }
 }

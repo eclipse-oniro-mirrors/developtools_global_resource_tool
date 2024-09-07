@@ -53,6 +53,7 @@ public:
     const FilePath &GetFilePath() const;
     static bool Exist(const std::string &path);
     static bool RemoveAllDir(const std::string &path);
+    static bool RemoveFile(const std::string &path);
     static bool CreateDirs(const std::string &path);
     static bool CopyFileInner(const std::string &src, const std::string &dst);
     static bool IsDirectory(const std::string &path);

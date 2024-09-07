@@ -137,6 +137,15 @@ bool FileEntry::RemoveAllDir(const string &path)
     return RemoveAllDirInner(f);
 }
 
+bool FileEntry::RemoveFile(const string &path)
+{
+    FileEntry f(path);
+    if (!f.Init()) {
+        return false;
+    }
+    return RemoveAllDirInner(f);
+}
+
 bool FileEntry::CreateDirs(const string &path)
 {
     return CreateDirsInner(path, 0);

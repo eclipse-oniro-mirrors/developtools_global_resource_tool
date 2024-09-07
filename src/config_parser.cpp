@@ -424,6 +424,11 @@ void ConfigParser::AddCheckNode(const string &key, uint32_t id)
         } else {
             result->second.emplace(id);
         }
+        auto layerIconIds = ReferenceParser::GetLayerIconIds();
+        if (layerIconIds.find(id) != layerIconIds.end()) {
+            auto ids = layerIconIds[id];
+            jsonCheckIds_[key].insert(ids.begin(), ids.end());
+        }
     }
 }
 
