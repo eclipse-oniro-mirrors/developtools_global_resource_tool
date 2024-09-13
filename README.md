@@ -58,5 +58,5 @@ entry Directory Structure
 
 [third_party_libpng](https://gitee.com/openharmony/third_party_libpng/blob/master/README.md)
 
-[third_party_bounds_checking_function](https://gitee.com/openharmony/third_party_bounds_checking_function/blob/master/README.en.md)
+[third_party_bounds_checking_function](https://gitee.com/openharmony/third_party_bounds_checking_function/README.md)
 
