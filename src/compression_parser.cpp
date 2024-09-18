@@ -97,8 +97,8 @@ uint32_t CompressionParser::Init()
     }
     cJSON *contextNode = cJSON_GetObjectItem(root_, "context");
     if (!ParseContext(contextNode)) {
-        cerr << NEW_LINE_PATH << filePath_ << endl;
-        return RESTOOL_ERROR;
+        cout << NEW_LINE_PATH << filePath_ << endl;
+        return RESTOOL_SUCCESS;
     }
     if (!LoadImageTranscoder()) {
         return RESTOOL_ERROR;
@@ -162,25 +162,25 @@ bool CompressionParser::ParseCompression(const cJSON *compressionNode)
 bool CompressionParser::ParseContext(const cJSON *contextNode)
 {
     if (!contextNode) {
-        cerr << "Error: if image transcoding is supported, the 'context' node cannot be empty.";
+        cout << "Warning: if image transcoding is supported, the 'context' node cannot be empty.";
         return false;
     }
     if (!cJSON_IsObject(contextNode)) {
-        cerr << "Error: 'context' must be object.";
+        cout << "Warning: 'context' must be object.";
         return false;
     }
     cJSON *extensionPathNode = cJSON_GetObjectItem(contextNode, "extensionPath");
     if (!extensionPathNode) {
-        cerr << "Error: if image transcoding is supported, the 'extensionPath' node cannot be empty.";
+        cout << "Warning: if image transcoding is supported, the 'extensionPath' node cannot be empty.";
         return false;
     }
     if (!cJSON_IsString(extensionPathNode)) {
-        cerr << "Error: 'extensionPath' must be string.";
+        cout << "Warning: 'extensionPath' must be string.";
         return false;
     }
     extensionPath_ = extensionPathNode->valuestring;
     if (extensionPath_.empty()) {
-        cerr << "Error: 'extensionPath' value cannot be empty.";
+        cout << "Warning: 'extensionPath' value cannot be empty.";
         return false;
     }
     return true;
