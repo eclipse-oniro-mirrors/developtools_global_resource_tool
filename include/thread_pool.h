@@ -64,7 +64,7 @@ private:
 
     std::mutex queueMutex_;
     std::condition_variable condition_;
-    bool running_;
+    bool running_{ false };
     size_t threadCount_;
 };
 
