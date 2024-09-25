@@ -28,7 +28,7 @@
 namespace OHOS {
 namespace Global {
 namespace Restool {
-class ThreadPool{
+class ThreadPool {
 public:
     /**
      * @brief Creates a thread pool with specify thread count

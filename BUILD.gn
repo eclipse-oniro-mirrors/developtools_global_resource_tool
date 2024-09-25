@@ -18,6 +18,7 @@ import("./restool.gni")
 ohos_executable("restool") {
   sources = [
     "src/append_compiler.cpp",
+    "src/binary_file_packer.cpp",
     "src/cmd_parser.cpp",
     "src/compression_parser.cpp",
     "src/config_parser.cpp",
@@ -31,7 +32,6 @@ ohos_executable("restool") {
     "src/id_worker.cpp",
     "src/json_compiler.cpp",
     "src/key_parser.cpp",
-    "src/binary_file_packer.cpp",
     "src/reference_parser.cpp",
     "src/resconfig_parser.cpp",
     "src/resource_append.cpp",
