@@ -31,7 +31,7 @@ ohos_executable("restool") {
     "src/id_worker.cpp",
     "src/json_compiler.cpp",
     "src/key_parser.cpp",
-    "src/rawfile_resfile_packer.cpp",
+    "src/binary_file_packer.cpp",
     "src/reference_parser.cpp",
     "src/resconfig_parser.cpp",
     "src/resource_append.cpp",

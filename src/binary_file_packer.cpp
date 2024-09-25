@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "rawfile_resfile_packer.h"
+#include "binary_file_packer.h"
 
 #include "compression_parser.h"
 #include "restool_errors.h"
@@ -23,34 +23,34 @@ namespace Global {
 namespace Restool {
 using namespace std;
 
-RawFileResFilePacker::RawFileResFilePacker(const PackageParser &packageParser, const std::string &moduleName)
+BinaryFilePacker::BinaryFilePacker(const PackageParser &packageParser, const std::string &moduleName)
     : packageParser_(packageParser), moduleName_(moduleName), threadPool_(ThreadPool(THREAD_POOL_SIZE))
 {
     threadPool_.Start();
 }
 
-RawFileResFilePacker::~RawFileResFilePacker()
+BinaryFilePacker::~BinaryFilePacker()
 {
     threadPool_.Stop();
 }
 
-std::future<uint32_t> RawFileResFilePacker::CopyRawFileOrResFileAsync(const std::vector<std::string> &inputs)
+std::future<uint32_t> BinaryFilePacker::CopyBinaryFileAsync(const std::vector<std::string> &inputs)
 {
-    auto func = [this](const std::vector<std::string> &inputs) { return this->CopyRawFileOrResFile(inputs); };
+    auto func = [this](const std::vector<std::string> &inputs) { return this->CopyBinaryFile(inputs); };
     std::future<uint32_t> res = threadPool_.Enqueue(func, inputs);
     return res;
 }
 
-uint32_t RawFileResFilePacker::CopyRawFileOrResFile(const vector<string> &inputs)
+uint32_t BinaryFilePacker::CopyBinaryFile(const vector<string> &inputs)
 {
     for (const auto &input : inputs) {
         string rawfilePath = FileEntry::FilePath(input).Append(RAW_FILE_DIR).GetPath();
-        if (CopyRawFileOrResFile(rawfilePath, RAW_FILE_DIR) == RESTOOL_ERROR) {
+        if (CopyBinaryFile(rawfilePath, RAW_FILE_DIR) == RESTOOL_ERROR) {
             cerr << "Error: copy raw file failed." << NEW_LINE_PATH << rawfilePath << endl;
             return RESTOOL_ERROR;
         }
         string resfilePath = FileEntry::FilePath(input).Append(RES_FILE_DIR).GetPath();
-        if (CopyRawFileOrResFile(resfilePath, RES_FILE_DIR) == RESTOOL_ERROR) {
+        if (CopyBinaryFile(resfilePath, RES_FILE_DIR) == RESTOOL_ERROR) {
             cerr << "Error: copy res file failed." << NEW_LINE_PATH << resfilePath << endl;
             return RESTOOL_ERROR;
         }
@@ -64,7 +64,7 @@ uint32_t RawFileResFilePacker::CopyRawFileOrResFile(const vector<string> &inputs
     return RESTOOL_SUCCESS;
 }
 
-uint32_t RawFileResFilePacker::CopyRawFileOrResFile(const string &filePath, const string &fileType)
+uint32_t BinaryFilePacker::CopyBinaryFile(const string &filePath, const string &fileType)
 {
     if (!ResourceUtil::FileExist(filePath)) {
         return RESTOOL_SUCCESS;
@@ -76,13 +76,13 @@ uint32_t RawFileResFilePacker::CopyRawFileOrResFile(const string &filePath, cons
     }
 
     string dst = FileEntry::FilePath(packageParser_.GetOutput()).Append(RESOURCES_DIR).Append(fileType).GetPath();
-    if (CopyRawFileOrResFileImpl(filePath, dst) != RESTOOL_SUCCESS) {
+    if (CopyBinaryFileImpl(filePath, dst) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
 }
 
-uint32_t RawFileResFilePacker::CopyRawFileOrResFileImpl(const string &src, const string &dst)
+uint32_t BinaryFilePacker::CopyBinaryFileImpl(const string &src, const string &dst)
 {
     if (!ResourceUtil::CreateDirs(dst)) {
         cerr << "Error: copy rawfile of resfile, create dirs failed." << NEW_LINE_PATH << dst << endl;
@@ -101,7 +101,7 @@ uint32_t RawFileResFilePacker::CopyRawFileOrResFileImpl(const string &src, const
 
         string subPath = FileEntry::FilePath(dst).Append(filename).GetPath();
         if (!entry->IsFile()) {
-            if (CopyRawFileOrResFileImpl(entry->GetFilePath().GetPath(), subPath) != RESTOOL_SUCCESS) {
+            if (CopyBinaryFileImpl(entry->GetFilePath().GetPath(), subPath) != RESTOOL_SUCCESS) {
                 return RESTOOL_ERROR;
             }
             continue;
@@ -119,7 +119,7 @@ uint32_t RawFileResFilePacker::CopyRawFileOrResFileImpl(const string &src, const
     return RESTOOL_SUCCESS;
 }
 
-uint32_t RawFileResFilePacker::CopySingleFile(const std::string &path, std::string &subPath)
+uint32_t BinaryFilePacker::CopySingleFile(const std::string &path, std::string &subPath)
 {
     if (moduleName_ == "har" || CompressionParser::GetCompressionParser()->GetDefaultCompress()) {
         if (!ResourceUtil::CopyFileInner(path, subPath)) {

@@ -23,7 +23,7 @@
 #include "resource_merge.h"
 #include "resource_table.h"
 #include "compression_parser.h"
-#include "rawfile_resfile_packer.h"
+#include "binary_file_packer.h"
 
 namespace OHOS {
 namespace Global {
@@ -293,8 +293,8 @@ uint32_t ResourcePack::PackNormal()
         return RESTOOL_ERROR;
     }
 
-    RawFileResFilePacker rawFilePacker(packageParser_, moduleName_);
-    std::future<uint32_t> copyFuture = rawFilePacker.CopyRawFileOrResFileAsync(resourceMerge.GetInputs());
+    BinaryFilePacker rawFilePacker(packageParser_, moduleName_);
+    std::future<uint32_t> copyFuture = rawFilePacker.CopyBinaryFileAsync(resourceMerge.GetInputs());
 
     if (ScanResources(resourceMerge.GetInputs(), packageParser_.GetOutput()) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;

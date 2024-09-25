@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_RESTOOL_RAWFILE_RESFILE_PACKER_H
-#define OHOS_RESTOOL_RAWFILE_RESFILE_PACKER_H
+#ifndef OHOS_RESTOOL_BINARY_FILE_PACKER_H
+#define OHOS_RESTOOL_BINARY_FILE_PACKER_H
 
 #include "cmd_parser.h"
 #include "resource_util.h"
@@ -23,16 +23,16 @@
 namespace OHOS {
 namespace Global {
 namespace Restool {
-class RawFileResFilePacker {
+class BinaryFilePacker {
 public:
-    explicit RawFileResFilePacker(const PackageParser &packageParser, const std::string &moduleName);
-    ~RawFileResFilePacker();
-    std::future<uint32_t> CopyRawFileOrResFileAsync(const std::vector<std::string> &inputs);
+    explicit BinaryFilePacker(const PackageParser &packageParser, const std::string &moduleName);
+    ~BinaryFilePacker();
+    std::future<uint32_t> CopyBinaryFileAsync(const std::vector<std::string> &inputs);
 
 private:
-    uint32_t CopyRawFileOrResFile(const std::vector<std::string> &inputs);
-    uint32_t CopyRawFileOrResFile(const std::string &filePath, const std::string &fileType);
-    uint32_t CopyRawFileOrResFileImpl(const std::string &src, const std::string &dst);
+    uint32_t CopyBinaryFile(const std::vector<std::string> &inputs);
+    uint32_t CopyBinaryFile(const std::string &filePath, const std::string &fileType);
+    uint32_t CopyBinaryFileImpl(const std::string &src, const std::string &dst);
     uint32_t CopySingleFile(const std::string &path, std::string &subPath);
     PackageParser packageParser_;
     std::string moduleName_;
