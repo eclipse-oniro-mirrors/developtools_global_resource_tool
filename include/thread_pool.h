@@ -16,8 +16,6 @@
 #ifndef OHOS_RESTOOL_THREAD_POOL_H
 #define OHOS_RESTOOL_THREAD_POOL_H
 
-#include "no_copy_able.h"
-
 #include <condition_variable>
 #include <functional>
 #include <future>
@@ -30,14 +28,14 @@
 namespace OHOS {
 namespace Global {
 namespace Restool {
-class ThreadPool : public NoCopyable {
+class ThreadPool{
 public:
     /**
      * @brief Creates a thread pool with specify thread count
      * @param threadCount the count of threads to be created
      */
     explicit ThreadPool(const size_t threadCount);
-    ~ThreadPool() override;
+    ~ThreadPool();
 
     /**
      * @brief Start the thread pool
@@ -55,7 +53,7 @@ public:
      * @param args the args of the function
      */
     template <class F, class... Args>
-    auto Enqueue(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>;
+    std::future<typename std::result_of<F(Args...)>::type> Enqueue(F &&f, Args &&...args);
 
 private:
     void WorkInThread();
@@ -69,7 +67,7 @@ private:
 };
 
 template <typename F, typename... Args>
-auto ThreadPool::Enqueue(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>
+std::future<typename std::result_of<F(Args...)>::type> ThreadPool::Enqueue(F &&f, Args &&...args)
 {
     using return_type = typename std::result_of<F(Args...)>::type;
     using p_task = std::packaged_task<return_type()>;
