@@ -36,11 +36,13 @@ public:
         moduleName_ = moduleName;
     };
     uint32_t MergeResourceItem(const std::map<int64_t, std::vector<ResourceItem>> &resourceInfos);
+    bool ScaleIcons(const std::string &output, const std::map<std::string, std::set<uint32_t>> &iconMap);
 
 private:
     uint32_t ScanModule(const std::string &input, const std::string &output);
     uint32_t ParseReference(const std::string &output);
     void CheckAllItems(std::vector<std::pair<ResType, std::string>> &noBaseResource);
+    bool ScaleIcon(const std::string &output, ResourceItem &item);
 
     // id, resource items
     std::map<int64_t, std::vector<ResourceItem>> items_;

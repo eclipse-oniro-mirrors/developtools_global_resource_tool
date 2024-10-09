@@ -70,6 +70,11 @@ bool ResourceUtil::RmoveAllDir(const string &path)
     return FileEntry::RemoveAllDir(path);
 }
 
+bool ResourceUtil::RmoveFile(const string &path)
+{
+    return FileEntry::RemoveFile(path);
+}
+
 bool ResourceUtil::OpenJsonFile(const string &path, cJSON **root)
 {
     ifstream ifs(FileEntry::AdaptLongPath(path), ios::binary);

@@ -57,6 +57,13 @@ public:
     static bool RmoveAllDir(const std::string &path);
 
     /**
+     * @brief remove file.
+     * @param path: input file.
+     * @return true if remove success, other false.
+     */
+    static bool RmoveFile(const std::string &path);
+
+    /**
      * @brief open json file.
      * @param path: json file path.
      * @param root: json root node
