@@ -18,6 +18,7 @@
 
 #include <cJSON.h>
 #include "id_worker.h"
+#include "resource_data.h"
 #include "resource_item.h"
 
 namespace OHOS {
@@ -31,6 +32,7 @@ public:
     uint32_t ParseRefInResourceItem(ResourceItem &resourceItem) const;
     uint32_t ParseRefInJsonFile(ResourceItem &resourceItem, const std::string &output, const bool isIncrement = false);
     uint32_t ParseRefInString(std::string &value, bool &update) const;
+    static std::map<int64_t, std::set<int64_t>> &GetLayerIconIds();
 private:
     bool ParseRefJson(const std::string &from, const std::string &to);
     bool ParseRefResourceItemData(const ResourceItem &resourceItem, std::string &data, bool &update) const;
@@ -46,7 +48,10 @@ private:
     const IdWorker &idWorker_;
     static const std::map<std::string, ResType> ID_REFS;
     static const std::map<std::string, ResType> ID_OHOS_REFS;
+    static std::map<int64_t, std::set<int64_t>> layerIconIds_;
     cJSON *root_;
+    bool isParsingMediaJson_;
+    int64_t mediaJsonId_{ INVALID_ID };
 };
 }
 }

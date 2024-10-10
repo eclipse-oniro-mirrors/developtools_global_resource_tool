@@ -384,6 +384,10 @@ uint32_t ResourcePack::PackNormal()
         return RESTOOL_ERROR;
     }
 
+    if (!FileManager::GetInstance().ScaleIcons(packageParser_.GetOutput(), configJson_.GetCheckNode())) {
+        return RESTOOL_ERROR;
+    }
+
     if (packageParser_.GetIconCheck()) {
         CheckConfigJson();
     }

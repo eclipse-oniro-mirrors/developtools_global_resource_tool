@@ -53,7 +53,9 @@ const map<string, ResType> ReferenceParser::ID_OHOS_REFS = {
     { "^\\$ohos:symbol:", ResType::SYMBOL }
 };
 
-ReferenceParser::ReferenceParser() : idWorker_(IdWorker::GetInstance()), root_(nullptr)
+std::map<int64_t, std::set<int64_t>> ReferenceParser::layerIconIds_;
+
+ReferenceParser::ReferenceParser() : idWorker_(IdWorker::GetInstance()), root_(nullptr), isParsingMediaJson_(false)
 {
 }
 
@@ -113,14 +115,25 @@ uint32_t ReferenceParser::ParseRefInResourceItem(ResourceItem &resourceItem) con
 uint32_t ReferenceParser::ParseRefInJsonFile(ResourceItem &resourceItem, const string &output, const bool isIncrement)
 {
     string jsonPath;
-    if (resourceItem.GetResType() == ResType::MEDIA) {
-        jsonPath = FileEntry::FilePath(output).Append(RESOURCES_DIR)
-            .Append(resourceItem.GetLimitKey()).Append("media").Append(resourceItem.GetName()).GetPath();
+    ResType resType = resourceItem.GetResType();
+    string resName = resourceItem.GetName();
+    if (resType == ResType::MEDIA) {
+        jsonPath = FileEntry::FilePath(output).Append(RESOURCES_DIR).Append(resourceItem.GetLimitKey()).Append("media")
+            .Append(resName).GetPath();
+        isParsingMediaJson_ = true;
+        mediaJsonId_ = idWorker_.GetId(resType, ResourceUtil::GetIdName(resName, resType));
+        if (mediaJsonId_ != INVALID_ID) {
+            set<int64_t> set;
+            layerIconIds_[mediaJsonId_] = set;
+        }
     } else {
-        jsonPath = FileEntry::FilePath(output).Append(RESOURCES_DIR)
-            .Append("base").Append("profile").Append(resourceItem.GetName()).GetPath();
+        jsonPath = FileEntry::FilePath(output).Append(RESOURCES_DIR).Append("base").Append("profile").Append(resName)
+            .GetPath();
     }
-    if (!ParseRefJson(resourceItem.GetFilePath(), jsonPath)) {
+    bool parseJsonRet = ParseRefJson(resourceItem.GetFilePath(), jsonPath);
+    isParsingMediaJson_ = false;
+    mediaJsonId_ = INVALID_ID;
+    if (!parseJsonRet) {
         return RESTOOL_ERROR;
     }
 
@@ -274,6 +287,10 @@ bool ReferenceParser::ParseRefImpl(string &key, const map<string, ResType> &refs
         if (regex_search(key, result, regex(ref.first))) {
             string name = key.substr(result[0].str().length());
             int64_t id = idWorker_.GetId(ref.second, name);
+            if (!isSystem && ref.second == ResType::MEDIA && mediaJsonId_ != 0
+                && layerIconIds_.find(mediaJsonId_) != layerIconIds_.end()) {
+                layerIconIds_[mediaJsonId_].insert(id);
+            }
             if (isSystem) {
                 id = idWorker_.GetSystemId(ref.second, name);
             }
@@ -313,6 +330,11 @@ bool ReferenceParser::ParseRefJsonImpl(cJSON *node, bool &needSave) const
         cJSON_SetValuestring(node, value.c_str());
     }
     return true;
+}
+
+std::map<int64_t, std::set<int64_t>> &ReferenceParser::GetLayerIconIds()
+{
+    return layerIconIds_;
 }
 }
 }
