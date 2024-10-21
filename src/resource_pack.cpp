@@ -295,7 +295,16 @@ uint32_t ResourcePack::PackNormal()
 
     BinaryFilePacker rawFilePacker(packageParser_, moduleName_);
     std::future<uint32_t> copyFuture = rawFilePacker.CopyBinaryFileAsync(resourceMerge.GetInputs());
+    uint32_t packQualifierRet = PackQualifierResources(resourceMerge);
+    if (packQualifierRet != RESTOOL_SUCCESS) {
+        rawFilePacker.StopCopy();
+    }
+    uint32_t copyRet = copyFuture.get();
+    return packQualifierRet == RESTOOL_SUCCESS && copyRet == RESTOOL_SUCCESS ? RESTOOL_SUCCESS : RESTOOL_ERROR;
+}
 
+uint32_t ResourcePack::PackQualifierResources(const ResourceMerge &resourceMerge)
+{
     if (ScanResources(resourceMerge.GetInputs(), packageParser_.GetOutput()) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
@@ -329,8 +338,7 @@ uint32_t ResourcePack::PackNormal()
     if (resourceTable.CreateResourceTable() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
-    uint32_t copyRet = copyFuture.get();
-    return copyRet == RESTOOL_SUCCESS ? RESTOOL_SUCCESS : RESTOOL_ERROR;
+    return RESTOOL_SUCCESS;
 }
 
 uint32_t ResourcePack::HandleFeature()

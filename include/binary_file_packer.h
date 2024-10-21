@@ -28,6 +28,7 @@ public:
     explicit BinaryFilePacker(const PackageParser &packageParser, const std::string &moduleName);
     ~BinaryFilePacker();
     std::future<uint32_t> CopyBinaryFileAsync(const std::vector<std::string> &inputs);
+    void StopCopy();
 
 private:
     uint32_t CopyBinaryFile(const std::vector<std::string> &inputs);
@@ -38,6 +39,7 @@ private:
     std::string moduleName_;
     ThreadPool threadPool_;
     std::vector<std::future<uint32_t>> copyResults_;
+    std::atomic<bool> stopCopy_{false};
 };
 } // namespace Restool
 } // namespace Global
