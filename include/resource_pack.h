@@ -18,10 +18,11 @@
 
 #include "cmd_parser.h"
 #include "config_parser.h"
-#include "resource_util.h"
-#include "resource_item.h"
-#include "resource_data.h"
 #include "resource_append.h"
+#include "resource_data.h"
+#include "resource_item.h"
+#include "resource_merge.h"
+#include "resource_util.h"
 
 namespace OHOS {
 namespace Global {
@@ -49,6 +50,7 @@ private:
     uint32_t PackPreview();
     uint32_t PackAppend();
     uint32_t PackCombine();
+    uint32_t PackQualifierResources(const ResourceMerge &resourceMerge);
     uint32_t HandleFeature();
     uint32_t FindResourceItems(const std::map<int64_t, std::vector<ResourceItem>> &resInfoLocal,
                                std::vector<ResourceItem> &items, int64_t id) const;

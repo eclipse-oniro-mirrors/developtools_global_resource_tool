@@ -49,7 +49,11 @@ void ThreadPool::Stop()
         running_ = false;
     }
     condition_.notify_all();
-    for (std::thread &worker : workerThreads_) { worker.join(); }
+    for (std::thread &worker : workerThreads_) {
+        if (worker.joinable()) {
+            worker.join();
+        }
+    }
     cout << "Info: thread pool is stopped" << endl;
 }
 

@@ -74,11 +74,6 @@ std::future<typename std::result_of<F(Args...)>::type> ThreadPool::Enqueue(F &&f
     auto task = std::make_shared<p_task>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
 
     std::future<return_type> res = task->get_future();
-    if (!running_ || workerThreads_.empty()) {
-        // If the pool is not running or there are no worker threads, execute the task immediately
-        (*task)();
-        return res;
-    }
     {
         std::unique_lock<std::mutex> lock(queueMutex_);
         tasks_.emplace([task]() { (*task)(); });

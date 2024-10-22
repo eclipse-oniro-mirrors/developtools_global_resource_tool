@@ -34,6 +34,11 @@ BinaryFilePacker::~BinaryFilePacker()
     threadPool_.Stop();
 }
 
+void BinaryFilePacker::StopCopy()
+{
+    stopCopy_.store(true);
+}
+
 std::future<uint32_t> BinaryFilePacker::CopyBinaryFileAsync(const std::vector<std::string> &inputs)
 {
     auto func = [this](const std::vector<std::string> &inputs) { return this->CopyBinaryFile(inputs); };
@@ -56,6 +61,10 @@ uint32_t BinaryFilePacker::CopyBinaryFile(const vector<string> &inputs)
         }
     }
     for (auto &res : copyResults_) {
+        if (stopCopy_.load()) {
+            cout << "Info: CopyBinaryFile: stop copy binary file." << endl;
+            return RESTOOL_ERROR;
+        }
         uint32_t ret = res.get();
         if (ret != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
@@ -110,6 +119,10 @@ uint32_t BinaryFilePacker::CopyBinaryFileImpl(const string &src, const string &d
         if (!g_resourceSet.emplace(subPath).second) {
             cerr << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly." << endl;
             continue;
+        }
+        if (stopCopy_.load()) {
+            cout << "Info: CopyBinaryFileImpl: stop copy binary file." << endl;
+            return RESTOOL_ERROR;
         }
         string path = entry->GetFilePath().GetPath();
         auto copyFunc = [this](const string path, string subPath) { return this->CopySingleFile(path, subPath); };
