@@ -383,7 +383,6 @@ bool ConfigParser::ParseJsonArrayRef(cJSON *parent, const string &key, cJSON *no
         }
     }
     cJSON_AddItemToObject(parent, (key + "Id").c_str(), array);
-    cJSON_Delete(array);
     return true;
 }
 
