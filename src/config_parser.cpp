@@ -402,7 +402,7 @@ bool ConfigParser::ParseJsonStringRef(cJSON *parent, const string &key, cJSON *n
         cerr << "Error: '" << key << "' value " << value << " invalid value." << NEW_LINE_PATH << filePath_ << endl;
         cerr << SOLUTIONS << endl;
         cerr << SOLUTIONS_ARROW << "Please check the module.json5/config.json file in the src/main directory of the "
-             << GetModuleName() << "' module." << endl;
+             << GetModuleName() << " module." << endl;
         return false;
     }
     if (update) {
