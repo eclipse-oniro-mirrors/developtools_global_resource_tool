@@ -41,7 +41,8 @@ const map<string, string> ConfigParser::JSON_STRING_IDS = {
     { "resource", "^\\$[a-z]+:" },
     { "extra", "^\\$[a-z]+:" },
     { "fileContextMenu", "^\\$profile:" },
-    { "orientation", "^\\$string:" }
+    { "orientation", "^\\$string:" },
+    { "value", "^\\$string:" }
 };
 
 const map<string, string> ConfigParser::JSON_ARRAY_IDS = {
