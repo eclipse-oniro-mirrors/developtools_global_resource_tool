@@ -52,6 +52,7 @@ const static int32_t INT_TO_BYTES = sizeof(uint32_t);
 static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 5.012" };
 const static int32_t TAG_LEN = 4;
 static std::set<std::string> g_resourceSet;
+static std::set<std::string> g_hapResourceSet;
 const static int8_t THREAD_POOL_SIZE = 2;
 const static int8_t INVALID_ID = -1;
 

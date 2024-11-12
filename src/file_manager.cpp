@@ -42,7 +42,19 @@ uint32_t FileManager::ScanModules(const vector<string> &inputs, const string &ou
     if (!noBaseResource.empty()) {
         ResourceUtil::PrintWarningMsg(noBaseResource);
     }
-    return isHar ? RESTOOL_SUCCESS : ParseReference(output);
+    if (hapMode_) {
+        SetHapItems();
+    }
+    return isHar || hapMode_ ? RESTOOL_SUCCESS : ParseReference(output);
+}
+
+void FileManager::SetHapItems()
+{
+    for (auto &item : items_) {
+        for (auto &resourceItem : item.second) {
+            resourceItem.SetHapRes();
+        }
+    }
 }
 
 uint32_t FileManager::MergeResourceItem(const map<int64_t, vector<ResourceItem>> &resourceInfos)
@@ -54,7 +66,7 @@ uint32_t FileManager::MergeResourceItem(const map<int64_t, vector<ResourceItem>>
 uint32_t FileManager::ScanModule(const string &input, const string &output)
 {
     ResourceModule resourceModule(input, output, moduleName_);
-    if (resourceModule.ScanResource() != RESTOOL_SUCCESS) {
+    if (resourceModule.ScanResource(hapMode_) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     MergeResourceItem(resourceModule.GetOwner());
@@ -118,6 +130,11 @@ bool FileManager::ScaleIcons(const string &output, const std::map<std::string, s
         }
     }
     return true;
+}
+
+void FileManager::SetHapMode(bool state)
+{
+    hapMode_ = state;
 }
 
 bool FileManager::ScaleIcon(const string &output, ResourceItem &item)

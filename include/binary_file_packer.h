@@ -29,17 +29,21 @@ public:
     ~BinaryFilePacker();
     std::future<uint32_t> CopyBinaryFileAsync(const std::vector<std::string> &inputs);
     void StopCopy();
+    void SetCopyHapMode(bool state);
 
 private:
     uint32_t CopyBinaryFile(const std::vector<std::string> &inputs);
     uint32_t CopyBinaryFile(const std::string &filePath, const std::string &fileType);
     uint32_t CopyBinaryFileImpl(const std::string &src, const std::string &dst);
     uint32_t CopySingleFile(const std::string &path, std::string &subPath);
+    uint32_t CopyBinaryFileWithHap(const std::vector<std::string> &inputs);
     PackageParser packageParser_;
     std::string moduleName_;
     ThreadPool threadPool_;
     std::vector<std::future<uint32_t>> copyResults_;
     std::atomic<bool> stopCopy_{false};
+    bool copyHapMode_{false};
+    std::mutex mutex_;
 };
 } // namespace Restool
 } // namespace Global

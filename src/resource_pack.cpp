@@ -42,6 +42,10 @@ uint32_t ResourcePack::Package()
     if (packageParser_.GetCombine()) {
         return PackCombine();
     }
+
+    if (packageParser_.ExistIndex()) {
+        return PackOverlap();
+    }
     return PackNormal();
 }
 
@@ -272,8 +276,20 @@ uint32_t ResourcePack::ScanResources(const vector<string> &inputs, const string 
 {
     auto &fileManager = FileManager::GetInstance();
     fileManager.SetModuleName(moduleName_);
-    if (fileManager.ScanModules(inputs, output, configJson_.IsHar()) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
+    if (packageParser_.GetOverlap()) {
+        vector<string> hapResInput{inputs[0]};
+        if (fileManager.ScanModules(hapResInput, output, configJson_.IsHar()) != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
+        }
+        fileManager.SetHapMode(false);
+        vector<string> resInputs(inputs.begin() + 1, inputs.end());
+        if (fileManager.ScanModules(resInputs, output, configJson_.IsHar()) != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
+        }
+    } else {
+        if (fileManager.ScanModules(inputs, output, configJson_.IsHar()) != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
+        }
     }
     return RESTOOL_SUCCESS;
 }
@@ -552,6 +568,60 @@ uint32_t ResourcePack::PackCombine()
     if (GenerateHeader() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t ResourcePack::PackOverlap()
+{
+    if (InitCompression() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
+    if (Init() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
+    ResourceMerge resourceMerge;
+    if (resourceMerge.Init(packageParser_) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
+    BinaryFilePacker rawFilePacker(packageParser_, moduleName_);
+    rawFilePacker.SetCopyHapMode(true);
+    std::future<uint32_t> copyFuture = rawFilePacker.CopyBinaryFileAsync(resourceMerge.GetInputs());
+
+    if (LoadHapResources() != RESTOOL_SUCCESS) {
+        rawFilePacker.StopCopy();
+        return RESTOOL_ERROR;
+    }
+
+    if (PackQualifierResources(resourceMerge) != RESTOOL_SUCCESS) {
+        rawFilePacker.StopCopy();
+        return RESTOOL_ERROR;
+    }
+
+    uint32_t copyRet = copyFuture.get();
+    return copyRet == RESTOOL_SUCCESS ? RESTOOL_SUCCESS : RESTOOL_ERROR;
+}
+
+uint32_t ResourcePack::LoadHapResources()
+{
+    ResourceTable resourceTabel;
+    map<int64_t, vector<ResourceItem>> items;
+    string resourceIndexPath =
+        FileEntry::FilePath(packageParser_.GetInputs()[0]).GetParent().Append(RESOURCE_INDEX_FILE).GetPath();
+    if (resourceTabel.LoadResTable(resourceIndexPath, items) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    IdWorker::GetInstance().LoadIdFromHap(items);
+
+    FileManager &fileManager = FileManager::GetInstance();
+    fileManager.SetModuleName(moduleName_);
+    if (fileManager.MergeResourceItem(items) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    fileManager.SetHapItems();
+    fileManager.SetHapMode(true);
     return RESTOOL_SUCCESS;
 }
 

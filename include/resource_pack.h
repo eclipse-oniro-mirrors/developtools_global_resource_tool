@@ -50,6 +50,7 @@ private:
     uint32_t PackPreview();
     uint32_t PackAppend();
     uint32_t PackCombine();
+    uint32_t PackOverlap();
     uint32_t PackQualifierResources(const ResourceMerge &resourceMerge);
     uint32_t HandleFeature();
     uint32_t FindResourceItems(const std::map<int64_t, std::vector<ResourceItem>> &resInfoLocal,
@@ -60,6 +61,7 @@ private:
     void CheckConfigJson();
     void CheckConfigJsonForCombine(ResourceAppend &resourceAppend);
     bool CopyIcon(std::string &dataPath, const std::string &idName, std::string &fileName) const;
+    uint32_t LoadHapResources();
     PackageParser packageParser_;
     std::string moduleName_;
     using HeaderCreater = std::function<uint32_t(const std::string&)>;

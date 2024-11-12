@@ -104,6 +104,11 @@ const map<pair<ResType, string>, vector<ResourceItem>> &IResourceCompiler::GetRe
     return nameInfos_;
 }
 
+void IResourceCompiler::SetHapRes()
+{
+    isHapRes_ = true;
+}
+
 void IResourceCompiler::SetModuleName(const string &moduleName)
 {
     moduleName_ = moduleName;

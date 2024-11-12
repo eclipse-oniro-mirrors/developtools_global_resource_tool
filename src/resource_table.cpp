@@ -489,9 +489,13 @@ bool ResourceTable::ReadDataRecordStart(std::ifstream &in, RecordItem &record,
         cerr << "Error: invalid resources.index limit key offset." << endl;
         return false;
     }
+
     const vector<KeyParam> &keyparams = limitKeys.find(datas.find(offset)->second.second)->second;
     ResourceItem resourceitem(filename, keyparams, g_resTypeMap.find(record.resType)->second);
     resourceitem.SetLimitKey(ResourceUtil::PaserKeyParam(keyparams));
+    if (values[value_size - 1] == '\0') {
+        value_size--;
+    }
     resourceitem.SetData(values, value_size);
     resInfos[record.id].push_back(resourceitem);
     return true;

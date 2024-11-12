@@ -39,11 +39,36 @@ void BinaryFilePacker::StopCopy()
     stopCopy_.store(true);
 }
 
+void BinaryFilePacker::SetCopyHapMode(bool state)
+{
+    copyHapMode_ = state;
+}
+
 std::future<uint32_t> BinaryFilePacker::CopyBinaryFileAsync(const std::vector<std::string> &inputs)
 {
-    auto func = [this](const std::vector<std::string> &inputs) { return this->CopyBinaryFile(inputs); };
+    if (copyHapMode_) {
+        auto func = [this](const vector<string> &inputs) { return this->CopyBinaryFileWithHap(inputs); };
+        future<uint32_t> res = threadPool_.Enqueue(func, inputs);
+        return res;
+    }
+    auto func = [this](const vector<string> &inputs) { return this->CopyBinaryFile(inputs); };
     std::future<uint32_t> res = threadPool_.Enqueue(func, inputs);
     return res;
+}
+
+uint32_t BinaryFilePacker::CopyBinaryFileWithHap(const vector<string> &inputs)
+{
+    vector<string> hapResource(inputs.begin(), inputs.begin() + 1);
+    if (CopyBinaryFile(hapResource) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    copyResults_.clear();
+    SetCopyHapMode(false);
+    vector<string> resource(inputs.begin() + 1, inputs.end());
+    if (CopyBinaryFile(resource) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
 }
 
 uint32_t BinaryFilePacker::CopyBinaryFile(const vector<string> &inputs)
@@ -116,14 +141,28 @@ uint32_t BinaryFilePacker::CopyBinaryFileImpl(const string &src, const string &d
             continue;
         }
 
-        if (!g_resourceSet.emplace(subPath).second) {
+        bool hapEmplaceSuccess = true;
+        bool gResEmplaceSuccess = true;
+        lock_guard<mutex> lock(mutex_);
+        if (copyHapMode_) {
+            hapEmplaceSuccess = g_hapResourceSet.emplace(subPath).second;
+            gResEmplaceSuccess = g_resourceSet.emplace(subPath).second;
+        } else if (g_hapResourceSet.count(subPath)) { // overlap the hap resource by new resource
+            g_hapResourceSet.erase(subPath);
+        } else {
+            gResEmplaceSuccess = g_resourceSet.emplace(subPath).second;
+        }
+        
+        if (!hapEmplaceSuccess || !gResEmplaceSuccess) {
             cerr << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly." << endl;
             continue;
         }
+
         if (stopCopy_.load()) {
             cout << "Info: CopyBinaryFileImpl: stop copy binary file." << endl;
             return RESTOOL_ERROR;
         }
+
         string path = entry->GetFilePath().GetPath();
         auto copyFunc = [this](const string path, string subPath) { return this->CopySingleFile(path, subPath); };
         std::future<uint32_t> res = threadPool_.Enqueue(copyFunc, path, subPath);

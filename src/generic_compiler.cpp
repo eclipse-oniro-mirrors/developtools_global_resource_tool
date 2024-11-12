@@ -101,7 +101,18 @@ bool GenericCompiler::IsIgnore(const FileInfo &fileInfo)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     string output = GetOutputFilePath(fileInfo);
-    if (!g_resourceSet.emplace(output).second) {
+    bool hapEmplaceSuccess = true;
+    bool gResEmplaceSuccess = true;
+    if (isHapRes_) {
+        hapEmplaceSuccess = g_hapResourceSet.emplace(output).second;
+        gResEmplaceSuccess = g_resourceSet.emplace(output).second;
+    } else if (g_hapResourceSet.count(output)) { // overlap the hap resource by new resource
+        g_hapResourceSet.erase(output);
+    } else {
+        gResEmplaceSuccess = g_resourceSet.emplace(output).second;
+    }
+
+    if (!hapEmplaceSuccess || !gResEmplaceSuccess) {
         cerr << "Warning: '" << fileInfo.filePath << "' is defined repeatedly." << endl;
         return true;
     }
