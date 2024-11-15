@@ -292,6 +292,9 @@ string CompressionParser::ParseJsonStr(const cJSON *node)
         return "";
     }
     char *jsonString = cJSON_Print(node);
+    if (jsonString == nullptr) {
+        return "";
+    }
     string res(jsonString);
     free(jsonString);
     return res;
