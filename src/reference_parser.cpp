@@ -88,6 +88,10 @@ uint32_t ReferenceParser::ParseRefInResourceItem(ResourceItem &resourceItem) con
     string data;
     bool update = false;
     if (IsStringOfResourceItem(resType)) {
+        if (resourceItem.GetData() == nullptr) {
+            cerr << "Error: parse ref in resource item failed, data is null." << endl;
+            return RESTOOL_ERROR;
+        }
         data = string(reinterpret_cast<const char *>(resourceItem.GetData()), resourceItem.GetDataLength());
         if (!ParseRefString(data, update)) {
             cerr << "Error: please check JSON file." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
@@ -182,6 +186,10 @@ bool ReferenceParser::ParseRefJson(const string &from, const string &to)
 
 bool ReferenceParser::ParseRefResourceItemData(const ResourceItem &resourceItem, string &data, bool &update) const
 {
+    if (resourceItem.GetData() == nullptr) {
+        cerr << "Error: parse ref resource item data failed, data is null." << endl;
+        return false;
+    }
     data = string(reinterpret_cast<const char *>(resourceItem.GetData()), resourceItem.GetDataLength());
     vector<string> contents = ResourceUtil::DecomposeStrings(data);
     if (contents.empty()) {

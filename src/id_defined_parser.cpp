@@ -291,6 +291,10 @@ int64_t IdDefinedParser::GetStartId() const
     }
 
     int64_t id = strtoll(startIdNode->valuestring, nullptr, 16);
+    if (id == 0) {
+        cerr << "Error: id_defined.json 'startId' is not a valid hexadecimal string." << endl;
+        return -1;
+    }
     return id;
 }
 
