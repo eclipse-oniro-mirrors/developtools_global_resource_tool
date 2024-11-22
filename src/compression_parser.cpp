@@ -306,8 +306,14 @@ bool CompressionParser::LoadImageTranscoder()
     if (!handle_) {
         handle_ = LoadLibrary(TEXT(extensionPath_.c_str()));
         if (!handle_) {
+            DWORD err = GetLastError();
+            LPVOID lpMsgBuf;
+            FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                NULL, err, MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
+            const char *msg = static_cast<const char*>(lpMsgBuf);
             cerr << "Error: open '" << extensionPath_.c_str() << "' fail." << endl;
-            cerr << "Error: LoadLibrary failed with error: " << GetLastError() << endl;
+            cerr << "Error: LoadLibrary failed with error: " << err << ", " << msg << endl;
+            LocalFree(lpMsgBuf);
             return false;
         }
     }
@@ -320,8 +326,9 @@ bool CompressionParser::LoadImageTranscoder()
         }
         handle_ = dlopen(realPath.c_str(), RTLD_LAZY);
         if (!handle_) {
+            char *err = dlerror();
             cerr << "Error: open '" << realPath.c_str() << "' fail." << endl;
-            cerr << "Error: dlopen failed with error: " << dlerror() << endl;
+            cerr << "Error: dlopen failed with error: " << err << endl;
             return false;
         }
     }
