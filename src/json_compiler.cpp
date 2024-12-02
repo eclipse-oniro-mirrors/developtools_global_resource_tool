@@ -187,6 +187,11 @@ bool JsonCompiler::HandleInteger(const cJSON *objectNode, ResourceItem &resource
 bool JsonCompiler::HandleBoolean(const cJSON *objectNode, ResourceItem &resourceItem) const
 {
     cJSON *valueNode = cJSON_GetObjectItem(objectNode, TAG_VALUE.c_str());
+    if (valueNode == nullptr) {
+        cerr << "Error: '" << resourceItem.GetName() << "' value not json.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        return false;
+    }
     if (cJSON_IsString(valueNode)) {
         regex ref("^\\$(ohos:)?boolean:.*");
         if (!regex_match(valueNode->valuestring, ref)) {
@@ -404,6 +409,12 @@ bool JsonCompiler::ParseValueArray(const cJSON *objectNode, ResourceItem &resour
                                    const vector<string> &extra, HandleValue callback) const
 {
     cJSON *arrayNode = cJSON_GetObjectItem(objectNode, TAG_VALUE.c_str());
+    if (arrayNode == nullptr) {
+        cerr << "Error: '" << resourceItem.GetName() << "' value not json.";
+        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        return false;
+    }
+
     if (!cJSON_IsArray(arrayNode)) {
         cerr << "Error: '" << resourceItem.GetName() << "' value not array.";
         cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
