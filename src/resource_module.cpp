@@ -57,7 +57,7 @@ uint32_t ResourceModule::ScanResource(bool isHap)
             FactoryResourceCompiler::CreateCompiler(type, moduleOutput_);
         resourceCompiler->SetModuleName(moduleName_);
         if (isHap) {
-            resourceCompiler->SetHapRes();
+            resourceCompiler->SetHapRes(true);
         }
         if (resourceCompiler->Compile(item->second) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;

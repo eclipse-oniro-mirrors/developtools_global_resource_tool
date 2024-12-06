@@ -39,14 +39,14 @@ void BinaryFilePacker::StopCopy()
     stopCopy_.store(true);
 }
 
-void BinaryFilePacker::SetCopyHapMode(bool state)
+void BinaryFilePacker::SetCopyHap(bool state)
 {
-    copyHapMode_ = state;
+    copyHap_ = state;
 }
 
 std::future<uint32_t> BinaryFilePacker::CopyBinaryFileAsync(const std::vector<std::string> &inputs)
 {
-    if (copyHapMode_) {
+    if (copyHap_) {
         auto func = [this](const vector<string> &inputs) { return this->CopyBinaryFileWithHap(inputs); };
         future<uint32_t> res = threadPool_.Enqueue(func, inputs);
         return res;
@@ -58,12 +58,13 @@ std::future<uint32_t> BinaryFilePacker::CopyBinaryFileAsync(const std::vector<st
 
 uint32_t BinaryFilePacker::CopyBinaryFileWithHap(const vector<string> &inputs)
 {
-    vector<string> hapResource(inputs.begin(), inputs.begin() + 1);
+    vector<string> hapResource{inputs[0]};
     if (CopyBinaryFile(hapResource) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     copyResults_.clear();
-    SetCopyHapMode(false);
+    SetCopyHap(false);
+
     vector<string> resource(inputs.begin() + 1, inputs.end());
     if (CopyBinaryFile(resource) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
@@ -141,20 +142,7 @@ uint32_t BinaryFilePacker::CopyBinaryFileImpl(const string &src, const string &d
             continue;
         }
 
-        bool hapEmplaceSuccess = true;
-        bool gResEmplaceSuccess = true;
-        lock_guard<mutex> lock(mutex_);
-        if (copyHapMode_) {
-            hapEmplaceSuccess = g_hapResourceSet.emplace(subPath).second;
-            gResEmplaceSuccess = g_resourceSet.emplace(subPath).second;
-        } else if (g_hapResourceSet.count(subPath)) { // overlap the hap resource by new resource
-            g_hapResourceSet.erase(subPath);
-        } else {
-            gResEmplaceSuccess = g_resourceSet.emplace(subPath).second;
-        }
-        
-        if (!hapEmplaceSuccess || !gResEmplaceSuccess) {
-            cerr << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly." << endl;
+        if (IsDefinedFile(entry, subPath)) {
             continue;
         }
 
@@ -169,6 +157,26 @@ uint32_t BinaryFilePacker::CopyBinaryFileImpl(const string &src, const string &d
         copyResults_.push_back(std::move(res));
     }
     return RESTOOL_SUCCESS;
+}
+
+bool BinaryFilePacker::IsDefinedFile(const unique_ptr<FileEntry> &entry, string subPath)
+{
+    lock_guard<mutex> lock(mutex_);
+    bool resEmplaceSuccess = true;
+    if (copyHap_) {
+        g_hapResourceSet.emplace(subPath);
+        g_resourceSet.emplace(subPath);
+    } else if (g_hapResourceSet.count(subPath)) {
+        g_hapResourceSet.erase(subPath);
+    } else {
+        resEmplaceSuccess = g_resourceSet.emplace(subPath).second;
+    }
+    
+    if (!resEmplaceSuccess) {
+        cerr << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly." << endl;
+        return true;
+    }
+    return false;
 }
 
 uint32_t BinaryFilePacker::CopySingleFile(const std::string &path, std::string &subPath)

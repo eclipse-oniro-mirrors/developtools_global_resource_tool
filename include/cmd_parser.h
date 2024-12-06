@@ -57,8 +57,7 @@ public:
     bool IsTargetConfig() const;
     const std::vector<std::string> &GetSysIdDefinedPaths() const;
     const std::string &GetCompressionPath() const;
-    bool ExistIndex();
-    bool GetOverlap();
+    bool ExistHapInput();
 
 private:
     void InitCommand();
@@ -114,7 +113,6 @@ private:
     bool isTtargetConfig_;
     std::vector<std::string> sysIdDefinedPaths_;
     std::string compressionPath_;
-    bool overlap_ = false;
 };
 
 template<class T>

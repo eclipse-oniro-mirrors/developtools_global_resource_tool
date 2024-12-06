@@ -55,7 +55,7 @@ uint32_t ResourceMerge::Init(const PackageParser &packageParser)
             continue;
         }
         ConfigParser::ModuleType moduleType = ConfigParser::ModuleType::NONE;
-        if (!ResourceUtil::FileExist(configPath) || ResourceUtil::FileExist(indexPath)) {
+        if (!ResourceUtil::FileExist(configPath)) {
             inputTypes[moduleType].push_back(resourceDir);
             continue;
         }

@@ -33,7 +33,7 @@ public:
     void SetModuleName(const std::string &moduleName);
     uint32_t CompileForAppend(const FileInfo &fileInfo);
     const std::map<std::pair<ResType, std::string>, std::vector<ResourceItem>> &GetResourceItems() const;
-    void SetHapRes();
+    void SetHapRes(bool state);
 
 protected:
     virtual uint32_t CompileSingleFile(const FileInfo &fileInfo);
@@ -43,7 +43,7 @@ protected:
     ResType type_;
     std::string output_;
     std::string moduleName_;
-    bool isHapRes_ = false;
+    bool hapRes_ = false;
 
     // id, resource items
     std::map<int64_t, std::vector<ResourceItem>> resourceInfos_;

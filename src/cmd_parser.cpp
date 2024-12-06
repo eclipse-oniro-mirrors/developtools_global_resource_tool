@@ -444,23 +444,17 @@ const std::string &PackageParser::GetCompressionPath() const
     return compressionPath_;
 }
 
-bool PackageParser::ExistIndex()
+bool PackageParser::ExistHapInput()
 {
     for (auto &input : inputs_) {
         string indexPath = ResourceUtil::GetMainPath(input).Append(RESOURCE_INDEX_FILE).GetPath();
         if (ResourceUtil::FileExist(indexPath)) {
             inputs_.erase(find(inputs_.begin(), inputs_.end(), input));
             inputs_.emplace(inputs_.begin(), input);
-            overlap_ = true;
             return true;
         }
     }
     return false;
-}
-
-bool PackageParser::GetOverlap()
-{
-    return overlap_;
 }
 
 void PackageParser::InitCommand()

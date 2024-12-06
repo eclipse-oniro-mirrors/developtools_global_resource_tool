@@ -35,10 +35,10 @@ public:
     {
         moduleName_ = moduleName;
     };
-    void SetHapItems();
+    void MarkItemsAsHap();
     uint32_t MergeResourceItem(const std::map<int64_t, std::vector<ResourceItem>> &resourceInfos);
     bool ScaleIcons(const std::string &output, const std::map<std::string, std::set<uint32_t>> &iconMap);
-    void SetHapMode(bool state);
+    void SetScanHap(bool state);
 
 private:
     uint32_t ScanModule(const std::string &input, const std::string &output);
@@ -49,7 +49,7 @@ private:
     // id, resource items
     std::map<int64_t, std::vector<ResourceItem>> items_;
     std::string moduleName_;
-    bool hapMode_ = false;
+    bool scanHap_ = false;
 };
 }
 }

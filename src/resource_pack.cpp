@@ -43,10 +43,10 @@ uint32_t ResourcePack::Package()
         return PackCombine();
     }
 
-    if (packageParser_.ExistIndex()) {
-        return PackOverlap();
+    if (packageParser_.ExistHapInput()) {
+        packType_ = PackType::OVERLAP;
     }
-    return PackNormal();
+    return Pack();
 }
 
 uint32_t ResourcePack::InitCompression()
@@ -62,9 +62,13 @@ uint32_t ResourcePack::InitCompression()
 }
 
 // below private founction
-uint32_t ResourcePack::Init()
+uint32_t ResourcePack::InitResourcePack()
 {
     InitHeaderCreater();
+    if (InitCompression() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
     if (InitOutput() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
@@ -276,12 +280,13 @@ uint32_t ResourcePack::ScanResources(const vector<string> &inputs, const string 
 {
     auto &fileManager = FileManager::GetInstance();
     fileManager.SetModuleName(moduleName_);
-    if (packageParser_.GetOverlap()) {
+    if (packType_ == PackType::OVERLAP) {
         vector<string> hapResInput{inputs[0]};
         if (fileManager.ScanModules(hapResInput, output, configJson_.IsHar()) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }
-        fileManager.SetHapMode(false);
+        fileManager.SetScanHap(false);
+
         vector<string> resInputs(inputs.begin() + 1, inputs.end());
         if (fileManager.ScanModules(resInputs, output, configJson_.IsHar()) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
@@ -294,33 +299,50 @@ uint32_t ResourcePack::ScanResources(const vector<string> &inputs, const string 
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ResourcePack::PackNormal()
+uint32_t ResourcePack::Pack()
 {
-    if (InitCompression() != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
+    if (packType_ == PackType::NORMAL) {
+        cout << "Info: Pack: normal pack mode" << endl;
+    } else if (packType_ == PackType::OVERLAP) {
+        cout << "Info: Pack: overlap pack mode" << endl;
     }
 
-    if (Init() != RESTOOL_SUCCESS) {
+    if (InitResourcePack() != RESTOOL_SUCCESS) {
+        cerr << "Error: ResourcePack init failed." << endl;
         return RESTOOL_ERROR;
     }
 
     ResourceMerge resourceMerge;
-    if (resourceMerge.Init() != RESTOOL_SUCCESS) {
+    if (resourceMerge.Init(packageParser_) != RESTOOL_SUCCESS) {
+        cerr << "Error: resourceMerge init failed." << endl;
         return RESTOOL_ERROR;
     }
 
     BinaryFilePacker rawFilePacker(packageParser_, moduleName_);
-    std::future<uint32_t> copyFuture = rawFilePacker.CopyBinaryFileAsync(resourceMerge.GetInputs());
-    uint32_t packQualifierRet = PackQualifierResources(resourceMerge);
-    if (packQualifierRet != RESTOOL_SUCCESS) {
-        rawFilePacker.StopCopy();
+    if (packType_ == PackType::OVERLAP) {
+        rawFilePacker.SetCopyHap(true);
     }
-    uint32_t copyRet = copyFuture.get();
-    return packQualifierRet == RESTOOL_SUCCESS && copyRet == RESTOOL_SUCCESS ? RESTOOL_SUCCESS : RESTOOL_ERROR;
+    std::future<uint32_t> copyFuture = rawFilePacker.CopyBinaryFileAsync(resourceMerge.GetInputs());
+
+    if (PackResources(resourceMerge) != RESTOOL_SUCCESS) {
+        rawFilePacker.StopCopy();
+        cerr << "Error: pack resources failed." << endl;
+        return RESTOOL_ERROR;
+    }
+
+    if (copyFuture.get() != RESTOOL_SUCCESS) {
+        cerr << "Error: copy binary file failed." << endl;
+        return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
 }
 
-uint32_t ResourcePack::PackQualifierResources(const ResourceMerge &resourceMerge)
+uint32_t ResourcePack::PackResources(const ResourceMerge &resourceMerge)
 {
+    if (packType_ == PackType::OVERLAP && LoadHapResources() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
     if (ScanResources(resourceMerge.GetInputs(), packageParser_.GetOutput()) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
@@ -354,6 +376,28 @@ uint32_t ResourcePack::PackQualifierResources(const ResourceMerge &resourceMerge
     if (resourceTable.CreateResourceTable() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t ResourcePack::LoadHapResources()
+{
+    ResourceTable resourceTabel;
+    map<int64_t, vector<ResourceItem>> items;
+    string resourceIndexPath =
+        FileEntry::FilePath(packageParser_.GetInputs()[0]).GetParent().Append(RESOURCE_INDEX_FILE).GetPath();
+    if (resourceTabel.LoadResTable(resourceIndexPath, items) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    
+    IdWorker::GetInstance().LoadIdFromHap(items);
+
+    FileManager &fileManager = FileManager::GetInstance();
+    fileManager.SetModuleName(moduleName_);
+    if (fileManager.MergeResourceItem(items) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    fileManager.MarkItemsAsHap();
+    fileManager.SetScanHap(true);
     return RESTOOL_SUCCESS;
 }
 
@@ -548,7 +592,7 @@ uint32_t ResourcePack::PackAppend()
 
 uint32_t ResourcePack::PackCombine()
 {
-    if (Init() != RESTOOL_SUCCESS) {
+    if (InitResourcePack() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
 
@@ -568,60 +612,6 @@ uint32_t ResourcePack::PackCombine()
     if (GenerateHeader() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
-    return RESTOOL_SUCCESS;
-}
-
-uint32_t ResourcePack::PackOverlap()
-{
-    if (InitCompression() != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-
-    if (Init() != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-
-    ResourceMerge resourceMerge;
-    if (resourceMerge.Init(packageParser_) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-
-    BinaryFilePacker rawFilePacker(packageParser_, moduleName_);
-    rawFilePacker.SetCopyHapMode(true);
-    std::future<uint32_t> copyFuture = rawFilePacker.CopyBinaryFileAsync(resourceMerge.GetInputs());
-
-    if (LoadHapResources() != RESTOOL_SUCCESS) {
-        rawFilePacker.StopCopy();
-        return RESTOOL_ERROR;
-    }
-
-    if (PackQualifierResources(resourceMerge) != RESTOOL_SUCCESS) {
-        rawFilePacker.StopCopy();
-        return RESTOOL_ERROR;
-    }
-
-    uint32_t copyRet = copyFuture.get();
-    return copyRet == RESTOOL_SUCCESS ? RESTOOL_SUCCESS : RESTOOL_ERROR;
-}
-
-uint32_t ResourcePack::LoadHapResources()
-{
-    ResourceTable resourceTabel;
-    map<int64_t, vector<ResourceItem>> items;
-    string resourceIndexPath =
-        FileEntry::FilePath(packageParser_.GetInputs()[0]).GetParent().Append(RESOURCE_INDEX_FILE).GetPath();
-    if (resourceTabel.LoadResTable(resourceIndexPath, items) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-    IdWorker::GetInstance().LoadIdFromHap(items);
-
-    FileManager &fileManager = FileManager::GetInstance();
-    fileManager.SetModuleName(moduleName_);
-    if (fileManager.MergeResourceItem(items) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-    fileManager.SetHapItems();
-    fileManager.SetHapMode(true);
     return RESTOOL_SUCCESS;
 }
 

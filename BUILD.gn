@@ -45,7 +45,6 @@ ohos_executable("restool") {
     "src/resource_util.cpp",
     "src/restool.cpp",
     "src/select_compile_parse.cpp",
-    "src/task_handle.cpp",
     "src/thread_pool.cpp",
     "src/translatable_parser.cpp",
   ]

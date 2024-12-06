@@ -85,9 +85,9 @@ void ResourceItem::SetName(const string &name)
     name_ = name;
 }
 
-void ResourceItem::SetHapRes()
+void ResourceItem::MarkHapRes()
 {
-    isHapRes_ = true;
+    hapRes_ = true;
 }
 
 const int8_t *ResourceItem::GetData() const
@@ -127,7 +127,7 @@ const string &ResourceItem::GetLimitKey() const
 
 bool ResourceItem::IsHapRes() const
 {
-    return isHapRes_;
+    return hapRes_;
 }
 
 ResourceItem &ResourceItem::operator=(const ResourceItem &other)
@@ -157,7 +157,7 @@ void ResourceItem::CopyFrom(const ResourceItem &other)
     dataLen_ = other.dataLen_;
     filePath_ = other.filePath_;
     limitKey_ = other.limitKey_;
-    isHapRes_ = other.isHapRes_;
+    hapRes_ = other.hapRes_;
     if (!SetData(other.data_, other.dataLen_)) {
         ReleaseData();
     }
