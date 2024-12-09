@@ -16,9 +16,9 @@
 #ifndef OHOS_RESTOOL_FILE_ENTRY_H
 #define OHOS_RESTOOL_FILE_ENTRY_H
 
-#include<memory>
-#include<vector>
-#include<string>
+#include <memory>
+#include <vector>
+#include <string>
 
 namespace OHOS {
 namespace Global {

@@ -16,7 +16,7 @@
 #ifndef OHOS_RESTOOL_KEY_MANAGER_H
 #define OHOS_RESTOOL_KEY_MANAGER_H
 
-#include<memory>
+#include <memory>
 #include "xml_key_node.h"
 
 namespace OHOS {

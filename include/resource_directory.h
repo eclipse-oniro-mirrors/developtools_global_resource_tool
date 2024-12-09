@@ -16,9 +16,9 @@
 #ifndef OHOS_RESTOOL_RESOURCE_DIRECTORY
 #define OHOS_RESTOOL_RESOURCE_DIRECTORY
 
-#include<functional>
-#include<string>
-#include<map>
+#include <functional>
+#include <string>
+#include <map>
 #include "key_parser.h"
 
 namespace OHOS {

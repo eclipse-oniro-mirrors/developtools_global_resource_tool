@@ -16,7 +16,7 @@
 #ifndef OHOS_RESTOOL_ERRORS_H
 #define OHOS_RESTOOL_ERRORS_H
 
-#include<stdint.h>
+#include <stdint.h>
 #include "resource_data.h"
 
 namespace OHOS {

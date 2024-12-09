@@ -16,7 +16,7 @@
 #ifndef OHOS_RESTOOL_RESOURCE_ITEM_H
 #define OHOS_RESTOOL_RESOURCE_ITEM_H
 
-#include<vector>
+#include <vector>
 #include "resource_data.h"
 
 namespace OHOS {

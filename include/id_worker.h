@@ -16,8 +16,8 @@
 #ifndef OHOS_RESTOOL_ID_WORKER_H
 #define OHOS_RESTOOL_ID_WORKER_H
 
-#include<functional>
-#include<vector>
+#include <functional>
+#include <vector>
 #include "singleton.h"
 #include "resource_data.h"
 #include "resource_util.h"
