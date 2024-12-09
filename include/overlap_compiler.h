@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,19 +13,20 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_RESTOOL_FACTORY_RESOURCE_COMPILER_H
-#define OHOS_RESTOOL_FACTORY_RESOURCE_COMPILER_H
+#ifndef OHOS_RESTOOL_OVERLAP_COMPILER_H
+#define OHOS_RESTOOL_OVERLAP_COMPILER_H
 
-#include <memory>
-#include "i_resource_compiler.h"
+#include "generic_compiler.h"
 
 namespace OHOS {
 namespace Global {
 namespace Restool {
-class FactoryResourceCompiler {
+class OverlapCompiler : public GenericCompiler {
 public:
-    static std::unique_ptr<IResourceCompiler> CreateCompiler(ResType type, const std::string &output, bool isHap);
-    static std::unique_ptr<IResourceCompiler> CreateCompilerForAppend(ResType type, const std::string &output);
+    OverlapCompiler(ResType type, const std::string &output, bool isOverlap = false);
+
+protected:
+    bool IsIgnore(const FileInfo &fileInfo);
 };
 }
 }

@@ -135,7 +135,13 @@ uint32_t PackageParser::AddInput(const string& argValue)
     if (!IsAscii(inputPath)) {
         return RESTOOL_ERROR;
     }
-    inputs_.push_back(inputPath);
+
+    string indexPath = ResourceUtil::GetMainPath(inputPath).Append(RESOURCE_INDEX_FILE).GetPath();
+    if (ResourceUtil::FileExist(indexPath)) {
+        inputs_.emplace(inputs_.begin(), inputPath);
+    } else {
+        inputs_.push_back(inputPath);
+    }
     return RESTOOL_SUCCESS;
 }
 
@@ -444,15 +450,11 @@ const std::string &PackageParser::GetCompressionPath() const
     return compressionPath_;
 }
 
-bool PackageParser::ExistHapInput()
+bool PackageParser::IsOverlap() const
 {
-    for (auto &input : inputs_) {
-        string indexPath = ResourceUtil::GetMainPath(input).Append(RESOURCE_INDEX_FILE).GetPath();
-        if (ResourceUtil::FileExist(indexPath)) {
-            inputs_.erase(find(inputs_.begin(), inputs_.end(), input));
-            inputs_.emplace(inputs_.begin(), input);
-            return true;
-        }
+    string indexPath = ResourceUtil::GetMainPath(inputs_[0]).Append(RESOURCE_INDEX_FILE).GetPath();
+    if (ResourceUtil::FileExist(indexPath)) {
+        return true;
     }
     return false;
 }

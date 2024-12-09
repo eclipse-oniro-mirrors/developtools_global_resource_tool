@@ -35,7 +35,6 @@ public:
     {
         moduleName_ = moduleName;
     };
-    void MarkItemsAsHap();
     uint32_t MergeResourceItem(const std::map<int64_t, std::vector<ResourceItem>> &resourceInfos);
     bool ScaleIcons(const std::string &output, const std::map<std::string, std::set<uint32_t>> &iconMap);
     void SetScanHap(bool state);

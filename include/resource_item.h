@@ -34,7 +34,7 @@ public:
     void SetFilePath(const std::string &filePath);
     void SetLimitKey(const std::string &limitKey);
     void SetName(const std::string &name);
-    void MarkHapRes();
+    void MarkCoverable();
 
     const int8_t *GetData() const;
     uint32_t GetDataLength() const;
@@ -43,7 +43,7 @@ public:
     const std::vector<KeyParam> &GetKeyParam() const;
     const std::string &GetFilePath() const;
     const std::string &GetLimitKey() const;
-    bool IsHapRes() const;
+    bool IsCoverable() const;
 
     ResourceItem &operator=(const ResourceItem &other);
 private:
@@ -56,7 +56,7 @@ private:
     ResType type_;
     std::string filePath_;
     std::string limitKey_;
-    bool hapRes_ = false;
+    bool coverable_ = false;
 };
 }
 }

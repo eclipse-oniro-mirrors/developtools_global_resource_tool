@@ -111,6 +111,7 @@ uint32_t ResourceTable::LoadResTable(const string path, map<int64_t, vector<Reso
     int64_t length = in.tellg();
     if (length <= 0) {
         in.close();
+        cerr << "Error: file is empty." << NEW_LINE_PATH << path <<endl;
         return RESTOOL_ERROR;
     }
     in.seekg(0, ios::beg);
@@ -497,6 +498,7 @@ bool ResourceTable::ReadDataRecordStart(std::ifstream &in, RecordItem &record,
         value_size--;
     }
     resourceitem.SetData(values, value_size);
+    resourceitem.MarkCoverable();
     resInfos[record.id].push_back(resourceitem);
     return true;
 }

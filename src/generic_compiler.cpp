@@ -25,8 +25,8 @@ namespace OHOS {
 namespace Global {
 namespace Restool {
 using namespace std;
-GenericCompiler::GenericCompiler(ResType type, const string &output)
-    : IResourceCompiler(type, output)
+GenericCompiler::GenericCompiler(ResType type, const string &output, bool isOverlap)
+    : IResourceCompiler(type, output, isOverlap)
 {
 }
 GenericCompiler::~GenericCompiler()
@@ -87,6 +87,11 @@ bool GenericCompiler::PostMediaFile(const FileInfo &fileInfo, const std::string 
         cerr << "Error: resource item set data fail, data: " << data << NEW_LINE_PATH << fileInfo.filePath << endl;
         return false;
     }
+
+    if (isOverlap_) {
+        resourceItem.MarkCoverable();
+    }
+
     return MergeResourceItem(resourceItem);
 }
 
@@ -99,19 +104,11 @@ string GenericCompiler::GetOutputFilePath(const FileInfo &fileInfo) const
 
 bool GenericCompiler::IsIgnore(const FileInfo &fileInfo)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    lock_guard<mutex> lock(mutex_);
     string output = GetOutputFilePath(fileInfo);
-    bool resEmplaceSuccess = true;
-    if (hapRes_) {
-        g_hapResourceSet.emplace(output);
-        g_resourceSet.emplace(output);
-    } else if (g_hapResourceSet.count(output)) {
+    if (g_hapResourceSet.count(output)) {
         g_hapResourceSet.erase(output);
-    } else {
-        resEmplaceSuccess = g_resourceSet.emplace(output).second;
-    }
-
-    if (!resEmplaceSuccess) {
+    } else if (!g_resourceSet.emplace(output).second) {
         cerr << "Warning: '" << fileInfo.filePath << "' is defined repeatedly." << endl;
         return true;
     }

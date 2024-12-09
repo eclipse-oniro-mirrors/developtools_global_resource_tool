@@ -24,6 +24,7 @@
 #include "resource_table.h"
 #include "compression_parser.h"
 #include "binary_file_packer.h"
+#include "factory_resource_packer.h"
 
 namespace OHOS {
 namespace Global {
@@ -43,10 +44,13 @@ uint32_t ResourcePack::Package()
         return PackCombine();
     }
 
-    if (packageParser_.ExistHapInput()) {
+    if (packageParser_.IsOverlap()) {
         packType_ = PackType::OVERLAP;
     }
-    return Pack();
+
+    unique_ptr<ResourcePack> resourcePacker =
+            FactoryResourcePacker::CreatePacker(packType_, packageParser_);
+    return resourcePacker->Pack();
 }
 
 uint32_t ResourcePack::InitCompression()
@@ -280,32 +284,15 @@ uint32_t ResourcePack::ScanResources(const vector<string> &inputs, const string 
 {
     auto &fileManager = FileManager::GetInstance();
     fileManager.SetModuleName(moduleName_);
-    if (packType_ == PackType::OVERLAP) {
-        vector<string> hapResInput{inputs[0]};
-        if (fileManager.ScanModules(hapResInput, output, configJson_.IsHar()) != RESTOOL_SUCCESS) {
-            return RESTOOL_ERROR;
-        }
-        fileManager.SetScanHap(false);
-
-        vector<string> resInputs(inputs.begin() + 1, inputs.end());
-        if (fileManager.ScanModules(resInputs, output, configJson_.IsHar()) != RESTOOL_SUCCESS) {
-            return RESTOOL_ERROR;
-        }
-    } else {
-        if (fileManager.ScanModules(inputs, output, configJson_.IsHar()) != RESTOOL_SUCCESS) {
-            return RESTOOL_ERROR;
-        }
+    if (fileManager.ScanModules(inputs, output, configJson_.IsHar()) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
 }
 
 uint32_t ResourcePack::Pack()
 {
-    if (packType_ == PackType::NORMAL) {
-        cout << "Info: Pack: normal pack mode" << endl;
-    } else if (packType_ == PackType::OVERLAP) {
-        cout << "Info: Pack: overlap pack mode" << endl;
-    }
+    cout << "Info: Pack: normal pack mode" << endl;
 
     if (InitResourcePack() != RESTOOL_SUCCESS) {
         cerr << "Error: ResourcePack init failed." << endl;
@@ -319,9 +306,6 @@ uint32_t ResourcePack::Pack()
     }
 
     BinaryFilePacker rawFilePacker(packageParser_, moduleName_);
-    if (packType_ == PackType::OVERLAP) {
-        rawFilePacker.SetCopyHap(true);
-    }
     std::future<uint32_t> copyFuture = rawFilePacker.CopyBinaryFileAsync(resourceMerge.GetInputs());
 
     if (PackResources(resourceMerge) != RESTOOL_SUCCESS) {
@@ -339,10 +323,6 @@ uint32_t ResourcePack::Pack()
 
 uint32_t ResourcePack::PackResources(const ResourceMerge &resourceMerge)
 {
-    if (packType_ == PackType::OVERLAP && LoadHapResources() != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-
     if (ScanResources(resourceMerge.GetInputs(), packageParser_.GetOutput()) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
@@ -376,28 +356,6 @@ uint32_t ResourcePack::PackResources(const ResourceMerge &resourceMerge)
     if (resourceTable.CreateResourceTable() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
-    return RESTOOL_SUCCESS;
-}
-
-uint32_t ResourcePack::LoadHapResources()
-{
-    ResourceTable resourceTabel;
-    map<int64_t, vector<ResourceItem>> items;
-    string resourceIndexPath =
-        FileEntry::FilePath(packageParser_.GetInputs()[0]).GetParent().Append(RESOURCE_INDEX_FILE).GetPath();
-    if (resourceTabel.LoadResTable(resourceIndexPath, items) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-    
-    IdWorker::GetInstance().LoadIdFromHap(items);
-
-    FileManager &fileManager = FileManager::GetInstance();
-    fileManager.SetModuleName(moduleName_);
-    if (fileManager.MergeResourceItem(items) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-    fileManager.MarkItemsAsHap();
-    fileManager.SetScanHap(true);
     return RESTOOL_SUCCESS;
 }
 
@@ -620,7 +578,6 @@ void ResourcePack::CheckConfigJsonForCombine(ResourceAppend &resourceAppend)
     ResourceCheck resourceCheck(configJson_.GetCheckNode(), make_shared<ResourceAppend>(resourceAppend));
     resourceCheck.CheckConfigJsonForCombine();
 }
-
 }
 }
 }

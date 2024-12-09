@@ -85,9 +85,9 @@ void ResourceItem::SetName(const string &name)
     name_ = name;
 }
 
-void ResourceItem::MarkHapRes()
+void ResourceItem::MarkCoverable()
 {
-    hapRes_ = true;
+    coverable_ = true;
 }
 
 const int8_t *ResourceItem::GetData() const
@@ -125,9 +125,9 @@ const string &ResourceItem::GetLimitKey() const
     return limitKey_;
 }
 
-bool ResourceItem::IsHapRes() const
+bool ResourceItem::IsCoverable() const
 {
-    return hapRes_;
+    return coverable_;
 }
 
 ResourceItem &ResourceItem::operator=(const ResourceItem &other)
@@ -157,7 +157,7 @@ void ResourceItem::CopyFrom(const ResourceItem &other)
     dataLen_ = other.dataLen_;
     filePath_ = other.filePath_;
     limitKey_ = other.limitKey_;
-    hapRes_ = other.hapRes_;
+    coverable_ = other.coverable_;
     if (!SetData(other.data_, other.dataLen_)) {
         ReleaseData();
     }

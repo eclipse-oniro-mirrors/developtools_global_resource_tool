@@ -54,11 +54,8 @@ uint32_t ResourceModule::ScanResource(bool isHap)
         }
 
         unique_ptr<IResourceCompiler> resourceCompiler =
-            FactoryResourceCompiler::CreateCompiler(type, moduleOutput_);
+            FactoryResourceCompiler::CreateCompiler(type, moduleOutput_, isHap);
         resourceCompiler->SetModuleName(moduleName_);
-        if (isHap) {
-            resourceCompiler->SetHapRes(true);
-        }
         if (resourceCompiler->Compile(item->second) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;
         }
@@ -94,7 +91,7 @@ uint32_t ResourceModule::MergeResourceItem(map<int64_t, vector<ResourceItem>> &a
                 result.first->second.push_back(resourceItem);
                 continue;
             }
-            if (ret->IsHapRes()) { // overlap the hap resource by new resource
+            if (ret->IsCoverable()) { // overlap the hap resource by new resource
                 *ret = resourceItem;
                 continue;
             }
