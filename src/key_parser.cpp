@@ -14,7 +14,7 @@
  */
 
 #include "key_parser.h"
-#include<regex>
+#include <regex>
 #include "resource_util.h"
 
 namespace OHOS {

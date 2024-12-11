@@ -16,9 +16,9 @@
 #ifndef OHOS_RESTOOL_HEADER_H
 #define OHOS_RESTOOL_HEADER_H
 
-#include<functional>
-#include<sstream>
-#include<string>
+#include <functional>
+#include <sstream>
+#include <string>
 #include "id_worker.h"
 #include "restool_errors.h"
 

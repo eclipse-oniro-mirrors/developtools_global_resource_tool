@@ -16,8 +16,8 @@
 #ifndef OHOS_RESTOOL_CMD_LIST_H
 #define OHOS_RESTOOL_CMD_LIST_H
 
-#include<functional>
-#include<string>
+#include <functional>
+#include <string>
 #include "resource_util.h"
 
 namespace OHOS {

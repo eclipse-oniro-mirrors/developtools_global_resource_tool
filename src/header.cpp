@@ -14,10 +14,10 @@
  */
 
 #include "header.h"
-#include<algorithm>
-#include<fstream>
-#include<iomanip>
-#include<iostream>
+#include <algorithm>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
 
 namespace OHOS {
 namespace Global {
