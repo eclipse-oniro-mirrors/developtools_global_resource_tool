@@ -32,9 +32,17 @@ public:
     explicit ResourcePack(const PackageParser &packageParser);
     virtual ~ResourcePack() = default;
     uint32_t Package();
+    virtual uint32_t Pack();
+
+protected:
+    uint32_t InitResourcePack();
+    uint32_t PackResources(const ResourceMerge &resourceMerge);
+    virtual uint32_t ScanResources(const std::vector<std::string> &inputs, const std::string &output);
+    PackageParser packageParser_;
+    std::string moduleName_;
+    ConfigParser configJson_;
 
 private:
-    uint32_t Init();
     uint32_t InitModule();
     void InitHeaderCreater();
     uint32_t InitOutput() const;
@@ -45,12 +53,9 @@ private:
     uint32_t GenerateCplusHeader(const std::string &headerPath) const;
     uint32_t GenerateJsHeader(const std::string &headerPath) const;
     uint32_t GenerateConfigJson();
-    uint32_t ScanResources(const std::vector<std::string> &inputs, const std::string &output);
-    uint32_t PackNormal();
     uint32_t PackPreview();
     uint32_t PackAppend();
     uint32_t PackCombine();
-    uint32_t PackQualifierResources(const ResourceMerge &resourceMerge);
     uint32_t HandleFeature();
     uint32_t FindResourceItems(const std::map<int64_t, std::vector<ResourceItem>> &resInfoLocal,
                                std::vector<ResourceItem> &items, int64_t id) const;
@@ -60,11 +65,9 @@ private:
     void CheckConfigJson();
     void CheckConfigJsonForCombine(ResourceAppend &resourceAppend);
     bool CopyIcon(std::string &dataPath, const std::string &idName, std::string &fileName) const;
-    PackageParser packageParser_;
-    std::string moduleName_;
     using HeaderCreater = std::function<uint32_t(const std::string&)>;
     std::map<std::string, HeaderCreater> headerCreaters_;
-    ConfigParser configJson_;
+    PackType packType_ = PackType::NORMAL;
 };
 }
 }

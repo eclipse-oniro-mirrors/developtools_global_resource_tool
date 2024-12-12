@@ -14,7 +14,7 @@
  */
 
 #include "cmd_parser.h"
-#include "task_handle.h"
+#include "resource_pack.h"
 #include "compression_parser.h"
 
 using namespace std;
@@ -22,8 +22,8 @@ using namespace OHOS::Global::Restool;
 namespace {
 uint32_t ProccssHap(PackageParser &packageParser)
 {
-    TaskHandle taskHandle;
-    return taskHandle.HandlePackage(packageParser);
+    ResourcePack pack(packageParser);
+    return pack.Package();
 }
 }
 

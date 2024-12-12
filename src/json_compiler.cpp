@@ -31,8 +31,8 @@ const string TAG_QUANTITY = "quantity";
 const vector<string> QUANTITY_ATTRS = { "zero", "one", "two", "few", "many", "other" };
 const vector<string> TRANSLATION_TYPE = { "string", "strarray", "plural" };
 
-JsonCompiler::JsonCompiler(ResType type, const string &output)
-    : IResourceCompiler(type, output), isBaseString_(false), root_(nullptr)
+JsonCompiler::JsonCompiler(ResType type, const string &output, bool isOverlap)
+    : IResourceCompiler(type, output, isOverlap), isBaseString_(false), root_(nullptr)
 {
     InitParser();
 }
@@ -155,6 +155,10 @@ bool JsonCompiler::ParseJsonObjectLevel(cJSON *objectNode, const FileInfo &fileI
 
     if (!ret->second(objectNode, resourceItem)) {
         return false;
+    }
+
+    if (isOverlap_) {
+        resourceItem.MarkCoverable();
     }
 
     return MergeResourceItem(resourceItem);

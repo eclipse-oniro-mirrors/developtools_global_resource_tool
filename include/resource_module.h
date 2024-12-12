@@ -27,7 +27,7 @@ class ResourceModule {
 public:
     ResourceModule(const std::string &modulePath, const std::string &moduleOutput, const std::string &moduleName);
     virtual ~ResourceModule() {};
-    uint32_t ScanResource();
+    uint32_t ScanResource(bool isHap = false);
     const std::map<int64_t, std::vector<ResourceItem>> &GetOwner() const;
     const std::map<ResType, std::vector<DirectoryInfo>> &GetScanDirectorys() const;
     static uint32_t MergeResourceItem(std::map<int64_t, std::vector<ResourceItem>> &alls,

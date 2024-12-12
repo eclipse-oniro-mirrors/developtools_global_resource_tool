@@ -24,6 +24,7 @@
 #include "resource_table.h"
 #include "compression_parser.h"
 #include "binary_file_packer.h"
+#include "factory_resource_packer.h"
 
 namespace OHOS {
 namespace Global {
@@ -42,7 +43,14 @@ uint32_t ResourcePack::Package()
     if (packageParser_.GetCombine()) {
         return PackCombine();
     }
-    return PackNormal();
+
+    if (packageParser_.IsOverlap()) {
+        packType_ = PackType::OVERLAP;
+    }
+
+    unique_ptr<ResourcePack> resourcePacker =
+            FactoryResourcePacker::CreatePacker(packType_, packageParser_);
+    return resourcePacker->Pack();
 }
 
 uint32_t ResourcePack::InitCompression()
@@ -58,9 +66,13 @@ uint32_t ResourcePack::InitCompression()
 }
 
 // below private founction
-uint32_t ResourcePack::Init()
+uint32_t ResourcePack::InitResourcePack()
 {
     InitHeaderCreater();
+    if (InitCompression() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+
     if (InitOutput() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
@@ -278,32 +290,38 @@ uint32_t ResourcePack::ScanResources(const vector<string> &inputs, const string 
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ResourcePack::PackNormal()
+uint32_t ResourcePack::Pack()
 {
-    if (InitCompression() != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
+    cout << "Info: Pack: normal pack mode" << endl;
 
-    if (Init() != RESTOOL_SUCCESS) {
+    if (InitResourcePack() != RESTOOL_SUCCESS) {
+        cerr << "Error: ResourcePack init failed." << endl;
         return RESTOOL_ERROR;
     }
 
     ResourceMerge resourceMerge;
-    if (resourceMerge.Init() != RESTOOL_SUCCESS) {
+    if (resourceMerge.Init(packageParser_) != RESTOOL_SUCCESS) {
+        cerr << "Error: resourceMerge init failed." << endl;
         return RESTOOL_ERROR;
     }
 
     BinaryFilePacker rawFilePacker(packageParser_, moduleName_);
     std::future<uint32_t> copyFuture = rawFilePacker.CopyBinaryFileAsync(resourceMerge.GetInputs());
-    uint32_t packQualifierRet = PackQualifierResources(resourceMerge);
-    if (packQualifierRet != RESTOOL_SUCCESS) {
+
+    if (PackResources(resourceMerge) != RESTOOL_SUCCESS) {
         rawFilePacker.StopCopy();
+        cerr << "Error: pack resources failed." << endl;
+        return RESTOOL_ERROR;
     }
-    uint32_t copyRet = copyFuture.get();
-    return packQualifierRet == RESTOOL_SUCCESS && copyRet == RESTOOL_SUCCESS ? RESTOOL_SUCCESS : RESTOOL_ERROR;
+
+    if (copyFuture.get() != RESTOOL_SUCCESS) {
+        cerr << "Error: copy binary file failed." << endl;
+        return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
 }
 
-uint32_t ResourcePack::PackQualifierResources(const ResourceMerge &resourceMerge)
+uint32_t ResourcePack::PackResources(const ResourceMerge &resourceMerge)
 {
     if (ScanResources(resourceMerge.GetInputs(), packageParser_.GetOutput()) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
@@ -532,7 +550,7 @@ uint32_t ResourcePack::PackAppend()
 
 uint32_t ResourcePack::PackCombine()
 {
-    if (Init() != RESTOOL_SUCCESS) {
+    if (InitResourcePack() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
 
@@ -560,7 +578,6 @@ void ResourcePack::CheckConfigJsonForCombine(ResourceAppend &resourceAppend)
     ResourceCheck resourceCheck(configJson_.GetCheckNode(), make_shared<ResourceAppend>(resourceAppend));
     resourceCheck.CheckConfigJsonForCombine();
 }
-
 }
 }
 }

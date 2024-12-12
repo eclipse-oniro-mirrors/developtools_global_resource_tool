@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,27 +13,25 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_RESTOOL_RESOURCE_MERGE_H
-#define OHOS_RESTOOL_RESOURCE_MERGE_H
+#ifndef OHOS_RESTOOL_RESOURCE_OVERLAP_H
+#define OHOS_RESTOOL_RESOURCE_OVERLAP_H
 
-#include <string>
-#include <vector>
-#include "config_parser.h"
-#include "restool_errors.h"
 #include "cmd_parser.h"
+#include "resource_pack.h"
 
 namespace OHOS {
 namespace Global {
 namespace Restool {
-class ResourceMerge {
+class ResourceOverlap : public ResourcePack {
 public:
-    ResourceMerge();
-    virtual ~ResourceMerge();
-    uint32_t Init(const PackageParser &packageParser = CmdParser<PackageParser>::GetInstance().GetCmdParser());
-    const std::vector<std::string> &GetInputs() const;
+    ResourceOverlap(const PackageParser &packageParser);
+    uint32_t Pack();
+
+protected:
+    uint32_t ScanResources(const std::vector<std::string> &inputs, const std::string &output);
+
 private:
-    std::vector<std::string> inputsOrder_;
-    static const std::vector<ConfigParser::ModuleType> ORDERS;
+    uint32_t LoadHapResources();
 };
 }
 }

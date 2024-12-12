@@ -30,16 +30,22 @@ public:
     std::future<uint32_t> CopyBinaryFileAsync(const std::vector<std::string> &inputs);
     void StopCopy();
 
-private:
-    uint32_t CopyBinaryFile(const std::vector<std::string> &inputs);
-    uint32_t CopyBinaryFile(const std::string &filePath, const std::string &fileType);
-    uint32_t CopyBinaryFileImpl(const std::string &src, const std::string &dst);
-    uint32_t CopySingleFile(const std::string &path, std::string &subPath);
+protected:
+    virtual uint32_t CopyBinaryFile(const std::vector<std::string> &inputs);
+    uint32_t CheckCopyResults();
+    uint32_t CopyBinaryFile(const std::string &input);
+    virtual bool IsDuplicated(const std::unique_ptr<FileEntry> &entry, std::string subPath);
     PackageParser packageParser_;
     std::string moduleName_;
     ThreadPool threadPool_;
     std::vector<std::future<uint32_t>> copyResults_;
     std::atomic<bool> stopCopy_{false};
+    std::mutex mutex_;
+
+private:
+    uint32_t CopyBinaryFile(const std::string &filePath, const std::string &fileType);
+    uint32_t CopyBinaryFileImpl(const std::string &src, const std::string &dst);
+    uint32_t CopySingleFile(const std::string &path, std::string &subPath);
 };
 } // namespace Restool
 } // namespace Global

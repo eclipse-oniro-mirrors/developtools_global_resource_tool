@@ -41,7 +41,7 @@ void BinaryFilePacker::StopCopy()
 
 std::future<uint32_t> BinaryFilePacker::CopyBinaryFileAsync(const std::vector<std::string> &inputs)
 {
-    auto func = [this](const std::vector<std::string> &inputs) { return this->CopyBinaryFile(inputs); };
+    auto func = [this](const vector<string> &inputs) { return this->CopyBinaryFile(inputs); };
     std::future<uint32_t> res = threadPool_.Enqueue(func, inputs);
     return res;
 }
@@ -49,26 +49,25 @@ std::future<uint32_t> BinaryFilePacker::CopyBinaryFileAsync(const std::vector<st
 uint32_t BinaryFilePacker::CopyBinaryFile(const vector<string> &inputs)
 {
     for (const auto &input : inputs) {
-        string rawfilePath = FileEntry::FilePath(input).Append(RAW_FILE_DIR).GetPath();
-        if (CopyBinaryFile(rawfilePath, RAW_FILE_DIR) == RESTOOL_ERROR) {
-            cerr << "Error: copy raw file failed." << NEW_LINE_PATH << rawfilePath << endl;
-            return RESTOOL_ERROR;
-        }
-        string resfilePath = FileEntry::FilePath(input).Append(RES_FILE_DIR).GetPath();
-        if (CopyBinaryFile(resfilePath, RES_FILE_DIR) == RESTOOL_ERROR) {
-            cerr << "Error: copy res file failed." << NEW_LINE_PATH << resfilePath << endl;
-            return RESTOOL_ERROR;
-        }
+        CopyBinaryFile(input);
     }
-    for (auto &res : copyResults_) {
-        if (stopCopy_.load()) {
-            cout << "Info: CopyBinaryFile: stop copy binary file." << endl;
-            return RESTOOL_ERROR;
-        }
-        uint32_t ret = res.get();
-        if (ret != RESTOOL_SUCCESS) {
-            return RESTOOL_ERROR;
-        }
+    if (CheckCopyResults() != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t BinaryFilePacker::CopyBinaryFile(const string &input)
+{
+    string rawfilePath = FileEntry::FilePath(input).Append(RAW_FILE_DIR).GetPath();
+    if (CopyBinaryFile(rawfilePath, RAW_FILE_DIR) == RESTOOL_ERROR) {
+        cerr << "Error: copy raw file failed." << NEW_LINE_PATH << rawfilePath << endl;
+        return RESTOOL_ERROR;
+    }
+    string resfilePath = FileEntry::FilePath(input).Append(RES_FILE_DIR).GetPath();
+    if (CopyBinaryFile(resfilePath, RES_FILE_DIR) == RESTOOL_ERROR) {
+        cerr << "Error: copy res file failed." << NEW_LINE_PATH << resfilePath << endl;
+        return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
 }
@@ -116,20 +115,33 @@ uint32_t BinaryFilePacker::CopyBinaryFileImpl(const string &src, const string &d
             continue;
         }
 
-        if (!g_resourceSet.emplace(subPath).second) {
-            cerr << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly." << endl;
+        if (IsDuplicated(entry, subPath)) {
             continue;
         }
+
         if (stopCopy_.load()) {
             cout << "Info: CopyBinaryFileImpl: stop copy binary file." << endl;
             return RESTOOL_ERROR;
         }
+
         string path = entry->GetFilePath().GetPath();
         auto copyFunc = [this](const string path, string subPath) { return this->CopySingleFile(path, subPath); };
         std::future<uint32_t> res = threadPool_.Enqueue(copyFunc, path, subPath);
         copyResults_.push_back(std::move(res));
     }
     return RESTOOL_SUCCESS;
+}
+
+bool BinaryFilePacker::IsDuplicated(const unique_ptr<FileEntry> &entry, string subPath)
+{
+    lock_guard<mutex> lock(mutex_);
+    if (g_hapResourceSet.count(subPath)) {
+        g_hapResourceSet.erase(subPath);
+    } else if (!g_resourceSet.emplace(subPath).second) {
+        cerr << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly." << endl;
+        return true;
+    }
+    return false;
 }
 
 uint32_t BinaryFilePacker::CopySingleFile(const std::string &path, std::string &subPath)
@@ -144,6 +156,22 @@ uint32_t BinaryFilePacker::CopySingleFile(const std::string &path, std::string &
     if (!CompressionParser::GetCompressionParser()->CopyAndTranscode(path, subPath, true)) {
         cerr << "Error: copy rawfile or resfile, CopyAndTranscode failed." << NEW_LINE_PATH << endl;
         return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t BinaryFilePacker::CheckCopyResults()
+{
+    for (auto &res : copyResults_) {
+        if (stopCopy_.load()) {
+            cout << "Info: CopyBinaryFile: stop copy binary file." << endl;
+            return RESTOOL_ERROR;
+        }
+        uint32_t ret = res.get();
+        if (ret != RESTOOL_SUCCESS) {
+            cerr << "Error: copy binary file failed." << endl;
+            return RESTOOL_ERROR;
+        }
     }
     return RESTOOL_SUCCESS;
 }

@@ -14,7 +14,6 @@
  */
 
 #include "resource_merge.h"
-#include "cmd_parser.h"
 #include "file_entry.h"
 
 namespace OHOS {
@@ -37,19 +36,24 @@ ResourceMerge::~ResourceMerge()
 {
 }
 
-uint32_t ResourceMerge::Init()
+uint32_t ResourceMerge::Init(const PackageParser &packageParser)
 {
-    auto &cmdParser = CmdParser<PackageParser>::GetInstance().GetCmdParser();
-    const vector<string> &inputs = cmdParser.GetInputs();
-    if (cmdParser.IsFileList()) {
+    const vector<string> &inputs = packageParser.GetInputs();
+    if (packageParser.IsFileList()) {
         inputsOrder_ = inputs;
         return RESTOOL_SUCCESS;
     }
 
     map<ConfigParser::ModuleType, vector<string>> inputTypes;
+    string hapDir = "";
     for (auto it = inputs.crbegin(); it != inputs.crend(); it++) {
         string configPath = ResourceUtil::GetMainPath(*it).Append(ConfigParser::GetConfigName()).GetPath();
         string resourceDir = FileEntry::FilePath(*it).GetPath();
+        string indexPath = ResourceUtil::GetMainPath(*it).Append(RESOURCE_INDEX_FILE).GetPath();
+        if (ResourceUtil::FileExist(indexPath)) {
+            hapDir = resourceDir;
+            continue;
+        }
         ConfigParser::ModuleType moduleType = ConfigParser::ModuleType::NONE;
         if (!ResourceUtil::FileExist(configPath)) {
             inputTypes[moduleType].push_back(resourceDir);
@@ -68,6 +72,9 @@ uint32_t ResourceMerge::Init()
             continue;
         }
         inputsOrder_.insert(inputsOrder_.end(), inputTypes[type].begin(), inputTypes[type].end());
+    }
+    if (hapDir != "") {
+        inputsOrder_.insert(inputsOrder_.begin(), hapDir);
     }
     return RESTOOL_SUCCESS;
 }
