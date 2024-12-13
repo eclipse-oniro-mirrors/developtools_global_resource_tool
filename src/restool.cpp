@@ -13,19 +13,16 @@
  * limitations under the License.
  */
 
-#include "cmd_parser.h"
+#include <cstring>
+#include "cmd/package_parser.h"
+#include "cmd/dump_parser.h"
 #include "resource_pack.h"
 #include "compression_parser.h"
 
 using namespace std;
 using namespace OHOS::Global::Restool;
-namespace {
-uint32_t ProccssHap(PackageParser &packageParser)
-{
-    ResourcePack pack(packageParser);
-    return pack.Package();
-}
-}
+
+constexpr int PARAM_MIN_NUM = 2;
 
 int main(int argc, char *argv[])
 {
@@ -33,19 +30,23 @@ int main(int argc, char *argv[])
         cerr << "Error: argv null" << endl;
         return RESTOOL_ERROR;
     }
-    auto &parser = CmdParser<PackageParser>::GetInstance();
-    if (parser.Parse(argc, argv) != RESTOOL_SUCCESS) {
-        parser.ShowUseage();
+    if (argc < PARAM_MIN_NUM) {
+        cerr << "Error: At least 1 parameters are required, but no parameter is passed in." << endl;
+        return RESTOOL_ERROR;
+    }
+    if (strcmp(argv[1], "dump") == 0) {
+        auto &dumpParser = CmdParser<DumpParser>::GetInstance();
+        if (dumpParser.Parse(argc, argv) != RESTOOL_SUCCESS) {
+            dumpParser.ShowUseage();
+            return RESTOOL_ERROR;
+        }
+        return dumpParser.ExecCommand();
+    }
+    auto &packParser = CmdParser<PackageParser>::GetInstance();
+    if (packParser.Parse(argc, argv) != RESTOOL_SUCCESS) {
+        packParser.ShowUseage();
         return RESTOOL_ERROR;
     }
 
-    auto &packageParser = parser.GetCmdParser();
-    if (ProccssHap(packageParser) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-    cout << "Info: restool resources compile success." << endl;
-    if (CompressionParser::GetCompressionParser()->GetMediaSwitch()) {
-        cout << CompressionParser::GetCompressionParser()->PrintTransMessage() << endl;
-    }
-    return RESTOOL_SUCCESS;
+    return packParser.ExecCommand();
 }

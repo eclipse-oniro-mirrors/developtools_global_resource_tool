@@ -20,7 +20,7 @@
 #include <vector>
 #include "config_parser.h"
 #include "restool_errors.h"
-#include "cmd_parser.h"
+#include "cmd/package_parser.h"
 
 namespace OHOS {
 namespace Global {

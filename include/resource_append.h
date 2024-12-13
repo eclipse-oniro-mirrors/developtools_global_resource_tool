@@ -17,8 +17,8 @@
 #define OHOS_RESTOOL_RESOURCE_APPEND_H
 
 #include <fstream>
-#include "cmd_parser.h"
-#include "factory_resource_compiler.h"
+#include "cmd/package_parser.h"
+#include "resource_compiler_factory.h"
 #include "file_entry.h"
 
 namespace OHOS {

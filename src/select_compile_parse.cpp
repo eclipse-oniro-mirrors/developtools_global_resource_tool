@@ -16,7 +16,7 @@
 #include "select_compile_parse.h"
 #include <algorithm>
 #include "key_parser.h"
-#include "cmd_parser.h"
+#include "cmd/package_parser.h"
 #include "resource_util.h"
 
 namespace OHOS {

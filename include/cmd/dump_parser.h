@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 - 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,25 +13,28 @@
  * limitations under the License.
  */
 
-#include "factory_resource_packer.h"
-#include "resource_overlap.h"
+#ifndef OHOS_RESTOOL_DUMP_PARSER_H
+#define OHOS_RESTOOL_DUMP_PARSER_H
+
+#include "cmd_parser.h"
+#include <memory>
+#include <string>
 
 namespace OHOS {
 namespace Global {
 namespace Restool {
-using namespace std;
+class DumpParser : public ICmdParser {
+public:
+    virtual ~DumpParser() = default;
+    uint32_t Parse(int argc, char *argv[]) override;
+    uint32_t ExecCommand() override;
+    const std::string &GetInputPath() const;
 
-unique_ptr<ResourcePack> FactoryResourcePacker::CreatePacker(PackType type, const PackageParser &packageParser)
-{
-    if (type == PackType::NORMAL) {
-        return make_unique<ResourcePack>(packageParser);
-    } else if (type == PackType::OVERLAP) {
-        return make_unique<ResourceOverlap>(packageParser);
-    } else {
-        cerr << "Error: FactoryResourcePacker: Unknown input PackType." << endl;
-        return nullptr;
-    }
-}
-}
-}
-}
+private:
+    std::string inputPath_;
+    std::string type_;
+};
+} // namespace Restool
+} // namespace Global
+} // namespace OHOS
+#endif

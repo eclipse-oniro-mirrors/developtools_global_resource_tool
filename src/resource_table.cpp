@@ -15,7 +15,8 @@
 
 #include "resource_table.h"
 #include <cJSON.h>
-#include "cmd_parser.h"
+#include <cstdint>
+#include "cmd/package_parser.h"
 #include "file_entry.h"
 #include "file_manager.h"
 #include "resource_util.h"
@@ -115,23 +116,33 @@ uint32_t ResourceTable::LoadResTable(const string path, map<int64_t, vector<Reso
         return RESTOOL_ERROR;
     }
     in.seekg(0, ios::beg);
+    uint32_t errorCode = LoadResTable(in, resInfos);
+    in.close();
+    return errorCode;
+}
 
+uint32_t ResourceTable::LoadResTable(basic_istream<char> &in, map<int64_t, vector<ResourceItem>> &resInfos)
+{
+    if (!in) {
+        cerr << "Error: istream state is bad. stateCode: " << in.rdstate() << endl;
+        return RESTOOL_ERROR;
+    }
+    in.seekg(0, ios::end);
+    int64_t length = in.tellg();
+    in.seekg(0, ios::beg);
     uint64_t pos = 0;
     IndexHeader indexHeader;
     if (!ReadFileHeader(in, indexHeader, pos, static_cast<uint64_t>(length))) {
-        in.close();
         return RESTOOL_ERROR;
     }
 
     map<int64_t, vector<KeyParam>> limitKeys;
     if (!ReadLimitKeys(in, limitKeys, indexHeader.limitKeyConfigSize, pos, static_cast<uint64_t>(length))) {
-        in.close();
         return RESTOOL_ERROR;
     }
 
     map<int64_t, pair<int64_t, int64_t>> datas;
     if (!ReadIdTables(in, datas, indexHeader.limitKeyConfigSize, pos, static_cast<uint64_t>(length))) {
-        in.close();
         return RESTOOL_ERROR;
     }
 
@@ -139,11 +150,9 @@ uint32_t ResourceTable::LoadResTable(const string path, map<int64_t, vector<Reso
         RecordItem record;
         if (!ReadDataRecordPrepare(in, record, pos, static_cast<uint64_t>(length)) ||
             !ReadDataRecordStart(in, record, limitKeys, datas, resInfos)) {
-            in.close();
             return RESTOOL_ERROR;
         }
     }
-    in.close();
     return RESTOOL_SUCCESS;
 }
 
@@ -348,7 +357,7 @@ void ResourceTable::SaveIdSets(const map<string, IdSet> &idSets, ostringstream &
     }
 }
 
-bool ResourceTable::ReadFileHeader(ifstream &in, IndexHeader &indexHeader, uint64_t &pos, uint64_t length) const
+bool ResourceTable::ReadFileHeader(basic_istream<char> &in, IndexHeader &indexHeader, uint64_t &pos, uint64_t length)
 {
     pos += sizeof(indexHeader);
     if (pos > length) {
@@ -361,8 +370,8 @@ bool ResourceTable::ReadFileHeader(ifstream &in, IndexHeader &indexHeader, uint6
     return true;
 }
 
-bool ResourceTable::ReadLimitKeys(ifstream &in, map<int64_t, vector<KeyParam>> &limitKeys,
-                                  uint32_t count, uint64_t &pos, uint64_t length) const
+bool ResourceTable::ReadLimitKeys(basic_istream<char> &in, map<int64_t, vector<KeyParam>> &limitKeys,
+                                  uint32_t count, uint64_t &pos, uint64_t length)
 {
     for (uint32_t i = 0; i< count; i++) {
         pos = pos + TAG_LEN + INT_TO_BYTES + INT_TO_BYTES;
@@ -397,8 +406,8 @@ bool ResourceTable::ReadLimitKeys(ifstream &in, map<int64_t, vector<KeyParam>> &
     return true;
 }
 
-bool ResourceTable::ReadIdTables(std::ifstream &in, std::map<int64_t, std::pair<int64_t, int64_t>> &datas,
-                                 uint32_t count, uint64_t &pos, uint64_t length) const
+bool ResourceTable::ReadIdTables(basic_istream<char> &in, std::map<int64_t, std::pair<int64_t, int64_t>> &datas,
+                                 uint32_t count, uint64_t &pos, uint64_t length)
 {
     for (uint32_t i = 0; i< count; i++) {
         pos = pos + TAG_LEN + INT_TO_BYTES;
@@ -431,7 +440,7 @@ bool ResourceTable::ReadIdTables(std::ifstream &in, std::map<int64_t, std::pair<
     return true;
 }
 
-bool ResourceTable::ReadDataRecordPrepare(ifstream &in, RecordItem &record, uint64_t &pos, uint64_t length) const
+bool ResourceTable::ReadDataRecordPrepare(basic_istream<char> &in, RecordItem &record, uint64_t &pos, uint64_t length)
 {
     pos = pos + INT_TO_BYTES;
     if (pos > length) {
@@ -449,10 +458,10 @@ bool ResourceTable::ReadDataRecordPrepare(ifstream &in, RecordItem &record, uint
     return true;
 }
 
-bool ResourceTable::ReadDataRecordStart(std::ifstream &in, RecordItem &record,
-                                        const std::map<int64_t, std::vector<KeyParam>> &limitKeys,
-                                        const std::map<int64_t, std::pair<int64_t, int64_t>> &datas,
-                                        std::map<int64_t, std::vector<ResourceItem>> &resInfos) const
+bool ResourceTable::ReadDataRecordStart(basic_istream<char> &in, RecordItem &record,
+                                        const map<int64_t, vector<KeyParam>> &limitKeys,
+                                        const map<int64_t, pair<int64_t, int64_t>> &datas,
+                                        map<int64_t, vector<ResourceItem>> &resInfos)
 {
     int64_t offset = in.tellg();
     offset = offset - INT_TO_BYTES - INT_TO_BYTES - INT_TO_BYTES;

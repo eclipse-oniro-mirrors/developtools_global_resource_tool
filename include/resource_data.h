@@ -49,7 +49,7 @@ const static std::string SOLUTIONS_ARROW = "> ";
 const static std::string LONG_PATH_HEAD = "\\\\?\\";
 const static int32_t VERSION_MAX_LEN = 128;
 const static int32_t INT_TO_BYTES = sizeof(uint32_t);
-static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 5.1.0.002" };
+static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 5.1.0.003" };
 const static int32_t TAG_LEN = 4;
 static std::set<std::string> g_resourceSet;
 static std::set<std::string> g_hapResourceSet;
@@ -249,6 +249,19 @@ const std::map<std::string, ResType> g_contentClusterMap = {
     { "theme", ResType::THEME },
     { "float", ResType::FLOAT },
     { "symbol", ResType::SYMBOL }
+};
+
+const std::map<KeyType, std::string> g_keyTypeToStrMap = {
+    {KeyType::MCC, "mcc"},
+    {KeyType::MNC, "mnc"},
+    {KeyType::LANGUAGE, "language"},
+    {KeyType::SCRIPT, "script"},
+    {KeyType::REGION, "region"},
+    {KeyType::ORIENTATION, "orientation"},
+    {KeyType::RESOLUTION, "density"},
+    {KeyType::DEVICETYPE, "device"},
+    {KeyType::NIGHTMODE, "colorMode"},
+    {KeyType::INPUTDEVICE, "inputDevice"},
 };
 
 const std::map<int32_t, ResType> g_resTypeMap = {

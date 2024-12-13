@@ -247,6 +247,19 @@ public:
     */
     static void PrintWarningMsg(std::vector<std::pair<ResType, std::string>> &noBaseResource);
 
+    /**
+     * @brief covert KeyParam to str by keytype
+     * @param keyParam: KeyParam
+     * @return limit value string
+    */
+    static std::string GetKeyParamValue(const KeyParam &KeyParam);
+
+    /**
+     * @brief keyType to string
+     * @param type: KeyType
+     * @return limit type string
+    */
+    static std::string KeyTypeToStr(KeyType type);
 private:
     enum class IgnoreType {
         IGNORE_FILE,
@@ -257,7 +270,6 @@ private:
     static std::string GetLocaleLimitkey(const KeyParam &KeyParam);
     static std::string GetDeviceTypeLimitkey(const KeyParam &KeyParam);
     static std::string GetResolutionLimitkey(const KeyParam &KeyParam);
-    static std::string GetKeyParamValue(const KeyParam &KeyParam);
 };
 }
 }

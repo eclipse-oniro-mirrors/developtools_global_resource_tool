@@ -16,7 +16,7 @@
 #ifndef OHOS_RESTOOL_BINARY_FILE_PACKER_H
 #define OHOS_RESTOOL_BINARY_FILE_PACKER_H
 
-#include "cmd_parser.h"
+#include "cmd/package_parser.h"
 #include "resource_util.h"
 #include "thread_pool.h"
 

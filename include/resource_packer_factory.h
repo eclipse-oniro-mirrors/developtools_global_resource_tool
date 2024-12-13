@@ -13,25 +13,18 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_RESTOOL_RESOURCE_OVERLAP_H
-#define OHOS_RESTOOL_RESOURCE_OVERLAP_H
+#ifndef OHOS_RESTOOL_FACTORY_RESOURCE_PACKER_H
+#define OHOS_RESTOOL_FACTORY_RESOURCE_PACKER_H
 
-#include "cmd/package_parser.h"
+#include <memory>
 #include "resource_pack.h"
 
 namespace OHOS {
 namespace Global {
 namespace Restool {
-class ResourceOverlap : public ResourcePack {
+class ResourcePackerFactory {
 public:
-    ResourceOverlap(const PackageParser &packageParser);
-    uint32_t Pack();
-
-protected:
-    uint32_t ScanResources(const std::vector<std::string> &inputs, const std::string &output);
-
-private:
-    uint32_t LoadHapResources();
+    static std::unique_ptr<ResourcePack> CreatePacker(PackType type, const PackageParser &packageParser);
 };
 }
 }

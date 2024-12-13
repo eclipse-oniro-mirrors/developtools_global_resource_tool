@@ -19,11 +19,10 @@ ohos_executable("restool") {
   sources = [
     "src/append_compiler.cpp",
     "src/binary_file_packer.cpp",
-    "src/cmd_parser.cpp",
+    "src/cmd/dump_parser.cpp",
+    "src/cmd/package_parser.cpp",
     "src/compression_parser.cpp",
     "src/config_parser.cpp",
-    "src/factory_resource_compiler.cpp",
-    "src/factory_resource_packer.cpp",
     "src/file_entry.cpp",
     "src/file_manager.cpp",
     "src/generic_compiler.cpp",
@@ -39,12 +38,15 @@ ohos_executable("restool") {
     "src/resconfig_parser.cpp",
     "src/resource_append.cpp",
     "src/resource_check.cpp",
+    "src/resource_compiler_factory.cpp",
     "src/resource_directory.cpp",
+    "src/resource_dumper.cpp",
     "src/resource_item.cpp",
     "src/resource_merge.cpp",
     "src/resource_module.cpp",
     "src/resource_overlap.cpp",
     "src/resource_pack.cpp",
+    "src/resource_packer_factory.cpp",
     "src/resource_table.cpp",
     "src/resource_util.cpp",
     "src/restool.cpp",
@@ -62,6 +64,7 @@ ohos_executable("restool") {
     "//third_party/bounds_checking_function:libsec_static",
     "//third_party/cJSON:cjson_static",
     "//third_party/libpng:libpng_static",
+    "//third_party/zlib:libz",
   ]
 
   cflags = [ "-std=c++17" ]
