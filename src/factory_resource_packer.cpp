@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,21 +13,25 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_RESTOOL_FACTORY_RESOURCE_COMPILER_H
-#define OHOS_RESTOOL_FACTORY_RESOURCE_COMPILER_H
-
-#include <memory>
-#include "i_resource_compiler.h"
+#include "factory_resource_packer.h"
+#include "resource_overlap.h"
 
 namespace OHOS {
 namespace Global {
 namespace Restool {
-class FactoryResourceCompiler {
-public:
-    static std::unique_ptr<IResourceCompiler> CreateCompiler(ResType type, const std::string &output, bool isHap);
-    static std::unique_ptr<IResourceCompiler> CreateCompilerForAppend(ResType type, const std::string &output);
-};
+using namespace std;
+
+unique_ptr<ResourcePack> FactoryResourcePacker::CreatePacker(PackType type, const PackageParser &packageParser)
+{
+    if (type == PackType::NORMAL) {
+        return make_unique<ResourcePack>(packageParser);
+    } else if (type == PackType::OVERLAP) {
+        return make_unique<ResourceOverlap>(packageParser);
+    } else {
+        cerr << "Error: FactoryResourcePacker: Unknown input PackType." << endl;
+        return nullptr;
+    }
 }
 }
 }
-#endif
+}

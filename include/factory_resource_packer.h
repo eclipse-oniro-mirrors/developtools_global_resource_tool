@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,19 +13,18 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_RESTOOL_TASK_HANDLE_H
-#define OHOS_RESTOOL_TASK_HANDLE_H
+#ifndef OHOS_RESTOOL_FACTORY_RESOURCE_PACKER_H
+#define OHOS_RESTOOL_FACTORY_RESOURCE_PACKER_H
 
-#include "cmd_parser.h"
+#include <memory>
+#include "resource_pack.h"
 
 namespace OHOS {
 namespace Global {
 namespace Restool {
-class TaskHandle {
+class FactoryResourcePacker {
 public:
-    TaskHandle() {};
-    ~TaskHandle() {};
-    uint32_t HandlePackage(const PackageParser &packageParser);
+    static std::unique_ptr<ResourcePack> CreatePacker(PackType type, const PackageParser &packageParser);
 };
 }
 }

@@ -24,17 +24,19 @@ namespace Global {
 namespace Restool {
 class GenericCompiler : public IResourceCompiler {
 public:
-    GenericCompiler(ResType type, const std::string &output);
+    GenericCompiler(ResType type, const std::string &output, bool isOverlap = false);
     virtual ~GenericCompiler();
+
 protected:
+    std::string GetOutputFilePath(const FileInfo &fileInfo) const;
+    virtual bool IsIgnore(const FileInfo &fileInfo);
     uint32_t CompileSingleFile(const FileInfo &fileInfo) override;
     uint32_t CompileFiles(const std::vector<FileInfo> &fileInfos) override;
     bool PostMediaFile(const FileInfo &fileInfo, const std::string &output);
-private:
-    std::string GetOutputFilePath(const FileInfo &fileInfo) const;
-    bool IsIgnore(const FileInfo &fileInfo);
-    bool CopyMediaFile(const FileInfo &fileInfo, std::string &output);
     std::mutex mutex_;
+
+private:
+    bool CopyMediaFile(const FileInfo &fileInfo, std::string &output);
 };
 }
 }

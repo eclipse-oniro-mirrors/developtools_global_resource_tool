@@ -57,6 +57,7 @@ public:
     bool IsTargetConfig() const;
     const std::vector<std::string> &GetSysIdDefinedPaths() const;
     const std::string &GetCompressionPath() const;
+    bool IsOverlap() const;
 
 private:
     void InitCommand();

@@ -18,6 +18,7 @@
 #include "resconfig_parser.h"
 #include "resource_util.h"
 #include "select_compile_parse.h"
+#include "file_entry.h"
 
 namespace OHOS {
 namespace Global {
@@ -134,7 +135,13 @@ uint32_t PackageParser::AddInput(const string& argValue)
     if (!IsAscii(inputPath)) {
         return RESTOOL_ERROR;
     }
-    inputs_.push_back(inputPath);
+
+    string indexPath = ResourceUtil::GetMainPath(inputPath).Append(RESOURCE_INDEX_FILE).GetPath();
+    if (ResourceUtil::FileExist(indexPath)) {
+        inputs_.emplace(inputs_.begin(), inputPath);
+    } else {
+        inputs_.push_back(inputPath);
+    }
     return RESTOOL_SUCCESS;
 }
 
@@ -441,6 +448,15 @@ uint32_t PackageParser::AddCompressionPath(const std::string& argValue)
 const std::string &PackageParser::GetCompressionPath() const
 {
     return compressionPath_;
+}
+
+bool PackageParser::IsOverlap() const
+{
+    string indexPath = ResourceUtil::GetMainPath(inputs_[0]).Append(RESOURCE_INDEX_FILE).GetPath();
+    if (ResourceUtil::FileExist(indexPath)) {
+        return true;
+    }
+    return false;
 }
 
 void PackageParser::InitCommand()

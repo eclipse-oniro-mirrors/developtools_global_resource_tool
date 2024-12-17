@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,17 +13,23 @@
  * limitations under the License.
  */
 
-#include "task_handle.h"
-#include "resource_pack.h"
+#ifndef OHOS_RESTOOL_OVERLAP_BINARY_FILE_PACKER_H
+#define OHOS_RESTOOL_OVERLAP_BINARY_FILE_PACKER_H
+
+#include "binary_file_packer.h"
 
 namespace OHOS {
 namespace Global {
 namespace Restool {
-uint32_t TaskHandle::HandlePackage(const PackageParser &packageParser)
-{
-    ResourcePack pack(packageParser);
-    return pack.Package();
+class OverlapBinaryFilePacker : public BinaryFilePacker {
+public:
+    OverlapBinaryFilePacker(const PackageParser &packageParser, const std::string &moduleName);
+
+protected:
+    uint32_t CopyBinaryFile(const std::vector<std::string> &inputs);
+    bool IsDuplicated(const std::unique_ptr<FileEntry> &entry, std::string subPath);
+};
 }
 }
 }
-}
+#endif

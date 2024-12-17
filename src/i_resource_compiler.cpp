@@ -25,8 +25,8 @@ namespace OHOS {
 namespace Global {
 namespace Restool {
 using namespace std;
-IResourceCompiler::IResourceCompiler(ResType type, const string &output)
-    :type_(type), output_(output)
+IResourceCompiler::IResourceCompiler(ResType type, const string &output, bool isOverlap)
+    :type_(type), output_(output), isOverlap_(isOverlap)
 {
 }
 
@@ -152,7 +152,6 @@ bool IResourceCompiler::MergeResourceItem(const ResourceItem &resourceItem)
         cerr << "but declare again." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
         return false;
     }
-
     nameInfos_[make_pair(resourceItem.GetResType(), idName)].push_back(resourceItem);
     return true;
 }

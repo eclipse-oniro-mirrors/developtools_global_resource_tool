@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,17 +17,21 @@
 #include "append_compiler.h"
 #include "generic_compiler.h"
 #include "json_compiler.h"
+#include "overlap_compiler.h"
 
 namespace OHOS {
 namespace Global {
 namespace Restool {
 using namespace std;
-unique_ptr<IResourceCompiler> FactoryResourceCompiler::CreateCompiler(ResType type, const string &output)
+unique_ptr<IResourceCompiler> FactoryResourceCompiler::CreateCompiler(ResType type,
+    const string &output, bool isOverlap)
 {
     if (type == ResType::ELEMENT) {
-        return make_unique<JsonCompiler>(type, output);
+        return make_unique<JsonCompiler>(type, output, isOverlap);
+    } else if (isOverlap) {
+        return make_unique<OverlapCompiler>(type, output, isOverlap);
     } else {
-        return make_unique<GenericCompiler>(type, output);
+        return make_unique<GenericCompiler>(type, output, isOverlap);
     }
 }
 

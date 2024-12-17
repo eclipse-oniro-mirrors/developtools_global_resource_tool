@@ -19,6 +19,7 @@
 #include <vector>
 #include "id_defined_parser.h"
 #include "resource_data.h"
+#include "resource_item.h"
 #include "resource_util.h"
 #include "singleton.h"
 
@@ -32,6 +33,7 @@ public:
     std::vector<ResourceId> GetHeaderId() const;
     int64_t GetId(ResType resType, const std::string &name) const;
     int64_t GetSystemId(ResType resType, const std::string &name) const;
+    void LoadIdFromHap(const std::map<int64_t, std::vector<ResourceItem>> &items);
 
 private:
     int64_t GenerateAppId(ResType resType, const std::string &name);

@@ -85,6 +85,11 @@ void ResourceItem::SetName(const string &name)
     name_ = name;
 }
 
+void ResourceItem::MarkCoverable()
+{
+    coverable_ = true;
+}
+
 const int8_t *ResourceItem::GetData() const
 {
     return data_;
@@ -120,6 +125,11 @@ const string &ResourceItem::GetLimitKey() const
     return limitKey_;
 }
 
+bool ResourceItem::IsCoverable() const
+{
+    return coverable_;
+}
+
 ResourceItem &ResourceItem::operator=(const ResourceItem &other)
 {
     if (this == &other) {
@@ -147,6 +157,7 @@ void ResourceItem::CopyFrom(const ResourceItem &other)
     dataLen_ = other.dataLen_;
     filePath_ = other.filePath_;
     limitKey_ = other.limitKey_;
+    coverable_ = other.coverable_;
     if (!SetData(other.data_, other.dataLen_)) {
         ReleaseData();
     }
