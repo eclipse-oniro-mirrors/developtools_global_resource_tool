@@ -29,6 +29,7 @@ GenericCompiler::GenericCompiler(ResType type, const string &output, bool isOver
     : IResourceCompiler(type, output, isOverlap)
 {
 }
+
 GenericCompiler::~GenericCompiler()
 {
 }
