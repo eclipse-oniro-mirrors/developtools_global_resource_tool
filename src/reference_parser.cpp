@@ -70,6 +70,9 @@ uint32_t ReferenceParser::ParseRefInResources(map<int64_t, vector<ResourceItem>>
 {
     for (auto &iter : items) {
         for (auto &resourceItem : iter.second) {
+            if (resourceItem.IsCoverable()) {
+                continue;
+            }
             if (IsElementRef(resourceItem) && ParseRefInResourceItem(resourceItem) != RESTOOL_SUCCESS) {
                 return RESTOOL_ERROR;
             }

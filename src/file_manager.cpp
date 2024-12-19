@@ -42,7 +42,7 @@ uint32_t FileManager::ScanModules(const vector<string> &inputs, const string &ou
     if (!noBaseResource.empty()) {
         ResourceUtil::PrintWarningMsg(noBaseResource);
     }
-    return isHar || scanHap_ ? RESTOOL_SUCCESS : ParseReference(output);
+    return isHar ? RESTOOL_SUCCESS : ParseReference(output);
 }
 
 uint32_t FileManager::MergeResourceItem(const map<int64_t, vector<ResourceItem>> &resourceInfos)
