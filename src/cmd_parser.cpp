@@ -136,8 +136,9 @@ uint32_t PackageParser::AddInput(const string& argValue)
         return RESTOOL_ERROR;
     }
 
-    string indexPath = ResourceUtil::GetMainPath(inputPath).Append(RESOURCE_INDEX_FILE).GetPath();
-    if (ResourceUtil::FileExist(indexPath)) {
+    string indexPath = FileEntry::FilePath(inputPath).Append(RESOURCE_INDEX_FILE).GetPath();
+    string indexPathJson = ResourceUtil::GetMainPath(inputPath).Append(RESOURCE_INDEX_FILE).GetPath();
+    if (ResourceUtil::FileExist(indexPath) || ResourceUtil::FileExist(indexPathJson)) {
         inputs_.emplace(inputs_.begin(), inputPath);
     } else {
         inputs_.push_back(inputPath);
