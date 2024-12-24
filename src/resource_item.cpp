@@ -130,6 +130,36 @@ bool ResourceItem::IsCoverable() const
     return coverable_;
 }
 
+bool ResourceItem::IsArray() const
+{
+    return type_ == ResType::STRARRAY || type_ == ResType::INTARRAY;
+}
+
+bool ResourceItem::IsPair() const
+{
+    return type_ == ResType::THEME || type_ == ResType::PLURAL || type_ == ResType::PATTERN;
+}
+
+const std::vector<std::string> ResourceItem::SplitValue() const
+{
+    std::vector<std::string> ret;
+    if (!(IsArray() || IsPair())) {
+        return ret;
+    }
+    char *buffer = reinterpret_cast<char*>(data_);
+    uint32_t index = 0;
+    while (index < dataLen_) {
+        uint16_t strLen = *reinterpret_cast<uint16_t*>(buffer + index);
+        index += sizeof(uint16_t);
+        if (index + strLen >= dataLen_) {
+            return ret;
+        }
+        ret.push_back(string(buffer+index, strLen));
+        index = index + strLen + 1;
+    }
+    return ret;
+}
+
 ResourceItem &ResourceItem::operator=(const ResourceItem &other)
 {
     if (this == &other) {

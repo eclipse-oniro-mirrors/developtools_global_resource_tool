@@ -267,7 +267,7 @@ bool ResourceAppend::ScanFile(const FileInfo &fileInfo, const string &outputPath
     }
 
     unique_ptr<IResourceCompiler> resourceCompiler =
-        FactoryResourceCompiler::CreateCompilerForAppend(fileInfo.dirType, outputPath);
+        ResourceCompilerFactory::CreateCompilerForAppend(fileInfo.dirType, outputPath);
     if (resourceCompiler == nullptr) {
         return true;
     }

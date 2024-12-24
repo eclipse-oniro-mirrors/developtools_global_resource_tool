@@ -18,7 +18,7 @@
 
 #include <string>
 #include <cJSON.h>
-#include "cmd_parser.h"
+#include "cmd/package_parser.h"
 
 namespace OHOS {
 namespace Global {

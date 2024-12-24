@@ -16,7 +16,7 @@
 #include "resource_module.h"
 #include <algorithm>
 #include <iostream>
-#include "factory_resource_compiler.h"
+#include "resource_compiler_factory.h"
 #include "restool_errors.h"
 
 namespace OHOS {
@@ -54,7 +54,7 @@ uint32_t ResourceModule::ScanResource(bool isHap)
         }
 
         unique_ptr<IResourceCompiler> resourceCompiler =
-            FactoryResourceCompiler::CreateCompiler(type, moduleOutput_, isHap);
+            ResourceCompilerFactory::CreateCompiler(type, moduleOutput_, isHap);
         resourceCompiler->SetModuleName(moduleName_);
         if (resourceCompiler->Compile(item->second) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;

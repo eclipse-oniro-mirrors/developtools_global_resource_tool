@@ -15,6 +15,7 @@
 
 #include "resource_pack.h"
 #include <algorithm>
+#include <cstdint>
 #include <iomanip>
 #include "file_entry.h"
 #include "file_manager.h"
@@ -24,33 +25,34 @@
 #include "resource_table.h"
 #include "compression_parser.h"
 #include "binary_file_packer.h"
-#include "factory_resource_packer.h"
+#include "resource_packer_factory.h"
 
 namespace OHOS {
 namespace Global {
 namespace Restool {
 using namespace std;
 ResourcePack::ResourcePack(const PackageParser &packageParser):packageParser_(packageParser)
-{
-}
+{}
 
 uint32_t ResourcePack::Package()
 {
+    uint32_t errorCode = RESTOOL_SUCCESS;
     if (!packageParser_.GetAppend().empty()) {
-        return PackAppend();
+        errorCode = PackAppend();
+    } else if (packageParser_.GetCombine()) {
+        errorCode = PackCombine();
+    } else {
+        if (packageParser_.IsOverlap()) {
+            packType_ = PackType::OVERLAP;
+        }
+        unique_ptr<ResourcePack> resourcePacker =
+                ResourcePackerFactory::CreatePacker(packType_, packageParser_);
+        errorCode = resourcePacker->Pack();
     }
-
-    if (packageParser_.GetCombine()) {
-        return PackCombine();
+    if (errorCode == RESTOOL_SUCCESS) {
+        ShowPackSuccess();
     }
-
-    if (packageParser_.IsOverlap()) {
-        packType_ = PackType::OVERLAP;
-    }
-
-    unique_ptr<ResourcePack> resourcePacker =
-            FactoryResourcePacker::CreatePacker(packType_, packageParser_);
-    return resourcePacker->Pack();
+    return errorCode;
 }
 
 uint32_t ResourcePack::InitCompression()
@@ -577,6 +579,14 @@ void ResourcePack::CheckConfigJsonForCombine(ResourceAppend &resourceAppend)
 {
     ResourceCheck resourceCheck(configJson_.GetCheckNode(), make_shared<ResourceAppend>(resourceAppend));
     resourceCheck.CheckConfigJsonForCombine();
+}
+
+void ResourcePack::ShowPackSuccess()
+{
+    cout << "Info: restool resources compile success." << endl;
+    if (CompressionParser::GetCompressionParser()->GetMediaSwitch()) {
+        cout << CompressionParser::GetCompressionParser()->PrintTransMessage() << endl;
+    }
 }
 }
 }

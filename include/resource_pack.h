@@ -16,7 +16,6 @@
 #ifndef OHOS_RESTOOL_RESOURCE_PACK_H
 #define OHOS_RESTOOL_RESOURCE_PACK_H
 
-#include "cmd_parser.h"
 #include "config_parser.h"
 #include "resource_append.h"
 #include "resource_data.h"
@@ -65,6 +64,8 @@ private:
     void CheckConfigJson();
     void CheckConfigJsonForCombine(ResourceAppend &resourceAppend);
     bool CopyIcon(std::string &dataPath, const std::string &idName, std::string &fileName) const;
+    void ShowPackSuccess();
+    
     using HeaderCreater = std::function<uint32_t(const std::string&)>;
     std::map<std::string, HeaderCreater> headerCreaters_;
     PackType packType_ = PackType::NORMAL;

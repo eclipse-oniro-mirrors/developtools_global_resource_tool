@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "factory_resource_packer.h"
+#include "resource_packer_factory.h"
 #include "resource_overlap.h"
 
 namespace OHOS {
@@ -21,14 +21,14 @@ namespace Global {
 namespace Restool {
 using namespace std;
 
-unique_ptr<ResourcePack> FactoryResourcePacker::CreatePacker(PackType type, const PackageParser &packageParser)
+unique_ptr<ResourcePack> ResourcePackerFactory::CreatePacker(PackType type, const PackageParser &packageParser)
 {
     if (type == PackType::NORMAL) {
         return make_unique<ResourcePack>(packageParser);
     } else if (type == PackType::OVERLAP) {
         return make_unique<ResourceOverlap>(packageParser);
     } else {
-        cerr << "Error: FactoryResourcePacker: Unknown input PackType." << endl;
+        cerr << "Error: ResourcePackerFactory: Unknown input PackType." << endl;
         return nullptr;
     }
 }

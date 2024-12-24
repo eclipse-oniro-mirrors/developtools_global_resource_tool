@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "factory_resource_compiler.h"
+#include "resource_compiler_factory.h"
 #include "append_compiler.h"
 #include "generic_compiler.h"
 #include "json_compiler.h"
@@ -23,7 +23,7 @@ namespace OHOS {
 namespace Global {
 namespace Restool {
 using namespace std;
-unique_ptr<IResourceCompiler> FactoryResourceCompiler::CreateCompiler(ResType type,
+unique_ptr<IResourceCompiler> ResourceCompilerFactory::CreateCompiler(ResType type,
     const string &output, bool isOverlap)
 {
     if (type == ResType::ELEMENT) {
@@ -35,7 +35,7 @@ unique_ptr<IResourceCompiler> FactoryResourceCompiler::CreateCompiler(ResType ty
     }
 }
 
-unique_ptr<IResourceCompiler> FactoryResourceCompiler::CreateCompilerForAppend(ResType type, const string &output)
+unique_ptr<IResourceCompiler> ResourceCompilerFactory::CreateCompilerForAppend(ResType type, const string &output)
 {
     if (type == ResType::ELEMENT) {
         return make_unique<JsonCompiler>(type, output);

@@ -13,12 +13,13 @@
  * limitations under the License.
  */
 
-#include "cmd_parser.h"
+#include "cmd/package_parser.h"
 #include <algorithm>
 #include "resconfig_parser.h"
 #include "resource_util.h"
 #include "select_compile_parse.h"
 #include "file_entry.h"
+#include "resource_pack.h"
 
 namespace OHOS {
 namespace Global {
@@ -470,7 +471,7 @@ void PackageParser::InitCommand()
     handles_.emplace(Option::FORCEWRITE, [this](const string &) -> uint32_t { return ForceWrite(); });
     handles_.emplace(Option::VERSION, [this](const string &) -> uint32_t { return PrintVersion(); });
     handles_.emplace(Option::MODULES, bind(&PackageParser::AddMoudleNames, this, _1));
-    handles_.emplace(Option::JSON, bind(&PackageParser::AddConfig, this,  _1));
+    handles_.emplace(Option::JSON, bind(&PackageParser::AddConfig, this, _1));
     handles_.emplace(Option::STARTID, bind(&PackageParser::AddStartId, this, _1));
     handles_.emplace(Option::APPEND, bind(&PackageParser::AddAppend, this, _1));
     handles_.emplace(Option::COMBINE, [this](const string &) -> uint32_t { return SetCombine(); });
@@ -544,7 +545,7 @@ uint32_t PackageParser::CheckError(int argc, char *argv[], int c, int optIndex)
 uint32_t PackageParser::ParseCommand(int argc, char *argv[])
 {
     restoolPath_ = string(argv[0]);
-    while (true) {
+    while (optind <= argc) {
         int optIndex = -1;
         int c = getopt_long(argc, argv, CMD_PARAMS.c_str(), CMD_OPTS, &optIndex);
         if (CheckError(argc, argv, c, optIndex) != RESTOOL_SUCCESS) {
@@ -584,6 +585,11 @@ bool PackageParser::IsLongOpt(int argc, char *argv[]) const
         }
     }
     return false;
+}
+
+uint32_t PackageParser::ExecCommand()
+{
+    return ResourcePack(*this).Package();
 }
 }
 }

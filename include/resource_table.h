@@ -31,7 +31,8 @@ public:
     virtual ~ResourceTable();
     uint32_t CreateResourceTable();
     uint32_t CreateResourceTable(const std::map<int64_t, std::vector<std::shared_ptr<ResourceItem>>> &items);
-    uint32_t LoadResTable(const std::string path, std::map<int64_t, std::vector<ResourceItem>> &resInfos);
+    static uint32_t LoadResTable(const std::string path, std::map<int64_t, std::vector<ResourceItem>> &resInfos);
+    static uint32_t LoadResTable(std::basic_istream<char> &in, std::map<int64_t, std::vector<ResourceItem>> &resInfos);
 private:
     struct TableData {
         uint32_t id;
@@ -74,16 +75,16 @@ private:
     void SaveLimitKeyConfigs(const std::map<std::string, LimitKeyConfig> &limitKeyConfigs,
                              std::ostringstream &out) const;
     void SaveIdSets(const std::map<std::string, IdSet> &idSets, std::ostringstream &out) const;
-    bool ReadFileHeader(std::ifstream &in, IndexHeader &indexHeader, uint64_t &pos, uint64_t length) const;
-    bool ReadLimitKeys(std::ifstream &in, std::map<int64_t, std::vector<KeyParam>> &limitKeys,
-                       uint32_t count, uint64_t &pos, uint64_t length) const;
-    bool ReadIdTables(std::ifstream &in, std::map<int64_t, std::pair<int64_t, int64_t>> &datas,
-                      uint32_t count, uint64_t &pos, uint64_t length) const;
-    bool ReadDataRecordPrepare(std::ifstream &in, RecordItem &record, uint64_t &pos, uint64_t length) const;
-    bool ReadDataRecordStart(std::ifstream &in, RecordItem &record,
+    static bool ReadFileHeader(std::basic_istream<char> &in, IndexHeader &indexHeader, uint64_t &pos, uint64_t length);
+    static bool ReadLimitKeys(std::basic_istream<char> &in, std::map<int64_t, std::vector<KeyParam>> &limitKeys,
+                       uint32_t count, uint64_t &pos, uint64_t length);
+    static bool ReadIdTables(std::basic_istream<char> &in, std::map<int64_t, std::pair<int64_t, int64_t>> &datas,
+                      uint32_t count, uint64_t &pos, uint64_t length);
+    static bool ReadDataRecordPrepare(std::basic_istream<char> &in, RecordItem &record, uint64_t &pos, uint64_t length);
+    static bool ReadDataRecordStart(std::basic_istream<char> &in, RecordItem &record,
                              const std::map<int64_t, std::vector<KeyParam>> &limitKeys,
                              const std::map<int64_t, std::pair<int64_t, int64_t>> &datas,
-                             std::map<int64_t, std::vector<ResourceItem>> &resInfos) const;
+                             std::map<int64_t, std::vector<ResourceItem>> &resInfos);
     std::string indexFilePath_;
     std::string idDefinedPath_;
 };

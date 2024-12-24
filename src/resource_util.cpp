@@ -328,6 +328,10 @@ string ResourceUtil::GetKeyParamValue(const KeyParam &KeyParam)
         case KeyType::REGION:
             val = GetLocaleLimitkey(KeyParam);
             break;
+        case KeyType::INPUTDEVICE:
+            val = KeyParam.value == static_cast<const uint32_t>(InputDevice::INPUTDEVICE_NOT_SET) ?
+            "not set" : "pointDevice";
+            break;
         default:
             val = to_string(KeyParam.value);
             break;
@@ -470,6 +474,18 @@ void ResourceUtil::PrintWarningMsg(vector<pair<ResType, string>> &noBaseResource
         cerr << "Warning: the " << ResourceUtil::ResTypeToString(item.first);
         cerr << " of '" << item.second << "' does not have a base resource." << endl;
     }
+}
+
+string ResourceUtil::KeyTypeToStr(KeyType type)
+{
+    string ret("unknown type: ");
+    auto it = g_keyTypeToStrMap.find(type);
+    if (it != g_keyTypeToStrMap.end()) {
+        ret = it->second;
+    } else {
+        ret += to_string(static_cast<uint32_t>(type));
+    }
+    return ret;
 }
 }
 }

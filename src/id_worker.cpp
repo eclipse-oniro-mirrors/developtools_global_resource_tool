@@ -16,7 +16,6 @@
 #include "id_worker.h"
 #include <iostream>
 #include <regex>
-#include "cmd_parser.h"
 
 namespace OHOS {
 namespace Global {

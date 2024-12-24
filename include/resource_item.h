@@ -44,6 +44,9 @@ public:
     const std::string &GetFilePath() const;
     const std::string &GetLimitKey() const;
     bool IsCoverable() const;
+    const std::vector<std::string> SplitValue() const;
+    bool IsArray() const;
+    bool IsPair() const;
 
     ResourceItem &operator=(const ResourceItem &other);
 private:

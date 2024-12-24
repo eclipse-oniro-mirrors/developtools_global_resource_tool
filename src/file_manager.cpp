@@ -17,7 +17,7 @@
 #include <algorithm>
 #include "compression_parser.h"
 #include <iostream>
-#include "factory_resource_compiler.h"
+#include "resource_compiler_factory.h"
 #include "file_entry.h"
 #include "key_parser.h"
 #include "reference_parser.h"
