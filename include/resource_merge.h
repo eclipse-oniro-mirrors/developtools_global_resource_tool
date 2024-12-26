@@ -20,7 +20,7 @@
 #include <vector>
 #include "config_parser.h"
 #include "restool_errors.h"
-#include "cmd/package_parser.h"
+#include "cmd/cmd_parser.h"
 
 namespace OHOS {
 namespace Global {
@@ -29,7 +29,7 @@ class ResourceMerge {
 public:
     ResourceMerge();
     virtual ~ResourceMerge();
-    uint32_t Init(const PackageParser &packageParser = CmdParser<PackageParser>::GetInstance().GetCmdParser());
+    uint32_t Init(const PackageParser &packageParser = CmdParser::GetInstance().GetPackageParser());
     const std::vector<std::string> &GetInputs() const;
 private:
     std::vector<std::string> inputsOrder_;

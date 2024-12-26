@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,17 +18,20 @@
 
 #include <functional>
 #include <getopt.h>
-#include "cmd_parser.h"
+#include <string>
+#include <iostream>
+#include "resource_data.h"
+#include "restool_errors.h"
 
 namespace OHOS {
 namespace Global {
 namespace Restool {
-class PackageParser : public ICmdParser {
+class PackageParser {
 public:
     PackageParser(){};
     virtual ~PackageParser() = default;
-    uint32_t Parse(int argc, char *argv[]) override;
-    uint32_t ExecCommand() override;
+    uint32_t Parse(int argc, char *argv[]);
+    uint32_t ExecCommand();
     const std::vector<std::string> &GetInputs() const;
     const std::string &GetPackageName() const;
     const std::string &GetOutput() const;

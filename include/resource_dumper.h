@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,7 +36,7 @@ namespace Restool {
 class ResourceDumper {
 public:
     virtual ~ResourceDumper() = default;
-    virtual uint32_t Dump(const DumpParser &parser);
+    virtual uint32_t Dump(const DumpParserBase &parser);
 protected:
     virtual uint32_t DumpRes(std::string &out) const = 0;
     void ReadHapInfo(const std::unique_ptr<char[]> &buffer, size_t len);
@@ -69,11 +69,6 @@ private:
     uint32_t AddItemCommonPropToJson(int32_t resId, const ResourceItem &item, cJSON* json) const;
 };
 
-class ResourceDumperFactory {
-public:
-    static std::unique_ptr<ResourceDumper> CreateResourceDumper(const std::string &type);
-    static const std::set<std::string> GetSupportDumpType();
-};
 } // namespace Restool
 } // namespace Global
 } // namespace OHOS

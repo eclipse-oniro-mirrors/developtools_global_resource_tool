@@ -16,6 +16,7 @@
 #include "id_worker.h"
 #include <iostream>
 #include <regex>
+#include "cmd/cmd_parser.h"
 
 namespace OHOS {
 namespace Global {
@@ -24,8 +25,8 @@ using namespace std;
 uint32_t IdWorker::Init(ResourceIdCluster &type, int64_t startId)
 {
     type_ = type;
-    CmdParser<PackageParser> &parser = CmdParser<PackageParser>::GetInstance();
-    PackageParser &packageParser = parser.GetCmdParser();
+    CmdParser &parser = CmdParser::GetInstance();
+    PackageParser &packageParser = parser.GetPackageParser();
     IdDefinedParser idDefinedParser = IdDefinedParser(packageParser, type_);
     if (idDefinedParser.Init() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;

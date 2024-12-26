@@ -16,7 +16,7 @@
 #include "resource_table.h"
 #include <cJSON.h>
 #include <cstdint>
-#include "cmd/package_parser.h"
+#include "cmd/cmd_parser.h"
 #include "file_entry.h"
 #include "file_manager.h"
 #include "resource_util.h"
@@ -28,8 +28,8 @@ namespace Restool {
 using namespace std;
 ResourceTable::ResourceTable()
 {
-    auto &parser = CmdParser<PackageParser>::GetInstance();
-    auto &packageParser = parser.GetCmdParser();
+    auto &parser = CmdParser::GetInstance();
+    auto &packageParser = parser.GetPackageParser();
     if (!packageParser.GetIdDefinedOutput().empty()) {
         idDefinedPath_ = FileEntry::FilePath(packageParser.GetIdDefinedOutput()).Append(ID_DEFINED_FILE).GetPath();
     }
