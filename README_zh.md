@@ -29,7 +29,7 @@ restool当前支持以下命令选项:
 
 | 选项 | 是否可缺省 | 是否存在入参 | 描述 |
 | -------- | -------- | -------- | -------- |
-| -i/--inputPath | 不可缺省 | 带参数 | 指定需要构建的资源目录或者需要构建的资源中间文件目录。同一个命令可以多次指定。 |
+| -i/--inputPath | 不可缺省 | 带参数 | 指定需要构建的资源目录或者资源中间件。<br>在资源目录中支持指定一个编译好的Hap资源目录（解压态），在此Hap的基础上完成叠加编译。|
 | -j/--json | 不可缺省 | 带参数 | 指定config.json或者module.json文件路径。 |
 | -o/--outputPath | 不可缺省 | 带参数 | 指定已编译资源的输出路径。 |
 | -p/--packageName | 不可缺省 | 带参数 | 指定编译资源的bundle名称。 |
@@ -95,6 +95,13 @@ restool -x entry/src/main/resource -o out
 2.编译中间件:
 ```
 restool -i out1 -i out2 -o out -p com.ohos.demo -r out/ResourceTable.txt -j entry/src/main/module.json -f -z
+```
+
+叠加资源编译命令：
+
+```
+# hapResource为解压后的Hap包路径
+restool -i entry/src/main -i hapResource -j entry/src/main/module.json -p com.ohos.demo -o out -r out/ResourceTable.txt -f
 ```
 
 固定资源ID的方式有两种，如下：
