@@ -19,6 +19,7 @@ ohos_executable("restool") {
   sources = [
     "src/append_compiler.cpp",
     "src/binary_file_packer.cpp",
+    "src/cmd/cmd_parser.cpp",
     "src/cmd/dump_parser.cpp",
     "src/cmd/package_parser.cpp",
     "src/compression_parser.cpp",

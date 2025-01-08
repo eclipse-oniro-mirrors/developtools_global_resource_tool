@@ -16,7 +16,7 @@
 #include "select_compile_parse.h"
 #include <algorithm>
 #include "key_parser.h"
-#include "cmd/package_parser.h"
+#include "cmd/cmd_parser.h"
 #include "resource_util.h"
 
 namespace OHOS {
@@ -65,7 +65,7 @@ bool SelectCompileParse::IsSelectCompile(vector<KeyParam> &keyParams)
     if (keyParams.empty()) {
         return true;
     }
-    auto &cmdParser = CmdParser<PackageParser>::GetInstance().GetCmdParser();
+    auto &cmdParser = CmdParser::GetInstance().GetPackageParser();
     bool isTtargetConfig = cmdParser.IsTargetConfig();
     if (!isTtargetConfig) {
         return true;

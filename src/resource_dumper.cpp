@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -39,7 +39,7 @@ static std::map<std::string, std::function<std::unique_ptr<ResourceDumper>()>> d
     {"config", std::make_unique<ConfigDumper>}
 };
 
-uint32_t ResourceDumper::Dump(const DumpParser &packageParser)
+uint32_t ResourceDumper::Dump(const DumpParserBase &packageParser)
 {
     inputPath_ = packageParser.GetInputPath();
     if (LoadHap() != RESTOOL_SUCCESS) {
@@ -64,6 +64,8 @@ uint32_t ResourceDumper::LoadHap()
     size_t len;
     if (ReadFileFromZip(zipFile, "module.json", buffer, len) == RESTOOL_SUCCESS) {
         ReadHapInfo(buffer, len);
+    } else if (ReadFileFromZip(zipFile, "config.json", buffer, len) == RESTOOL_SUCCESS) {
+        ReadHapInfo(buffer, len);
     }
     if (ReadFileFromZip(zipFile, "resources.index", buffer, len) != RESTOOL_SUCCESS) {
         unzClose(zipFile);
@@ -80,12 +82,12 @@ uint32_t ResourceDumper::LoadHap()
 
 void ResourceDumper::ReadHapInfo(const std::unique_ptr<char[]> &buffer, size_t len)
 {
-    cJSON *module = cJSON_Parse(buffer.get());
-    if (!module) {
+    cJSON *config = cJSON_Parse(buffer.get());
+    if (!config) {
         return;
     }
-    cJSON *appConfig = cJSON_GetObjectItemCaseSensitive(module, "app");
-    cJSON *moduleConfig = cJSON_GetObjectItemCaseSensitive(module, "module");
+    cJSON *appConfig = cJSON_GetObjectItemCaseSensitive(config, "app");
+    cJSON *moduleConfig = cJSON_GetObjectItemCaseSensitive(config, "module");
     if (appConfig) {
         cJSON *bundleName = cJSON_GetObjectItemCaseSensitive(appConfig, "bundleName");
         if (cJSON_IsString(bundleName) && bundleName->valuestring) {
@@ -98,7 +100,7 @@ void ResourceDumper::ReadHapInfo(const std::unique_ptr<char[]> &buffer, size_t l
             moduleName_ = moduleName->valuestring;
         }
     }
-    cJSON_Delete(module);
+    cJSON_Delete(config);
 }
 
 uint32_t ResourceDumper::ReadFileFromZip(
@@ -384,24 +386,6 @@ uint32_t ConfigDumper::DumpRes(std::string &out) const
     cJSON_free(rawStr);
     rawStr = nullptr;
     return RESTOOL_SUCCESS;
-}
-
-std::unique_ptr<ResourceDumper> ResourceDumperFactory::CreateResourceDumper(const std::string &type)
-{
-    auto it = dumpMap_.find(type);
-    if (it != dumpMap_.end()) {
-        return it->second();
-    }
-    return std::make_unique<CommonDumper>();
-}
-
-const std::set<std::string> ResourceDumperFactory::GetSupportDumpType()
-{
-    std::set<std::string> dumpType;
-    for (auto &it : dumpMap_) {
-        dumpType.insert(it.first);
-    }
-    return dumpType;
 }
 }
 }

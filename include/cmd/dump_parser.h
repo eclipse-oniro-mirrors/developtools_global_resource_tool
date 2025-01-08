@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,23 +16,35 @@
 #ifndef OHOS_RESTOOL_DUMP_PARSER_H
 #define OHOS_RESTOOL_DUMP_PARSER_H
 
-#include "cmd_parser.h"
 #include <memory>
 #include <string>
+#include "cmd_parser.h"
 
 namespace OHOS {
 namespace Global {
 namespace Restool {
-class DumpParser : public ICmdParser {
+class DumpParserBase : public virtual CmdParserBase {
 public:
-    virtual ~DumpParser() = default;
-    uint32_t Parse(int argc, char *argv[]) override;
-    uint32_t ExecCommand() override;
+    virtual ~DumpParserBase() = default;
+    uint32_t ParseOption(int argc, char *argv[], int currentIndex) override;
+    void ShowUseage() override;
     const std::string &GetInputPath() const;
 
-private:
+protected:
     std::string inputPath_;
-    std::string type_;
+};
+
+class DumpParser : public virtual DumpParserBase {
+public:
+    DumpParser();
+    uint32_t ExecCommand() override;
+};
+
+class DumpConfigParser : public virtual DumpParserBase {
+public:
+    DumpConfigParser();
+    virtual ~DumpConfigParser() = default;
+    uint32_t ExecCommand() override;
 };
 } // namespace Restool
 } // namespace Global

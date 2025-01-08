@@ -13,40 +13,23 @@
  * limitations under the License.
  */
 
-#include <cstring>
-#include "cmd/package_parser.h"
-#include "cmd/dump_parser.h"
-#include "resource_pack.h"
-#include "compression_parser.h"
+#include "cmd/cmd_parser.h"
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 using namespace std;
 using namespace OHOS::Global::Restool;
 
-constexpr int PARAM_MIN_NUM = 2;
-
 int main(int argc, char *argv[])
 {
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+#endif
     if (argv == nullptr) {
         cerr << "Error: argv null" << endl;
         return RESTOOL_ERROR;
     }
-    if (argc < PARAM_MIN_NUM) {
-        cerr << "Error: At least 1 parameters are required, but no parameter is passed in." << endl;
-        return RESTOOL_ERROR;
-    }
-    if (strcmp(argv[1], "dump") == 0) {
-        auto &dumpParser = CmdParser<DumpParser>::GetInstance();
-        if (dumpParser.Parse(argc, argv) != RESTOOL_SUCCESS) {
-            dumpParser.ShowUseage();
-            return RESTOOL_ERROR;
-        }
-        return dumpParser.ExecCommand();
-    }
-    auto &packParser = CmdParser<PackageParser>::GetInstance();
-    if (packParser.Parse(argc, argv) != RESTOOL_SUCCESS) {
-        packParser.ShowUseage();
-        return RESTOOL_ERROR;
-    }
-
-    return packParser.ExecCommand();
+    auto &parser = CmdParser::GetInstance();
+    return parser.Parse(argc, argv, 1);
 }

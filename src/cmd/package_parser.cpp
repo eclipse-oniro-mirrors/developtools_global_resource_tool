@@ -357,7 +357,7 @@ uint32_t PackageParser::AddDependEntry(const string& argValue)
 
 uint32_t PackageParser::ShowHelp() const
 {
-    auto &parser = CmdParser<PackageParser>::GetInstance();
+    auto &parser = CmdParser::GetInstance();
     parser.ShowUseage();
     exit(RESTOOL_SUCCESS);
     return RESTOOL_SUCCESS;
