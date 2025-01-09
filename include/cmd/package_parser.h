@@ -60,6 +60,7 @@ private:
     uint32_t ParseCommand(int argc, char *argv[]);
     uint32_t CheckError(int argc, char *argv[], int c, int optIndex);
     uint32_t AddInput(const std::string &argValue);
+    bool IsOverlapInput(const std::string& inputPath);
     uint32_t AddPackageName(const std::string &argValue);
     uint32_t AddOutput(const std::string &argValue);
     uint32_t AddResourceHeader(const std::string &argValue);
@@ -111,6 +112,7 @@ private:
     std::vector<std::string> sysIdDefinedPaths_;
     std::string compressionPath_;
     size_t threadCount_{ 0 };
+    bool isOverlap_{ false };
 };
 } // namespace Restool
 } // namespace Global

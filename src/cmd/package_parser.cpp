@@ -139,14 +139,39 @@ uint32_t PackageParser::AddInput(const string& argValue)
         return RESTOOL_ERROR;
     }
 
-    string indexPath = FileEntry::FilePath(inputPath).Append(RESOURCE_INDEX_FILE).GetPath();
-    string indexPathJson = ResourceUtil::GetMainPath(inputPath).Append(RESOURCE_INDEX_FILE).GetPath();
-    if (ResourceUtil::FileExist(indexPath) || ResourceUtil::FileExist(indexPathJson)) {
+    if (IsOverlapInput(inputPath)) {
         inputs_.emplace(inputs_.begin(), inputPath);
     } else {
         inputs_.push_back(inputPath);
     }
     return RESTOOL_SUCCESS;
+}
+
+bool PackageParser::IsOverlapInput(const string& inputPath)
+{
+    if (isOverlap_) {
+        return false;
+    }
+
+    string indexPath = FileEntry::FilePath(inputPath).Append(RESOURCE_INDEX_FILE).GetPath();
+    if (ResourceUtil::FileExist(indexPath)) {
+        isOverlap_ = true;
+        return true;
+    }
+
+    string jsonIndexPath = ResourceUtil::GetMainPath(inputPath).Append(RESOURCE_INDEX_FILE).GetPath();
+    string txtResHeaderPath = ResourceUtil::GetMainPath(inputPath).Append("ResourceTable.txt").GetPath();
+    string jsResHeaderPath = ResourceUtil::GetMainPath(inputPath).Append("ResourceTable.js").GetPath();
+    string hResJsHeaderPath = ResourceUtil::GetMainPath(inputPath).Append("ResourceTable.h").GetPath();
+    if (ResourceUtil::FileExist(jsonIndexPath) &&
+        !ResourceUtil::FileExist(txtResHeaderPath) &&
+        !ResourceUtil::FileExist(jsResHeaderPath) &&
+        !ResourceUtil::FileExist(hResJsHeaderPath)) {
+        isOverlap_ = true;
+        return true;
+    }
+
+    return false;
 }
 
 uint32_t PackageParser::AddSysIdDefined(const std::string& argValue)
@@ -481,11 +506,7 @@ const std::string &PackageParser::GetCompressionPath() const
 
 bool PackageParser::IsOverlap() const
 {
-    string indexPath = ResourceUtil::GetMainPath(inputs_[0]).Append(RESOURCE_INDEX_FILE).GetPath();
-    if (ResourceUtil::FileExist(indexPath)) {
-        return true;
-    }
-    return false;
+    return isOverlap_;
 }
 
 void PackageParser::InitCommand()
