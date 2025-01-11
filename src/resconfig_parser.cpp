@@ -92,6 +92,8 @@ void ResConfigParser::InitFileListCommand(HandleBack callback)
         Option::DEFINED_SYSIDS, callback));
     fileListHandles_.emplace("compression", bind(&ResConfigParser::GetString, this, _1,
         Option::COMPRESSED_CONFIG, callback));
+    fileListHandles_.emplace("thread", bind(&ResConfigParser::GetNumber, this, _1,
+        Option::THREAD, callback));
 }
 
 uint32_t ResConfigParser::GetString(const cJSON *node, int c, HandleBack callback)
@@ -159,6 +161,19 @@ uint32_t ResConfigParser::GetBool(const cJSON *node, int c, HandleBack callback)
     }
 
     if (cJSON_IsTrue(node) == 1 && callback(c, "") != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
+    return RESTOOL_SUCCESS;
+}
+
+uint32_t ResConfigParser::GetNumber(const cJSON *node, int c, HandleBack callback)
+{
+    if (!node || !cJSON_IsNumber(node)) {
+        cerr << "Error: GetNumber node not number. Option = " << c << endl;
+        return RESTOOL_ERROR;
+    }
+
+    if (callback(c, std::to_string(node->valuedouble)) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;

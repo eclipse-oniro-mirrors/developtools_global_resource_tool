@@ -24,14 +24,12 @@ namespace Restool {
 using namespace std;
 
 BinaryFilePacker::BinaryFilePacker(const PackageParser &packageParser, const std::string &moduleName)
-    : packageParser_(packageParser), moduleName_(moduleName), threadPool_(ThreadPool(THREAD_POOL_SIZE))
+    : packageParser_(packageParser), moduleName_(moduleName)
 {
-    threadPool_.Start();
 }
 
 BinaryFilePacker::~BinaryFilePacker()
 {
-    threadPool_.Stop();
 }
 
 void BinaryFilePacker::StopCopy()
@@ -42,7 +40,7 @@ void BinaryFilePacker::StopCopy()
 std::future<uint32_t> BinaryFilePacker::CopyBinaryFileAsync(const std::vector<std::string> &inputs)
 {
     auto func = [this](const vector<string> &inputs) { return this->CopyBinaryFile(inputs); };
-    std::future<uint32_t> res = threadPool_.Enqueue(func, inputs);
+    std::future<uint32_t> res = ThreadPool::GetInstance().Enqueue(func, inputs);
     return res;
 }
 
@@ -126,7 +124,7 @@ uint32_t BinaryFilePacker::CopyBinaryFileImpl(const string &src, const string &d
 
         string path = entry->GetFilePath().GetPath();
         auto copyFunc = [this](const string path, string subPath) { return this->CopySingleFile(path, subPath); };
-        std::future<uint32_t> res = threadPool_.Enqueue(copyFunc, path, subPath);
+        std::future<uint32_t> res = ThreadPool::GetInstance().Enqueue(copyFunc, path, subPath);
         copyResults_.push_back(std::move(res));
     }
     return RESTOOL_SUCCESS;

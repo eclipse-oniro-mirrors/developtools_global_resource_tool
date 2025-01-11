@@ -38,6 +38,7 @@ private:
     uint32_t GetArray(const cJSON *node, int c, HandleBack callback);
     uint32_t GetModuleNames(const cJSON *node, int c, HandleBack callback);
     uint32_t GetBool(const cJSON *node, int c, HandleBack callback);
+    uint32_t GetNumber(const cJSON *node, int c, HandleBack callback);
     cJSON *root_;
 };
 }

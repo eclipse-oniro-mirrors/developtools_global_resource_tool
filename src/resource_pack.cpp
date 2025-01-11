@@ -86,6 +86,9 @@ uint32_t ResourcePack::InitResourcePack()
     if (InitModule() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
+    if (ThreadPool::GetInstance().Start(packageParser_.GetThreadCount()) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    };
     return RESTOOL_SUCCESS;
 }
 

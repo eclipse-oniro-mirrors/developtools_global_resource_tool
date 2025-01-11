@@ -37,7 +37,6 @@ protected:
     virtual bool IsDuplicated(const std::unique_ptr<FileEntry> &entry, std::string subPath);
     PackageParser packageParser_;
     std::string moduleName_;
-    ThreadPool threadPool_;
     std::vector<std::future<uint32_t>> copyResults_;
     std::atomic<bool> stopCopy_{false};
     std::mutex mutex_;

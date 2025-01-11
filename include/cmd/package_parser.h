@@ -53,6 +53,7 @@ public:
     const std::vector<std::string> &GetSysIdDefinedPaths() const;
     const std::string &GetCompressionPath() const;
     bool IsOverlap() const;
+    size_t GetThreadCount() const;
 
 private:
     void InitCommand();
@@ -83,6 +84,7 @@ private:
     uint32_t IconCheck();
     uint32_t ParseTargetConfig(const std::string &argValue);
     uint32_t AddCompressionPath(const std::string &argValue);
+    uint32_t ParseThread(const std::string &argValue);
 
     static const struct option CMD_OPTS[];
     static const std::string CMD_PARAMS;
@@ -108,6 +110,7 @@ private:
     bool isTtargetConfig_;
     std::vector<std::string> sysIdDefinedPaths_;
     std::string compressionPath_;
+    size_t threadCount_{ 0 };
 };
 } // namespace Restool
 } // namespace Global
