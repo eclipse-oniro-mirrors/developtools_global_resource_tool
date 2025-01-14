@@ -18,12 +18,13 @@
       "rom": "0KB",
       "ram": "0KB",
       "deps": {
-        "components": [],
+        "components": [
+          "zlib"
+        ],
         "third_party": [
           "bounds_checking_function",
           "cJSON",
-          "libpng",
-          "zlib"
+          "libpng"
         ]
       },
       "build": {
