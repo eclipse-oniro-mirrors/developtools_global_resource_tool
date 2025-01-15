@@ -67,7 +67,11 @@ ohos_executable("restool") {
     "//third_party/libpng:libpng_static",
   ]
 
-  external_deps = [ "zlib:libz" ]
+  if (is_arkui_x) {
+    deps += [ "//third_party/zlib:libz" ]
+  } else {
+    external_deps = [ "zlib:libz" ]
+  }
 
   cflags = [ "-std=c++17" ]
   if (is_mingw) {
