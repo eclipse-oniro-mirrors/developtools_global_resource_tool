@@ -49,7 +49,7 @@ const static std::string SOLUTIONS_ARROW = "> ";
 const static std::string LONG_PATH_HEAD = "\\\\?\\";
 const static int32_t VERSION_MAX_LEN = 128;
 const static int32_t INT_TO_BYTES = sizeof(uint32_t);
-static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 5.1.0.003" };
+static const int8_t RESTOOL_VERSION[VERSION_MAX_LEN] = { "Restool 5.1.0.004" };
 const static int32_t TAG_LEN = 4;
 static std::set<std::string> g_resourceSet;
 static std::set<std::string> g_hapResourceSet;
