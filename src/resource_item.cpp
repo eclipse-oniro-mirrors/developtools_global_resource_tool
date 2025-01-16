@@ -160,6 +160,17 @@ const std::vector<std::string> ResourceItem::SplitValue() const
     return ret;
 }
 
+void ResourceItem::CheckData()
+{
+    int8_t data[GetDataLength()];
+    for (int i = 0; i < GetDataLength(); i++) {
+        data[i] = GetData()[i];
+    }
+    if (data[GetDataLength() - 1] == '\0') {
+        SetData(data, GetDataLength() - 1);
+    }
+}
+
 ResourceItem &ResourceItem::operator=(const ResourceItem &other)
 {
     if (this == &other) {
