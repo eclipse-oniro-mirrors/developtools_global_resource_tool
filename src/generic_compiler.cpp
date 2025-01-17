@@ -37,12 +37,10 @@ GenericCompiler::~GenericCompiler()
 uint32_t GenericCompiler::CompileFiles(const std::vector<FileInfo> &fileInfos)
 {
     cout << "Info: GenericCompiler::CompileFiles" << endl;
-    ThreadPool pool(THREAD_POOL_SIZE);
-    pool.Start();
     std::vector<std::future<uint32_t>> results;
     for (const auto &fileInfo : fileInfos) {
         auto taskFunc = [this](const FileInfo &fileInfo) { return this->CompileSingleFile(fileInfo); };
-        results.push_back(pool.Enqueue(taskFunc, fileInfo));
+        results.push_back(ThreadPool::GetInstance().Enqueue(taskFunc, fileInfo));
     }
     for (auto &ret : results) {
         if (ret.get() != RESTOOL_SUCCESS) {

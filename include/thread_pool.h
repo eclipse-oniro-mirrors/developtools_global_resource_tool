@@ -30,17 +30,13 @@ namespace Global {
 namespace Restool {
 class ThreadPool {
 public:
-    /**
-     * @brief Creates a thread pool with specify thread count
-     * @param threadCount the count of threads to be created
-     */
-    explicit ThreadPool(const size_t threadCount);
     ~ThreadPool();
 
     /**
      * @brief Start the thread pool
+     * @param threadCount the count of thread pool
      */
-    uint32_t Start();
+    uint32_t Start(const size_t &threadCount);
 
     /**
      * @brief Stop the thread pool
@@ -55,7 +51,12 @@ public:
     template <class F, class... Args>
     std::future<typename std::result_of<F(Args...)>::type> Enqueue(F &&f, Args &&...args);
 
+    static ThreadPool &GetInstance();
+
 private:
+    ThreadPool();
+    ThreadPool(const ThreadPool &) = delete;
+    ThreadPool &operator=(const ThreadPool &) = delete;
     void WorkInThread();
     std::vector<std::thread> workerThreads_;
     std::queue<std::function<void()>> tasks_;
@@ -63,7 +64,6 @@ private:
     std::mutex queueMutex_;
     std::condition_variable condition_;
     bool running_{ false };
-    size_t threadCount_;
 };
 
 template <typename F, typename... Args>

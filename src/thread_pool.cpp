@@ -24,18 +24,31 @@ namespace Global {
 namespace Restool {
 using namespace std;
 
-ThreadPool::ThreadPool(size_t threadCount) : threadCount_(threadCount)
+ThreadPool::ThreadPool()
 {}
 
-uint32_t ThreadPool::Start()
+ThreadPool &ThreadPool::GetInstance()
 {
-    if (!workerThreads_.empty() || threadCount_ <= 0) {
-        cerr << "Error: ThreadPool start failed." << endl;
-        return RESTOOL_ERROR;
+    static ThreadPool pool;
+    return pool;
+}
+
+uint32_t ThreadPool::Start(const size_t &threadCount)
+{
+    if (!workerThreads_.empty()) {
+        cout << "Warning: ThreadPool is already started." << endl;
+        return RESTOOL_SUCCESS;
     }
+    size_t hardwareCount = std::thread::hardware_concurrency();
+    cout << "Info: hardware concurrency count is : " << hardwareCount << endl;
+    size_t count = threadCount <= 0 ? (hardwareCount <= 0 ? DEFAULT_POOL_SIZE : hardwareCount) : threadCount;
+    if (count == 1) {
+        count++;
+    }
+    cout << "Info: thread count is : " << count << endl;
     running_ = true;
-    workerThreads_.reserve(threadCount_);
-    for (size_t i = 0; i < threadCount_; ++i) {
+    workerThreads_.reserve(count);
+    for (size_t i = 0; i < count; ++i) {
         workerThreads_.emplace_back([this] { this->WorkInThread(); });
     }
     cout << "Info: thread pool is started" << endl;

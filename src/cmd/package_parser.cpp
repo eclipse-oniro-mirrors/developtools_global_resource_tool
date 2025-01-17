@@ -15,6 +15,7 @@
 
 #include "cmd/package_parser.h"
 #include <algorithm>
+#include <climits>
 #include "resconfig_parser.h"
 #include "resource_util.h"
 #include "select_compile_parse.h"
@@ -46,6 +47,7 @@ const struct option PackageParser::CMD_OPTS[] = {
     { "target-config", required_argument, nullptr, Option::TARGET_CONFIG},
     { "defined-sysids", required_argument, nullptr, Option::DEFINED_SYSIDS},
     { "compressed-config", required_argument, nullptr, Option::COMPRESSED_CONFIG},
+    { "thread", required_argument, nullptr, Option::THREAD},
     { 0, 0, 0, 0},
 };
 
@@ -410,6 +412,31 @@ uint32_t PackageParser::ParseTargetConfig(const string& argValue)
     return RESTOOL_SUCCESS;
 }
 
+uint32_t PackageParser::ParseThread(const std::string &argValue)
+{
+    if (argValue.empty()) {
+        return RESTOOL_SUCCESS;
+    }
+    char *end;
+    errno = 0;
+    int count = static_cast<int>(strtol(argValue.c_str(), &end, 10));
+    if (end == argValue.c_str() || errno == ERANGE || *end != '\0' || count == INT_MIN || count == INT_MAX) {
+        cerr << "Error: Invalid thread count: " << argValue << endl;
+        return RESTOOL_ERROR;
+    }
+    if (count <= 0) {
+        cerr << "Error: Invalid thread count: " << count << endl;
+        return RESTOOL_ERROR;
+    }
+    threadCount_ = count;
+    return RESTOOL_SUCCESS;
+}
+
+size_t PackageParser::GetThreadCount() const
+{
+    return threadCount_;
+}
+
 const TargetConfig &PackageParser::GetTargetConfigValues() const
 {
     return targetConfig_;
@@ -483,6 +510,7 @@ void PackageParser::InitCommand()
     handles_.emplace(Option::TARGET_CONFIG, bind(&PackageParser::ParseTargetConfig, this, _1));
     handles_.emplace(Option::DEFINED_SYSIDS, bind(&PackageParser::AddSysIdDefined, this, _1));
     handles_.emplace(Option::COMPRESSED_CONFIG, bind(&PackageParser::AddCompressionPath, this, _1));
+    handles_.emplace(Option::THREAD, bind(&PackageParser::ParseThread, this, _1));
 }
 
 uint32_t PackageParser::HandleProcess(int c, const string& argValue)
