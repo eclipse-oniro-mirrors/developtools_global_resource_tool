@@ -14,9 +14,12 @@
  */
 
 #include "resource_directory.h"
+
 #include <iostream>
+
 #include "file_entry.h"
 #include "resource_util.h"
+#include "restool_errors.h"
 #include "select_compile_parse.h"
 
 namespace OHOS {
@@ -37,7 +40,7 @@ bool ResourceDirectory::ScanResources(const string &resourcesDir, function<bool(
         }
 
         if (it->IsFile()) {
-            cerr << "Error: '" << it->GetFilePath().GetPath() << "' not directory." << endl;
+            PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_DIR).FormatCause(it->GetFilePath().GetPath().c_str()));
             return false;
         }
 
@@ -58,7 +61,7 @@ bool ResourceDirectory::ScanResourceLimitKeyDir(const string &resourceTypeDir, c
 {
     vector<KeyParam> keyParams;
     if (!KeyParser::Parse(limitKey, keyParams)) {
-        cerr << "Error: invalid limit key '" << limitKey << "'." << NEW_LINE_PATH << resourceTypeDir << endl;
+        PrintError(GetError(ERR_CODE_INVALID_LIMIT_KEY).FormatCause(limitKey.c_str()).SetPosition(resourceTypeDir));
         return false;
     }
     if (!SelectCompileParse::IsSelectCompile(keyParams)) {
@@ -76,19 +79,19 @@ bool ResourceDirectory::ScanResourceLimitKeyDir(const string &resourceTypeDir, c
         }
 
         if (it->IsFile()) {
-            cerr << "Error: '" << dirPath << "' not directory." << endl;
+            PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_DIR).FormatCause(dirPath.c_str()));
             return false;
         }
 
         ResType type = ResourceUtil::GetResTypeByDir(fileCluster);
         if (type == ResType::INVALID_RES_TYPE) {
-            string array("[ ");
+            string array;
             for (auto item : g_fileClusterMap) {
                 array.append("'" + item.first + "' ");
             }
-            array.append("]");
-            cerr << "Error: '" << dirPath << "', invalid directory name '";
-            cerr << fileCluster << "', must in " << array << endl;
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_DIR)
+                           .FormatCause(fileCluster.c_str(), ResourceUtil::GetAllResTypeDirs().c_str())
+                           .SetPosition(dirPath));
             return false;
         }
         DirectoryInfo info = { limitKey, fileCluster, dirPath, keyParams, type };

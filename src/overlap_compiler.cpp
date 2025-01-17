@@ -31,7 +31,7 @@ bool OverlapCompiler::IsIgnore(const FileInfo &fileInfo)
     lock_guard<mutex> lock(mutex_);
     string output = GetOutputFilePath(fileInfo);
     if (!g_hapResourceSet.emplace(output).second || !g_resourceSet.emplace(output).second) {
-        cerr << "Warning: '" << fileInfo.filePath << "' is defined repeatedly." << endl;
+        cout << "Warning: '" << fileInfo.filePath << "' is defined repeatedly." << endl;
         return true;
     }
     return false;

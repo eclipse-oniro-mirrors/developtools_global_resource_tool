@@ -76,14 +76,15 @@ bool GenericCompiler::PostMediaFile(const FileInfo &fileInfo, const std::string 
 
     auto index = output.find_last_of(SEPARATOR_FILE);
     if (index == string::npos) {
-        cerr << "Error: invalid output path." << NEW_LINE_PATH << output << endl;
+        PrintError(GetError(ERR_CODE_INVALID_FILE_PATH).FormatCause(output.c_str()));
         return false;
     }
     string data = output.substr(index + 1);
     data = moduleName_ + SEPARATOR + RESOURCES_DIR + SEPARATOR + \
         fileInfo.limitKey + SEPARATOR + fileInfo.fileCluster + SEPARATOR + data;
     if (!resourceItem.SetData(reinterpret_cast<const int8_t *>(data.c_str()), data.length())) {
-        cerr << "Error: resource item set data fail, data: " << data << NEW_LINE_PATH << fileInfo.filePath << endl;
+        PrintError(GetError(ERR_CODE_SET_DATA_ERROR).FormatCause(resourceItem.GetName().c_str())
+            .SetPosition(fileInfo.filePath));
         return false;
     }
 
@@ -108,7 +109,7 @@ bool GenericCompiler::IsIgnore(const FileInfo &fileInfo)
     if (g_hapResourceSet.count(output)) {
         g_hapResourceSet.erase(output);
     } else if (!g_resourceSet.emplace(output).second) {
-        cerr << "Warning: '" << fileInfo.filePath << "' is defined repeatedly." << endl;
+        cout << "Warning: '" << fileInfo.filePath << "' is defined repeatedly." << endl;
         return true;
     }
     return false;
@@ -118,7 +119,6 @@ bool GenericCompiler::CopyMediaFile(const FileInfo &fileInfo, std::string &outpu
 {
     string outputFolder = GetOutputFolder(fileInfo);
     if (!ResourceUtil::CreateDirs(outputFolder)) {
-        cerr << "Error: CopyMediaFile create dirs failed." << NEW_LINE_PATH << outputFolder << endl;
         return false;
     }
     output = GetOutputFilePath(fileInfo);

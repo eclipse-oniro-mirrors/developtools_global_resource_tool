@@ -27,12 +27,12 @@ using namespace std;
 uint32_t DumpParserBase::ParseOption(int argc, char *argv[], int currentIndex)
 {
     if (currentIndex >= argc) {
-        cerr << "Error: missing input path." << endl;
+        PrintError(ERR_CODE_DUMP_MISSING_INPUT);
         return RESTOOL_ERROR;
     }
     inputPath_ = ResourceUtil::RealPath(argv[currentIndex]);
     if (inputPath_.empty()) {
-        cerr << "Error: invalid input path: '" << argv[currentIndex] << "'" << endl;
+        PrintError(ERR_CODE_DUMP_INVALID_INPUT);
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;

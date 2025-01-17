@@ -92,12 +92,11 @@ uint32_t ReferenceParser::ParseRefInResourceItem(ResourceItem &resourceItem) con
     bool update = false;
     if (IsStringOfResourceItem(resType)) {
         if (resourceItem.GetData() == nullptr) {
-            cerr << "Error: parse ref in resource item failed, data is null." << endl;
+            PrintError(GetError(ERR_CODE_ITEM_DATA_NULL).FormatCause(resourceItem.GetName().c_str()));
             return RESTOOL_ERROR;
         }
         data = string(reinterpret_cast<const char *>(resourceItem.GetData()), resourceItem.GetDataLength());
-        if (!ParseRefString(data, update)) {
-            cerr << "Error: please check JSON file." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        if (!ParseRefString(data, update, resourceItem.GetFilePath())) {
             return RESTOOL_ERROR;
         }
         if (!update) {
@@ -112,8 +111,8 @@ uint32_t ReferenceParser::ParseRefInResourceItem(ResourceItem &resourceItem) con
         }
     }
     if (update && !resourceItem.SetData(reinterpret_cast<const int8_t *>(data.c_str()), data.length())) {
-        cerr << "Error: set data fail. name = '" << resourceItem.GetName() << "' data = '" << data << "'.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+         PrintError(GetError(ERR_CODE_SET_DATA_ERROR).FormatCause(resourceItem.GetName().c_str())
+            .SetPosition(resourceItem.GetFilePath()));
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
@@ -150,9 +149,9 @@ uint32_t ReferenceParser::ParseRefInJsonFile(ResourceItem &resourceItem, const s
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ReferenceParser::ParseRefInString(string &value, bool &update) const
+uint32_t ReferenceParser::ParseRefInString(string &value, bool &update, const std::string &filePath) const
 {
-    if (ParseRefString(value, update)) {
+    if (ParseRefString(value, update, filePath)) {
         return RESTOOL_SUCCESS;
     }
     return RESTOOL_ERROR;
@@ -164,12 +163,11 @@ bool ReferenceParser::ParseRefJson(const string &from, const string &to)
         return false;
     }
     if (!root_ || !cJSON_IsObject(root_)) {
-        cerr << "Error: JSON file parsing failed, please check the JSON file." << NEW_LINE_PATH << from << endl;
+        PrintError(GetError(ERR_CODE_JSON_FORMAT_ERROR).SetPosition(from));
         return RESTOOL_ERROR;
     }
     bool needSave = false;
-    if (!ParseRefJsonImpl(root_, needSave)) {
-        cerr << "Error: please check JSON file." << NEW_LINE_PATH << from << endl;
+    if (!ParseRefJsonImpl(root_, needSave, from)) {
         return false;
     }
 
@@ -190,21 +188,20 @@ bool ReferenceParser::ParseRefJson(const string &from, const string &to)
 bool ReferenceParser::ParseRefResourceItemData(const ResourceItem &resourceItem, string &data, bool &update) const
 {
     if (resourceItem.GetData() == nullptr) {
-        cerr << "Error: parse ref resource item data failed, data is null." << endl;
+        PrintError(GetError(ERR_CODE_ITEM_DATA_NULL).FormatCause(resourceItem.GetName().c_str()));
         return false;
     }
     data = string(reinterpret_cast<const char *>(resourceItem.GetData()), resourceItem.GetDataLength());
     vector<string> contents = ResourceUtil::DecomposeStrings(data);
     if (contents.empty()) {
-        cerr << "Error: DecomposeStrings fail. name = '" << resourceItem.GetName() << "' data = '" << data << "'.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_ARRAY_DECOMPOSE_ERROR).FormatCause(resourceItem.GetName().c_str(), data.c_str())
+            .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
 
     for (auto &content : contents) {
         bool flag = false;
-        if (!ParseRefString(content, flag)) {
-            cerr << "Error: please check JSON file." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        if (!ParseRefString(content, flag, resourceItem.GetFilePath())) {
             return false;
         }
         update = (update || flag);
@@ -216,8 +213,8 @@ bool ReferenceParser::ParseRefResourceItemData(const ResourceItem &resourceItem,
 
     data = ResourceUtil::ComposeStrings(contents);
     if (data.empty()) {
-        cerr << "Error: ComposeStrings fail. name = '" << resourceItem.GetName();
-        cerr << "'  contents size is " << contents.size() << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_ARRAY_COMPOSE_ERROR).FormatCause(resourceItem.GetName().c_str(), contents.size())
+            .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
     return true;
@@ -278,20 +275,21 @@ bool ReferenceParser::ParseRefString(string &key) const
     return ParseRefString(key, update);
 }
 
-bool ReferenceParser::ParseRefString(std::string &key, bool &update) const
+bool ReferenceParser::ParseRefString(std::string &key, bool &update, const std::string &filePath) const
 {
     update = false;
     if (regex_match(key, regex("^\\$ohos:[a-z]+:.+"))) {
         update = true;
-        return ParseRefImpl(key, ID_OHOS_REFS, true);
+        return ParseRefImpl(key, ID_OHOS_REFS, true, filePath);
     } else if (regex_match(key, regex("^\\$[a-z]+:.+"))) {
         update = true;
-        return ParseRefImpl(key, ID_REFS, false);
+        return ParseRefImpl(key, ID_REFS, false, filePath);
     }
     return true;
 }
 
-bool ReferenceParser::ParseRefImpl(string &key, const map<string, ResType> &refs, bool isSystem) const
+bool ReferenceParser::ParseRefImpl(string &key, const map<string, ResType> &refs, bool isSystem,
+    const std::string &filePath) const
 {
     for (const auto &ref : refs) {
         smatch result;
@@ -306,7 +304,7 @@ bool ReferenceParser::ParseRefImpl(string &key, const map<string, ResType> &refs
                 id = idWorker_.GetSystemId(ref.second, name);
             }
             if (id < 0) {
-                cerr << "Error: ref '" << key << "' don't be defined." << endl;
+                PrintError(GetError(ERR_CODE_REF_NOT_DEFINED).FormatCause(key.c_str()).SetPosition(filePath));
                 return false;
             }
 
@@ -317,22 +315,26 @@ bool ReferenceParser::ParseRefImpl(string &key, const map<string, ResType> &refs
             return true;
         }
     }
-    cerr << "Error: reference '" << key << "' invalid." << endl;
+    string refer;
+    for (const auto &ref:refs) {
+        refer.append(ref.first).append(" ");
+    }
+    PrintError(GetError(ERR_CODE_INVALID_RESOURCE_REF).FormatCause(key.c_str(), refer.c_str()).SetPosition(filePath));
     return false;
 }
 
-bool ReferenceParser::ParseRefJsonImpl(cJSON *node, bool &needSave) const
+bool ReferenceParser::ParseRefJsonImpl(cJSON *node, bool &needSave, const std::string &filePath) const
 {
     if (cJSON_IsObject(node) || cJSON_IsArray(node)) {
         for (cJSON *item = node->child; item; item = item->next) {
-            if (!ParseRefJsonImpl(item, needSave)) {
+            if (!ParseRefJsonImpl(item, needSave, filePath)) {
                 return false;
             }
         }
     }  else if (cJSON_IsString(node)) {
         string value = node->valuestring;
         bool update = false;
-        if (!ParseRefString(value, update)) {
+        if (!ParseRefString(value, update, filePath)) {
             return false;
         }
         if (update) {

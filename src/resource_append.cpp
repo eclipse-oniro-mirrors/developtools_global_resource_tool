@@ -86,7 +86,7 @@ bool ResourceAppend::Combine(const string &folderPath)
     itemsForModule_.clear();
     for (const auto &child : entry.GetChilds()) {
         if (!child->IsFile()) {
-            cerr << "Error:" << child->GetFilePath().GetPath()  << " not file" << endl;
+            PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_FILE).FormatCause(child->GetFilePath().GetPath().c_str()));
             return false;
         }
         if (child->GetFilePath().GetFilename() == ID_DEFINED_FILE) {
@@ -119,7 +119,7 @@ bool ResourceAppend::ScanResources(const string &resourcePath, const string &out
     if (!ResourceUtil::FileExist(resourcePath)) {
         string filePath = FileEntry::FilePath(outputPath).Append(ResourceUtil::GenerateHash(resourcePath)).GetPath();
         if (remove(filePath.c_str()) != 0) {
-            cerr << "Error: remove failed '" << filePath << "', reason: " << strerror(errno) << endl;
+            PrintError(GetError(ERR_CODE_REMOVE_FILE_ERROR).FormatCause(filePath.c_str(), strerror(errno)));
             return false;
         }
         return true;
@@ -176,7 +176,7 @@ bool ResourceAppend::ScanSubLimitkeyResources(const FileEntry entry, const strin
         }
 
         if (child->IsFile()) {
-            cerr << "Error: " << child->GetFilePath().GetPath() << " not directory" << endl;
+            PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_DIR).FormatCause(child->GetFilePath().GetPath().c_str()));
             return false;
         }
 
@@ -205,8 +205,8 @@ bool ResourceAppend::ScanLimitKey(const unique_ptr<FileEntry> &entry,
 {
     vector<KeyParam> keyParams;
     if (!KeyParser::Parse(limitKey, keyParams)) {
-        cerr << "Error: invalid limit key '" << limitKey << "'.";
-        cerr << NEW_LINE_PATH << entry->GetFilePath().GetPath() << endl;
+        PrintError(GetError(ERR_CODE_INVALID_LIMIT_KEY).FormatCause(limitKey.c_str())
+            .SetPosition(entry->GetFilePath().GetPath().c_str()));
         return false;
     }
 
@@ -217,13 +217,15 @@ bool ResourceAppend::ScanLimitKey(const unique_ptr<FileEntry> &entry,
         }
 
         if (child->IsFile()) {
-            cerr << "Error: " << child->GetFilePath().GetPath() << " not directory" << endl;
+            PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_DIR).FormatCause(child->GetFilePath().GetPath().c_str()));
             return false;
         }
 
         ResType resType = ResourceUtil::GetResTypeByDir(fileCuster);
         if (resType == ResType::INVALID_RES_TYPE) {
-            cerr << "Error: invalid resType." << NEW_LINE_PATH << child->GetFilePath().GetPath() << endl;
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_DIR)
+                           .FormatCause(fileCuster.c_str(), ResourceUtil::GetAllResTypeDirs().c_str())
+                           .SetPosition(child->GetFilePath().GetPath().c_str()));
             return false;
         }
 
@@ -246,7 +248,7 @@ bool ResourceAppend::ScanFiles(const unique_ptr<FileEntry> &entry,
         }
 
         if (!child->IsFile()) {
-            cerr << "Error: '" << child->GetFilePath().GetPath() << "' not file." << endl;
+            PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_FILE).FormatCause(child->GetFilePath().GetPath().c_str()));
             return false;
         }
 
@@ -308,14 +310,16 @@ bool ResourceAppend::ScanSingleFile(const string &filePath, const string &output
     string fileCuster = path.GetParent().GetFilename();
     ResType resType = ResourceUtil::GetResTypeByDir(fileCuster);
     if (resType == ResType::INVALID_RES_TYPE) {
-        cerr << "Error: invalid resType." << NEW_LINE_PATH << filePath << endl;
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_DIR)
+                       .FormatCause(fileCuster.c_str(), ResourceUtil::GetAllResTypeDirs().c_str())
+                       .SetPosition(filePath));
         return false;
     }
 
     string limitKey = path.GetParent().GetParent().GetFilename();
     vector<KeyParam> keyParams;
     if (!KeyParser::Parse(limitKey, keyParams)) {
-        cerr << "Error: invalid limit key." << NEW_LINE_PATH << filePath << endl;
+        PrintError(GetError(ERR_CODE_INVALID_LIMIT_KEY).FormatCause(limitKey.c_str()).SetPosition(filePath));
         return false;
     }
 
@@ -333,13 +337,15 @@ bool ResourceAppend::WriteFileInner(ostringstream &outStream, const string &outp
     HANDLE hWriteFile = CreateFile(outputPath.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE,
         nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (hWriteFile == INVALID_HANDLE_VALUE) {
-        cerr << "Error: '" << outputPath << "' " << GetLastError() << endl;
+        PrintError(GetError(ERR_CODE_CREATE_FILE_ERROR)
+            .FormatCause(outputPath.c_str(), to_string(GetLastError()).c_str()));
         return false;
     }
 
     DWORD writeBytes;
     if (!WriteFile(hWriteFile, outStream.str().c_str(), outStream.tellp(), &writeBytes, nullptr)) {
-        cerr << "Error: write '" << outputPath << "' " << GetLastError() << endl;
+        PrintError(GetError(ERR_CODE_OPEN_FILE_ERROR)
+            .FormatCause(outputPath.c_str(), to_string(GetLastError()).c_str()));
         CloseHandle(hWriteFile);
         return false;
     }
@@ -347,7 +353,7 @@ bool ResourceAppend::WriteFileInner(ostringstream &outStream, const string &outp
 #else
     ofstream out(outputPath, ofstream::out | ofstream::binary);
     if (!out.is_open()) {
-        cerr << "Error: open failed '" << outputPath << "', reason: " << strerror(errno) << endl;
+        PrintError(GetError(ERR_CODE_OPEN_FILE_ERROR).FormatCause(outputPath.c_str(), strerror(errno)));
         return false;
     }
     out << outStream.str();
@@ -392,7 +398,7 @@ bool ResourceAppend::LoadResourceItem(const string &filePath)
 #else
     ifstream in(filePath, ifstream::in | ifstream::binary);
     if (!in.is_open()) {
-        cerr << "Error: open failed '" << filePath << "', reason: " << strerror(errno) << endl;
+        PrintError(GetError(ERR_CODE_OPEN_FILE_ERROR).FormatCause(filePath.c_str(), strerror(errno)));
         return false;
     }
     
@@ -400,7 +406,7 @@ bool ResourceAppend::LoadResourceItem(const string &filePath)
     int32_t length = in.tellg();
     in.seekg(0, in.beg);
     if (length <= 0) {
-        cerr << "Error: invalid file size = " << length << NEW_LINE_PATH << filePath << endl;
+        PrintError(GetError(ERR_CODE_FILE_EMPTY).FormatCause(filePath.c_str()));
         return false;
     }
     char buffer[length];
@@ -440,7 +446,7 @@ bool ResourceAppend::WriteRawFilesOrResFiles(const string &filePath, const strin
 {
     string::size_type pos = filePath.find(limit);
     if (pos == string::npos) {
-        cerr << "Error: invalid file path." << NEW_LINE_PATH << filePath << endl;
+        PrintError(GetError(ERR_CODE_INVALID_FILE_PATH).FormatCause(filePath.c_str()));
         return false;
     }
 
@@ -471,6 +477,9 @@ bool ResourceAppend::Push(const shared_ptr<ResourceItem> &resourceItem)
     string idName = ResourceUtil::GetIdName(resourceItem->GetName(), resourceItem->GetResType());
     int64_t id = IdWorker::GetInstance().GenerateId(resourceItem->GetResType(), idName);
     if (id < 0) {
+        PrintError(GetError(ERR_CODE_RESOURCE_ID_NOT_DEFINED)
+                       .FormatCause(ResourceUtil::ResTypeToString(resourceItem->GetResType()).c_str(),
+                                    resourceItem->GetName().c_str()));
         return false;
     }
 
@@ -628,9 +637,9 @@ bool ResourceAppend::CheckModuleResourceItem(const shared_ptr<ResourceItem> &res
     });
 
     if (ret != result->second.end()) {
-        cerr << "Error: '" << resourceItem->GetName() << "' conflict, first declared.";
-        cerr << NEW_LINE_PATH << (*ret)->GetFilePath() << endl;
-        cerr << "but declared again." << NEW_LINE_PATH << resourceItem->GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_RESOURCE_DUPLICATE)
+                       .FormatCause(resourceItem->GetName().c_str(), (*ret)->GetFilePath().c_str(),
+                                    resourceItem->GetFilePath().c_str()));
         return false;
     }
 
@@ -645,21 +654,24 @@ bool ResourceAppend::LoadResourceItemWin(const string &filePath)
     HANDLE hReadFile = CreateFile(filePath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
         FILE_ATTRIBUTE_READONLY | FILE_FLAG_RANDOM_ACCESS, nullptr);
     if (hReadFile == INVALID_HANDLE_VALUE) {
-        cerr << "Error: "<< GetLastError() << NEW_LINE_PATH << filePath << endl;
+        PrintError(GetError(ERR_CODE_CREATE_FILE_ERROR)
+            .FormatCause(filePath.c_str(), to_string(GetLastError()).c_str()).SetPosition(filePath));
         return result;
     }
 
     DWORD fileSize = GetFileSize(hReadFile, nullptr);
     HANDLE hFileMap = CreateFileMapping(hReadFile, nullptr, PAGE_READONLY, 0, fileSize, nullptr);
     if (hFileMap == INVALID_HANDLE_VALUE) {
-        cerr << "Error: create file mapping " << GetLastError() << endl;
+        string errMsg = "create mapping error: " + to_string(GetLastError());
+        PrintError(GetError(ERR_CODE_FILE_MAP_ERROR).FormatCause(errMsg.c_str()).SetPosition(filePath));
         CloseHandle(hReadFile);
         return result;
     }
 
     void* pBuffer = MapViewOfFile(hFileMap, FILE_MAP_READ, 0, 0, 0);
     if (pBuffer == nullptr) {
-        cerr << "Error: map view of file " << GetLastError() << endl;
+        string errMsg = "map view of file error: " + to_string(GetLastError());
+        PrintError(GetError(ERR_CODE_FILE_MAP_ERROR).FormatCause(errMsg.c_str()).SetPosition(filePath));
         CloseHandle(hReadFile);
         return result;
     }

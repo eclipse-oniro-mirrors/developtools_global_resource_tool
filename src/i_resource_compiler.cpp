@@ -52,7 +52,7 @@ uint32_t IResourceCompiler::Compile(const vector<DirectoryInfo> &directoryInfos)
             }
 
             if (!it->IsFile()) {
-                cerr << "Error: '" << it->GetFilePath().GetPath() << "' must be a file." << endl;
+                PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_FILE).FormatCause(it->GetFilePath().GetPath().c_str()));
                 return RESTOOL_ERROR;
             }
 
@@ -120,8 +120,9 @@ uint32_t IResourceCompiler::PostCommit()
     for (const auto &nameInfo : nameInfos_) {
         int64_t id = idWorker.GenerateId(nameInfo.first.first, nameInfo.first.second);
         if (id < 0) {
-            cerr << "Error: restype='" << ResourceUtil::ResTypeToString(nameInfo.first.first) << "' name='";
-            cerr << nameInfo.first.second << "' id not be defined." << endl;
+            PrintError(GetError(ERR_CODE_RESOURCE_ID_NOT_DEFINED)
+                           .FormatCause(ResourceUtil::ResTypeToString(nameInfo.first.first).c_str(),
+                                        nameInfo.first.second.c_str()));
             return RESTOOL_ERROR;
         }
         resourceInfos_.emplace(id, nameInfo.second);
@@ -133,9 +134,8 @@ bool IResourceCompiler::MergeResourceItem(const ResourceItem &resourceItem)
 {
     string idName = ResourceUtil::GetIdName(resourceItem.GetName(), resourceItem.GetResType());
     if (!ResourceUtil::IsValidName(idName)) {
-        cerr << "Error: invalid idName '" << idName << "'."<< NEW_LINE_PATH <<  resourceItem.GetFilePath() << endl;
-        cerr << SOLUTIONS << endl;
-        cerr << SOLUTIONS_ARROW << "Modify the name '" << idName << "' to match [a-zA-Z0-9_]." << endl;
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_NAME).FormatCause(idName.c_str())
+            .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
     auto item = nameInfos_.find(make_pair(resourceItem.GetResType(), idName));
@@ -148,8 +148,8 @@ bool IResourceCompiler::MergeResourceItem(const ResourceItem &resourceItem)
         return resourceItem.GetLimitKey() == iter.GetLimitKey();
     });
     if (ret != item->second.end()) {
-        cerr << "Error: resource '" << idName << "' first declared." << NEW_LINE_PATH << ret->GetFilePath() << endl;
-        cerr << "but declare again." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_RESOURCE_DUPLICATE)
+                       .FormatCause(idName.c_str(), ret->GetFilePath().c_str(), resourceItem.GetFilePath().c_str()));
         return false;
     }
     nameInfos_[make_pair(resourceItem.GetResType(), idName)].push_back(resourceItem);

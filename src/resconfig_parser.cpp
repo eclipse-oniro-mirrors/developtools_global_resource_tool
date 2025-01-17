@@ -34,7 +34,7 @@ uint32_t ResConfigParser::Init(const string &filePath, HandleBack callback)
         return RESTOOL_ERROR;
     }
     if (!root_ || !cJSON_IsObject(root_)) {
-        cerr << "Error: JSON file parsing failed, please check the JSON file." << NEW_LINE_PATH << filePath << endl;
+        PrintError(GetError(ERR_CODE_JSON_FORMAT_ERROR).SetPosition(filePath));
         return RESTOOL_ERROR;
     }
     if (!callback) {
@@ -99,7 +99,7 @@ void ResConfigParser::InitFileListCommand(HandleBack callback)
 uint32_t ResConfigParser::GetString(const cJSON *node, int c, HandleBack callback)
 {
     if (!node || !cJSON_IsString(node)) {
-        cerr << "Error: GetString node not string. Option = " << c << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(node->string, "string"));
         return RESTOOL_ERROR;
     }
 
@@ -112,12 +112,13 @@ uint32_t ResConfigParser::GetString(const cJSON *node, int c, HandleBack callbac
 uint32_t ResConfigParser::GetArray(const cJSON *node, int c, HandleBack callback)
 {
     if (!node || !cJSON_IsArray(node)) {
-        cerr << "Error: GetArray node not array. Option = " << c << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(node->string, "array"));
         return RESTOOL_ERROR;
     }
 
     for (cJSON *item = node->child; item; item = item->next) {
         if (!cJSON_IsString(item)) {
+            PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(item->string, "string"));
             return RESTOOL_ERROR;
         }
         if (callback(c, item->valuestring) != RESTOOL_SUCCESS) {
@@ -130,7 +131,7 @@ uint32_t ResConfigParser::GetArray(const cJSON *node, int c, HandleBack callback
 uint32_t ResConfigParser::GetModuleNames(const cJSON *node, int c, HandleBack callback)
 {
     if (!node) {
-        cerr << "Error: GetModuleNames node is null. Option = " << c << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause(node->string));
         return RESTOOL_ERROR;
     }
     if (cJSON_IsString(node)) {
@@ -156,7 +157,7 @@ uint32_t ResConfigParser::GetModuleNames(const cJSON *node, int c, HandleBack ca
 uint32_t ResConfigParser::GetBool(const cJSON *node, int c, HandleBack callback)
 {
     if (!node || !cJSON_IsBool(node)) {
-        cerr << "Error: GetBool node not bool. Option = " << c << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(node->string, "bool"));
         return RESTOOL_ERROR;
     }
 
@@ -169,7 +170,7 @@ uint32_t ResConfigParser::GetBool(const cJSON *node, int c, HandleBack callback)
 uint32_t ResConfigParser::GetNumber(const cJSON *node, int c, HandleBack callback)
 {
     if (!node || !cJSON_IsNumber(node)) {
-        cerr << "Error: GetNumber node not number. Option = " << c << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(node->string, "number"));
         return RESTOOL_ERROR;
     }
 

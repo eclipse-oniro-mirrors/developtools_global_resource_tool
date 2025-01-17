@@ -28,7 +28,7 @@ unique_ptr<ResourcePack> ResourcePackerFactory::CreatePacker(PackType type, cons
     } else if (type == PackType::OVERLAP) {
         return make_unique<ResourceOverlap>(packageParser);
     } else {
-        cerr << "Error: ResourcePackerFactory: Unknown input PackType." << endl;
+        cout << "Warning: ResourcePackerFactory: Unknown input PackType." << endl;
         return nullptr;
     }
 }

@@ -125,13 +125,13 @@ uint32_t PackageParser::AddInput(const string& argValue)
 {
     string inputPath = ResourceUtil::RealPath(argValue);
     if (inputPath.empty()) {
-        cerr << "Error: invalid input '" << argValue << "'" << endl;
+        PrintError(GetError(ERR_CODE_INVALID_INPUT).FormatCause(argValue.c_str()));
         return RESTOOL_ERROR;
     }
 
     auto ret = find_if(inputs_.begin(), inputs_.end(), [inputPath](auto iter) {return inputPath == iter;});
     if (ret != inputs_.end()) {
-        cerr << "Error: repeat input '" << argValue << "'" << endl;
+        PrintError(GetError(ERR_CODE_DUPLICATE_INPUT).FormatCause(argValue.c_str()));
         return RESTOOL_ERROR;
     }
 
@@ -153,14 +153,14 @@ uint32_t PackageParser::AddSysIdDefined(const std::string& argValue)
 {
     string sysIdDefinedPath = ResourceUtil::RealPath(argValue);
     if (sysIdDefinedPath.empty()) {
-        cerr << "Error: invalid system id_defined.json path: '" << argValue << "'" << endl;
+        PrintError(GetError(ERR_CODE_INVALID_SYSTEM_ID_DEFINED).FormatCause(argValue.c_str()));
         return RESTOOL_ERROR;
     }
 
     auto ret = find_if(sysIdDefinedPaths_.begin(), sysIdDefinedPaths_.end(),
         [sysIdDefinedPath](auto iter) {return sysIdDefinedPath == iter;});
     if (ret != sysIdDefinedPaths_.end()) {
-        cerr << "Error: repeat system id_defined.json path: '" << argValue << "'" << endl;
+        PrintError(GetError(ERR_CODE_DUPLICATE_SYSTEM_ID_DEFINED).FormatCause(argValue.c_str()));
         return RESTOOL_ERROR;
     }
 
@@ -174,7 +174,7 @@ uint32_t PackageParser::AddSysIdDefined(const std::string& argValue)
 uint32_t PackageParser::AddPackageName(const string& argValue)
 {
     if (!packageName_.empty()) {
-        cerr << "Error: double package name " << packageName_ << " vs " << argValue << endl;
+        PrintError(GetError(ERR_CODE_DOUBLE_PACKAGE_NAME).FormatCause(packageName_.c_str(), argValue.c_str()));
         return RESTOOL_ERROR;
     }
 
@@ -185,13 +185,13 @@ uint32_t PackageParser::AddPackageName(const string& argValue)
 uint32_t PackageParser::AddOutput(const string& argValue)
 {
     if (!output_.empty()) {
-        cerr << "Error: double output " << output_ << " vs " << argValue << endl;
+        PrintError(GetError(ERR_CODE_DOUBLE_OUTPUT).FormatCause(output_.c_str(), argValue.c_str()));
         return RESTOOL_ERROR;
     }
 
     output_ = ResourceUtil::RealPath(argValue);
     if (output_.empty()) {
-        cerr << "Error: invalid output '" << argValue << "'" << endl;
+        PrintError(GetError(ERR_CODE_INVALID_OUTPUT).FormatCause(argValue.c_str()));
         return RESTOOL_ERROR;
     }
     if (!IsAscii(output_)) {
@@ -200,10 +200,10 @@ uint32_t PackageParser::AddOutput(const string& argValue)
     return RESTOOL_SUCCESS;
 }
 
-uint32_t PackageParser::AddResourceHeader(const string& argValue)
+uint32_t PackageParser::AddResourceHeader(const string &argValue)
 {
     if (find(resourceHeaderPaths_.begin(), resourceHeaderPaths_.end(), argValue) != resourceHeaderPaths_.end()) {
-        cerr << "Error: '" << argValue << "' input duplicated." << endl;
+        PrintError(GetError(ERR_CODE_DUPLICATE_RES_HEADER).FormatCause(argValue.c_str()));
         return RESTOOL_ERROR;
     }
     resourceHeaderPaths_.push_back(argValue);
@@ -226,7 +226,7 @@ uint32_t PackageParser::PrintVersion()
 uint32_t PackageParser::AddMoudleNames(const string& argValue)
 {
     if (!moduleNames_.empty()) {
-        cerr << "Error: -m double module name '" << argValue << "'" << endl;
+        PrintError(GetError(ERR_CODE_DOUBLE_MODULES).FormatCause(argValue.c_str()));
         return RESTOOL_ERROR;
     }
 
@@ -234,7 +234,7 @@ uint32_t PackageParser::AddMoudleNames(const string& argValue)
     for (auto it = moduleNames_.begin(); it != moduleNames_.end(); it++) {
         auto ret = find_if(moduleNames_.begin(), moduleNames_.end(), [it](auto iter) {return *it == iter;});
         if (ret != it) {
-            cerr << "Error: double module name '" << *it << "'" << endl;
+            PrintError(GetError(ERR_CODE_DUPLICATE_MODULE_NAME).FormatCause(it->c_str()));
             return RESTOOL_ERROR;
         }
     }
@@ -244,7 +244,7 @@ uint32_t PackageParser::AddMoudleNames(const string& argValue)
 uint32_t PackageParser::AddConfig(const string& argValue)
 {
     if (!configPath_.empty()) {
-        cerr << "Error: double config.json " << configPath_ << " vs " << argValue << endl;
+        PrintError(GetError(ERR_CODE_DOUBLE_CONFIG_JSON).FormatCause(configPath_.c_str(), argValue.c_str()));
         return RESTOOL_ERROR;
     }
 
@@ -258,7 +258,7 @@ uint32_t PackageParser::AddStartId(const string& argValue)
     if ((startId_ >= 0x01000000 && startId_ < 0x06ffffff) || (startId_ >= 0x08000000 && startId_ < 0xffffffff)) {
         return RESTOOL_SUCCESS;
     }
-    cerr << "Error: invalid start id " << argValue << endl;
+    PrintError(GetError(ERR_CODE_INVALID_START_ID).FormatCause(argValue.c_str()));
     return RESTOOL_ERROR;
 }
 
@@ -275,17 +275,17 @@ void PackageParser::AdaptResourcesDirForInput()
 uint32_t PackageParser::CheckParam() const
 {
     if (inputs_.empty() && append_.empty()) {
-        cerr << "Error: input path empty." << endl;
+        PrintError(GetError(ERR_CODE_INVALID_INPUT).FormatCause(""));
         return RESTOOL_ERROR;
     }
 
     if (output_.empty()) {
-        cerr << "Error: output path empty." << endl;
+        PrintError(GetError(ERR_CODE_INVALID_OUTPUT).FormatCause(""));
         return RESTOOL_ERROR;
     }
 
     if (isTtargetConfig_ && !append_.empty()) {
-        cerr << "Error: -x and --target-config cannot be used together." << endl;
+        PrintError(GetError(ERR_CODE_EXCLUSIVE_OPTION).FormatCause("-x", "--target-config"));
         return RESTOOL_ERROR;
     }
 
@@ -294,17 +294,17 @@ uint32_t PackageParser::CheckParam() const
     }
 
     if (packageName_.empty()) {
-        cerr << "Error: package name empty." << endl;
+        PrintError(ERR_CODE_PACKAGE_NAME_EMPTY);
         return RESTOOL_ERROR;
     }
 
     if (resourceHeaderPaths_.empty()) {
-        cerr << "Error: resource header path empty." << endl;
+        PrintError(ERR_CODE_RES_HEADER_PATH_EMPTY);
         return RESTOOL_ERROR;
     }
 
     if (startId_ != 0 && !idDefinedInputPath_.empty()) {
-        cerr << "Error: set -e and --defined-ids cannot be used together." << endl;
+        PrintError(GetError(ERR_CODE_EXCLUSIVE_OPTION).FormatCause("-e", "--defined-ids"));
         return RESTOOL_ERROR;
     }
 
@@ -325,7 +325,7 @@ uint32_t PackageParser::AddAppend(const string& argValue)
     }
     auto ret = find_if(append_.begin(), append_.end(), [appendPath](auto iter) {return appendPath == iter;});
     if (ret != append_.end()) {
-        cerr << "Error: repeat input '" << argValue << "'" << endl;
+        PrintError(GetError(ERR_CODE_DUPLICATE_APPEND_PATH).FormatCause(argValue.c_str()));
         return RESTOOL_ERROR;
     }
     if (!IsAscii(appendPath)) {
@@ -401,11 +401,11 @@ bool PackageParser::GetIconCheck() const
 uint32_t PackageParser::ParseTargetConfig(const string& argValue)
 {
     if (isTtargetConfig_) {
-        cerr << "Error: repeat input '--target-config'" << endl;
+        PrintError(ERR_CODE_DOUBLE_TARGET_CONFIG);
         return RESTOOL_ERROR;
     }
     if (!SelectCompileParse::ParseTargetConfig(argValue, targetConfig_)) {
-        cerr << "Error: '" << argValue << "' is not valid parameter." << endl;
+        PrintError(GetError(ERR_CODE_INVALID_TARGET_CONFIG).FormatCause(argValue.c_str()));
         return RESTOOL_ERROR;
     }
     isTtargetConfig_ = true;
@@ -421,11 +421,11 @@ uint32_t PackageParser::ParseThread(const std::string &argValue)
     errno = 0;
     int count = static_cast<int>(strtol(argValue.c_str(), &end, 10));
     if (end == argValue.c_str() || errno == ERANGE || *end != '\0' || count == INT_MIN || count == INT_MAX) {
-        cerr << "Error: Invalid thread count: " << argValue << endl;
+        PrintError(GetError(ERR_CODE_INVALID_THREAD_COUNT).FormatCause(argValue.c_str()));
         return RESTOOL_ERROR;
     }
     if (count <= 0) {
-        cerr << "Error: Invalid thread count: " << count << endl;
+        PrintError(GetError(ERR_CODE_INVALID_THREAD_COUNT).FormatCause(argValue.c_str()));
         return RESTOOL_ERROR;
     }
     threadCount_ = count;
@@ -457,7 +457,7 @@ bool PackageParser::IsAscii(const string& argValue) const
         return false;
     });
     if (result != argValue.end()) {
-        cerr << "Error: '" << argValue << "' must be ASCII" << endl;
+        PrintError(GetError(ERR_CODE_NON_ASCII).FormatCause(argValue.c_str()));
         return false;
     }
 #endif
@@ -467,7 +467,7 @@ bool PackageParser::IsAscii(const string& argValue) const
 uint32_t PackageParser::AddCompressionPath(const std::string& argValue)
 {
     if (!compressionPath_.empty()) {
-        cerr << "Error: double opt-compression.json " << compressionPath_ << " vs " << argValue << endl;
+        PrintError(GetError(ERR_CODE_DOUBLE_COMPRESSION_PATH).FormatCause(compressionPath_.c_str(), argValue.c_str()));
         return RESTOOL_ERROR;
     }
     compressionPath_ = argValue;
@@ -513,11 +513,11 @@ void PackageParser::InitCommand()
     handles_.emplace(Option::THREAD, bind(&PackageParser::ParseThread, this, _1));
 }
 
-uint32_t PackageParser::HandleProcess(int c, const string& argValue)
+uint32_t PackageParser::HandleProcess(int c, const string &argValue)
 {
     auto handler = handles_.find(c);
     if (handler == handles_.end()) {
-        cerr << "Error: unsupport " << c << endl;
+        cout << "Warning: unsupport " << c << endl;
         return RESTOOL_ERROR;
     }
     return handler->second(argValue);
@@ -544,7 +544,7 @@ uint32_t PackageParser::CheckError(int argc, char *argv[], int c, int optIndex)
         }
         string curOpt = (optarg == nullptr) ? argv[optind - 1] : argv[optind - 2];
         if (curOpt != ("--" + string(CMD_OPTS[optIndex].name))) {
-            cerr << "Error: unknown option " << curOpt << endl;
+            PrintError(GetError(ERR_CODE_UNKNOWN_OPTION).FormatCause(curOpt.c_str()));
             return RESTOOL_ERROR;
         }
     }
@@ -553,7 +553,7 @@ uint32_t PackageParser::CheckError(int argc, char *argv[], int c, int optIndex)
             return RESTOOL_ERROR;
         }
         string optUnknown = (optopt == 0) ? argv[optind - 1] : ("-" + string(1, optopt));
-        cerr << "Error: unknown option " << optUnknown << endl;
+        PrintError(GetError(ERR_CODE_UNKNOWN_OPTION).FormatCause(optUnknown.c_str()));
         return RESTOOL_ERROR;
     }
     if (c == Option::NO_ARGUMENT) {
@@ -561,9 +561,9 @@ uint32_t PackageParser::CheckError(int argc, char *argv[], int c, int optIndex)
             return RESTOOL_ERROR;
         }
         if (IsLongOpt(argc, argv)) {
-            cerr << "Error: option " << argv[optind - 1] << " must have argument" << endl;
+            PrintError(GetError(ERR_CODE_MISSING_ARGUMENT).FormatCause(argv[optind - 1]));
         } else {
-            cerr << "Error: unknown option " << argv[optind - 1] << endl;
+            PrintError(GetError(ERR_CODE_UNKNOWN_OPTION).FormatCause(argv[optind - 1]));
         }
         return RESTOOL_ERROR;
     }
@@ -583,11 +583,11 @@ uint32_t PackageParser::ParseCommand(int argc, char *argv[])
             if (argc == optind) {
                 break;
             }
-            string errmsg = "Error: invalid arguments : ";
+            string errmsg;
             for (int i = optind; i < argc; i++) {
                 errmsg.append(argv[i]).append(" ");
             }
-            cerr << errmsg << endl;
+            PrintError(GetError(ERR_CODE_INVALID_ARGUMENT).FormatCause(errmsg.c_str()));
             return RESTOOL_ERROR;
         }
 

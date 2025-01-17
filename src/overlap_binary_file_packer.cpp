@@ -37,7 +37,6 @@ uint32_t OverlapBinaryFilePacker::CopyBinaryFile(const vector<string> &inputs)
     BinaryFilePacker rawFilePacker(packageParser_, moduleName_);
     std::future<uint32_t> copyFuture = rawFilePacker.CopyBinaryFileAsync(resource);
     if (copyFuture.get() != RESTOOL_SUCCESS) {
-        cerr << "Error: copy binary file failed." << endl;
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
@@ -47,7 +46,7 @@ bool OverlapBinaryFilePacker::IsDuplicated(const unique_ptr<FileEntry> &entry, s
 {
     lock_guard<mutex> lock(mutex_);
     if (!g_hapResourceSet.emplace(subPath).second || !g_resourceSet.emplace(subPath).second) {
-        cerr << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly in hap." << endl;
+        cout << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly in hap." << endl;
         return true;
     }
     return false;

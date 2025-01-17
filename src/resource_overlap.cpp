@@ -34,13 +34,11 @@ uint32_t ResourceOverlap::Pack()
     cout << "Info: Pack: overlap pack mode" << endl;
 
     if (InitResourcePack() != RESTOOL_SUCCESS) {
-        cerr << "Error: ResourcePack init failed." << endl;
         return RESTOOL_ERROR;
     }
 
     ResourceMerge resourceMerge;
     if (resourceMerge.Init(packageParser_) != RESTOOL_SUCCESS) {
-        cerr << "Error: resourceMerge init failed." << endl;
         return RESTOOL_ERROR;
     }
 
@@ -49,18 +47,15 @@ uint32_t ResourceOverlap::Pack()
 
     if (LoadHapResources() != RESTOOL_SUCCESS) {
         rawFilePacker.StopCopy();
-        cerr << "Error: load hap resources failed." << endl;
         return RESTOOL_ERROR;
     }
 
     if (PackResources(resourceMerge) != RESTOOL_SUCCESS) {
         rawFilePacker.StopCopy();
-        cerr << "Error: pack resources failed." << endl;
         return RESTOOL_ERROR;
     }
 
     if (copyFuture.get() != RESTOOL_SUCCESS) {
-        cerr << "Error: copy binary file failed." << endl;
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
@@ -72,14 +67,12 @@ uint32_t ResourceOverlap::ScanResources(const std::vector<std::string> &inputs, 
     fileManager.SetModuleName(moduleName_);
     vector<string> hapResInput{inputs[0]};
     if (fileManager.ScanModules(hapResInput, output, configJson_.IsHar()) != RESTOOL_SUCCESS) {
-        cerr << "Error: scan hap error" << endl;
         return RESTOOL_ERROR;
     }
     fileManager.SetScanHap(false);
 
     vector<string> resInputs(inputs.begin() + 1, inputs.end());
     if (fileManager.ScanModules(resInputs, output, configJson_.IsHar()) != RESTOOL_SUCCESS) {
-        cerr << "Error: scan resources error" << endl;
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;

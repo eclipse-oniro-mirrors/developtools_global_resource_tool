@@ -59,12 +59,10 @@ uint32_t BinaryFilePacker::CopyBinaryFile(const string &input)
 {
     string rawfilePath = FileEntry::FilePath(input).Append(RAW_FILE_DIR).GetPath();
     if (CopyBinaryFile(rawfilePath, RAW_FILE_DIR) == RESTOOL_ERROR) {
-        cerr << "Error: copy raw file failed." << NEW_LINE_PATH << rawfilePath << endl;
         return RESTOOL_ERROR;
     }
     string resfilePath = FileEntry::FilePath(input).Append(RES_FILE_DIR).GetPath();
     if (CopyBinaryFile(resfilePath, RES_FILE_DIR) == RESTOOL_ERROR) {
-        cerr << "Error: copy res file failed." << NEW_LINE_PATH << resfilePath << endl;
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
@@ -77,7 +75,7 @@ uint32_t BinaryFilePacker::CopyBinaryFile(const string &filePath, const string &
     }
 
     if (!FileEntry::IsDirectory(filePath)) {
-        cerr << "Error: '" << filePath << "' not directory." << endl;
+        PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_DIR).FormatCause(filePath.c_str()));
         return RESTOOL_ERROR;
     }
 
@@ -91,7 +89,6 @@ uint32_t BinaryFilePacker::CopyBinaryFile(const string &filePath, const string &
 uint32_t BinaryFilePacker::CopyBinaryFileImpl(const string &src, const string &dst)
 {
     if (!ResourceUtil::CreateDirs(dst)) {
-        cerr << "Error: copy rawfile of resfile, create dirs failed." << NEW_LINE_PATH << dst << endl;
         return RESTOOL_ERROR;
     }
 
@@ -136,7 +133,7 @@ bool BinaryFilePacker::IsDuplicated(const unique_ptr<FileEntry> &entry, string s
     if (g_hapResourceSet.count(subPath)) {
         g_hapResourceSet.erase(subPath);
     } else if (!g_resourceSet.emplace(subPath).second) {
-        cerr << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly." << endl;
+        cout << "Warning: '" << entry->GetFilePath().GetPath() << "' is defined repeatedly." << endl;
         return true;
     }
     return false;
@@ -146,13 +143,11 @@ uint32_t BinaryFilePacker::CopySingleFile(const std::string &path, std::string &
 {
     if (moduleName_ == "har" || CompressionParser::GetCompressionParser()->GetDefaultCompress()) {
         if (!ResourceUtil::CopyFileInner(path, subPath)) {
-            cerr << "Error: copy rawfile or resfile failed." << NEW_LINE_PATH << path << endl;
             return RESTOOL_ERROR;
         }
         return RESTOOL_SUCCESS;
     }
     if (!CompressionParser::GetCompressionParser()->CopyAndTranscode(path, subPath, true)) {
-        cerr << "Error: copy rawfile or resfile, CopyAndTranscode failed." << NEW_LINE_PATH << endl;
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
@@ -167,7 +162,6 @@ uint32_t BinaryFilePacker::CheckCopyResults()
         }
         uint32_t ret = res.get();
         if (ret != RESTOOL_SUCCESS) {
-            cerr << "Error: copy binary file failed." << endl;
             return RESTOOL_ERROR;
         }
     }

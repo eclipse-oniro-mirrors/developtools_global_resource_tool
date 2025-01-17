@@ -121,7 +121,7 @@ uint32_t ResourcePack::InitModule()
             for_each(moduleNames.begin(), moduleNames.end(), [&buffer](const auto &iter) {
                     buffer.append(" " + iter + " ");
                 });
-            cerr << "Error: module name '" << moduleName_ << "' not in [" << buffer << "]" << endl;
+            PrintError(GetError(ERR_CODE_MODULE_NAME_NOT_FOUND).FormatCause(moduleName_.c_str(), buffer.c_str()));
             return RESTOOL_ERROR;
         }
 
@@ -150,7 +150,7 @@ uint32_t ResourcePack::InitOutput() const
     string resourcesPath = FileEntry::FilePath(output).Append(RESOURCES_DIR).GetPath();
     if (ResourceUtil::FileExist(resourcesPath)) {
         if (!forceWrite) {
-            cerr << "Error: output path exists." << NEW_LINE_PATH << resourcesPath << endl;
+            PrintError(GetError(ERR_CODE_OUTPUT_EXIST).SetPosition(resourcesPath));
             return RESTOOL_ERROR;
         }
 
@@ -185,7 +185,7 @@ uint32_t ResourcePack::InitConfigJson()
     string config = packageParser_.GetConfig();
     if (config.empty()) {
         if (packageParser_.GetInputs().size() > 1) {
-            cerr << "Error: more input path, -j config.json empty" << endl;
+            PrintError(ERR_CODE_CONFIG_JSON_MISSING);
             return RESTOOL_ERROR;
         }
         config = ResourceUtil::GetMainPath(packageParser_.GetInputs()[0]).Append(CONFIG_JSON).GetPath();
@@ -301,13 +301,11 @@ uint32_t ResourcePack::Pack()
     cout << "Info: Pack: normal pack mode" << endl;
 
     if (InitResourcePack() != RESTOOL_SUCCESS) {
-        cerr << "Error: ResourcePack init failed." << endl;
         return RESTOOL_ERROR;
     }
 
     ResourceMerge resourceMerge;
     if (resourceMerge.Init(packageParser_) != RESTOOL_SUCCESS) {
-        cerr << "Error: resourceMerge init failed." << endl;
         return RESTOOL_ERROR;
     }
 
@@ -316,12 +314,10 @@ uint32_t ResourcePack::Pack()
 
     if (PackResources(resourceMerge) != RESTOOL_SUCCESS) {
         rawFilePacker.StopCopy();
-        cerr << "Error: pack resources failed." << endl;
         return RESTOOL_ERROR;
     }
 
     if (copyFuture.get() != RESTOOL_SUCCESS) {
-        cerr << "Error: copy binary file failed." << endl;
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
@@ -376,27 +372,24 @@ uint32_t ResourcePack::HandleFeature()
     ConfigParser entryJson(jsonFile);
     entryJson.SetDependEntry(true);
     if (entryJson.Init() != RESTOOL_SUCCESS) {
-        cerr << "Error: config json invalid." << NEW_LINE_PATH << jsonFile << endl;
         return RESTOOL_ERROR;
     }
 
     int64_t labelId = entryJson.GetAbilityLabelId();
     int64_t iconId = entryJson.GetAbilityIconId();
     if (labelId <= 0 || iconId <= 0) {
-        cerr << "Error: Entry MainAbility must have 'icon' and 'label'." << endl;
+        PrintError(ERR_CODE_FA_ENTRY_NO_ICON_LABEL);
         return RESTOOL_ERROR;
     }
     string path = FileEntry::FilePath(featureDependEntry).Append(RESOURCE_INDEX_FILE).GetPath();
     map<int64_t, vector<ResourceItem>> resInfoLocal;
     ResourceTable resourceTable;
     if (resourceTable.LoadResTable(path, resInfoLocal) != RESTOOL_SUCCESS) {
-        cerr << "Error: LoadResTable fail." << endl;
         return RESTOOL_ERROR;
     }
     jsonFile = FileEntry::FilePath(output).Append(CONFIG_JSON).GetPath();
     ConfigParser config(jsonFile);
     if (config.Init() != RESTOOL_SUCCESS) {
-        cerr << "Error: config json invalid." << NEW_LINE_PATH << jsonFile << endl;
         return RESTOOL_ERROR;
     }
     vector<ResourceItem> items;
@@ -422,13 +415,13 @@ uint32_t ResourcePack::FindResourceItems(const map<int64_t, vector<ResourceItem>
 {
     auto ret = resInfoLocal.find(id);
     if (ret == resInfoLocal.end()) {
-        cerr << "Error: FindResourceItems don't found '" << id << "'." << endl;
+        PrintError(GetError(ERR_CODE_RESOURCE_INDEX_ID_NOT_FOUND).FormatCause(id));
         return RESTOOL_ERROR;
     }
     ResType type = ResType::INVALID_RES_TYPE;
     items = ret->second;
     if (items.empty()) {
-        cerr << "Error: FindResourceItems resource item empty '" << id << "'." << endl;
+        PrintError(GetError(ERR_CODE_RESOURCE_INDEX_ITEM_EMPTY).FormatCause(id));
         return RESTOOL_ERROR;
     }
     for (auto &it : items) {
@@ -436,8 +429,9 @@ uint32_t ResourcePack::FindResourceItems(const map<int64_t, vector<ResourceItem>
             type = it.GetResType();
         }
         if (type != it.GetResType()) {
-            cerr << "Error: FindResourceItems invalid restype '" << ResourceUtil::ResTypeToString(type);
-            cerr << "' vs '"  << ResourceUtil::ResTypeToString(it.GetResType()) << "'." << endl;
+            string typePre = ResourceUtil::ResTypeToString(type);
+            string typeCur = ResourceUtil::ResTypeToString(it.GetResType());
+            PrintError(GetError(ERR_CODE_RESOURCE_INDEX_INVALID_RESTYPE).FormatCause(typeCur.c_str(), typePre.c_str()));
             return RESTOOL_ERROR;
         }
     }
@@ -450,8 +444,9 @@ uint32_t ResourcePack::HandleLabel(vector<ResourceItem> &items, ConfigParser &co
     string idName;
     for (auto it : items) {
         if (it.GetResType() != ResType::STRING) {
-            cerr << "Error: HandleLabel invalid restype '";
-            cerr << ResourceUtil::ResTypeToString(it.GetResType()) << "'." << endl;
+            PrintError(GetError(ERR_CODE_RESOURCE_INDEX_INVALID_RESTYPE)
+                           .FormatCause(ResourceUtil::ResTypeToString(it.GetResType()).c_str(),
+                                        ResourceUtil::ResTypeToString(ResType::STRING).c_str()));
             return RESTOOL_ERROR;
         }
         idName = it.GetName() + "_entry";
@@ -486,11 +481,9 @@ bool ResourcePack::CopyIcon(string &dataPath, const string &idName, string &file
     string dstDir = FileEntry::FilePath(output).Append(dataPath).GetParent().GetPath();
     string dst = FileEntry::FilePath(dstDir).Append(fileName).GetPath();
     if (!ResourceUtil::CreateDirs(dstDir)) {
-        cerr << "Error: Create Dirs fail '" << dstDir << "'."<< endl;
         return false;
     }
     if (!ResourceUtil::CopyFileInner(source, dst)) {
-        cerr << "Error: copy file fail from '" << source << "' to '" << dst << "'." << endl;
         return false;
     }
     return true;
@@ -502,14 +495,15 @@ uint32_t ResourcePack::HandleIcon(vector<ResourceItem> &items, ConfigParser &con
     string idName;
     for (auto it : items) {
         if (it.GetResType() != ResType::MEDIA) {
-            cerr << "Error: HandleLabel invalid restype '";
-            cerr << ResourceUtil::ResTypeToString(it.GetResType()) << "'." << endl;
+            PrintError(GetError(ERR_CODE_RESOURCE_INDEX_INVALID_RESTYPE)
+                           .FormatCause(ResourceUtil::ResTypeToString(it.GetResType()).c_str(),
+                                        ResourceUtil::ResTypeToString(ResType::MEDIA).c_str()));
             return RESTOOL_ERROR;
         }
         string dataPath(reinterpret_cast<const char *>(it.GetData()));
         string::size_type pos = dataPath.find_first_of(SEPARATOR);
         if (pos == string::npos) {
-            cerr << "Error: HandleIcon invalid '" << dataPath << "'."<< endl;
+            PrintError(GetError(ERR_CODE_INVALID_FILE_PATH).FormatCause(dataPath.c_str()));
             return RESTOOL_ERROR;
         }
         dataPath = dataPath.substr(pos + 1);
