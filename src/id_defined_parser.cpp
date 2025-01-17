@@ -15,6 +15,7 @@
 
 #include "id_defined_parser.h"
 #include "file_entry.h"
+#include "file_manager.h"
 #include "resource_util.h"
 
 namespace OHOS {
@@ -57,7 +58,8 @@ uint32_t IdDefinedParser::Init()
         }
     }
     //SystemResource.hap only defined by base/element/id_defined.json
-    if (isSys) {
+    string moduleName = FileManager::GetInstance().GetModuleName();
+    if (isSys && moduleName == "entry") {
         return RESTOOL_SUCCESS;
     }
     if (!idDefinedInput.empty() && ResourceUtil::FileExist(idDefinedInput)) {

@@ -101,6 +101,7 @@ uint32_t ResourcePack::InitModule()
     }
 
     moduleName_ = configJson_.GetModuleName();
+    FileManager::GetInstance().SetModuleName(moduleName_);
     vector<string> moduleNames = packageParser_.GetModuleNames();
     IdWorker &idWorker = IdWorker::GetInstance();
     int64_t startId = static_cast<int64_t>(packageParser_.GetStartId());
