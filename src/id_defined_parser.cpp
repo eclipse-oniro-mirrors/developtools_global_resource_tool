@@ -50,7 +50,7 @@ uint32_t IdDefinedParser::Init()
             idDefinedPath = ResourceUtil::GetBaseElementPath(inputPath).Append(ID_DEFINED_FILE).GetPath();
         }
         if (ResourceUtil::FileExist(idDefinedPath) && startId > 0) {
-            cerr << "Error: the set start_id and id_defined.json cannot be used together." << endl;
+            PrintError(ERR_CODE_EXCLUSIVE_START_ID);
             return RESTOOL_ERROR;
         }
         if (Init(idDefinedPath, isSys) != RESTOOL_SUCCESS) {
@@ -94,26 +94,25 @@ uint32_t IdDefinedParser::Init(const string &filePath, bool isSystem)
     }
 
     if (!root_ || !cJSON_IsObject(root_)) {
-        cerr << "Error: JSON file parsing failed, please check the JSON file.";
-        cerr << NEW_LINE_PATH << filePath << endl;
+        PrintError(GetError(ERR_CODE_JSON_FORMAT_ERROR).SetPosition(filePath));
         return RESTOOL_ERROR;
     }
 
     cJSON *recordNode = cJSON_GetObjectItem(root_, "record");
     if (!recordNode || !cJSON_IsArray(recordNode)) {
-        cerr << "Error: 'record' node is not an array, please check the JSON file.";
-        cerr << NEW_LINE_PATH << filePath << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("record", "array").SetPosition(filePath));
         return RESTOOL_ERROR;
     }
     if (cJSON_GetArraySize(recordNode) == 0) {
-        cerr << "Warning: 'record' node is empty, please check the JSON file.";
-        cerr << NEW_LINE_PATH << filePath << endl;
+        cout << "Warning: 'record' node is empty, please check the JSON file.";
+        cout << NEW_LINE_PATH << filePath << endl;
         return RESTOOL_SUCCESS;
     }
     int64_t startSysId = 0;
     if (isSystem) {
         startSysId = GetStartId();
         if (startSysId < 0) {
+            PrintError(ERR_CODE_ID_DEFINED_INVALID_START_ID);
             return RESTOOL_ERROR;
         }
     }
@@ -140,6 +139,8 @@ uint32_t IdDefinedParser::IdDefinedToResourceIds(const std::string &filePath, co
     for (cJSON *item = record->child; item; item = item->next) {
         index++;
         if (!cJSON_IsObject(item)) {
+            PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("record's child", "object")
+                .SetPosition(filePath));
             return RESTOOL_ERROR;
         }
         ResourceId resourceId;
@@ -165,7 +166,8 @@ bool IdDefinedParser::PushResourceId(const std::string &filePath, const Resource
     ResType resType = ResourceUtil::GetResTypeFromString(resourceId.type);
     auto ret = idDefineds_.emplace(resourceId.id, resourceId);
     if (!ret.second) {
-        cerr << "Error: '" << ret.first->second.name << "' and '" << resourceId.name << "' defind the same ID." << endl;
+        PrintError(GetError(ERR_CODE_ID_DEFINED_SAME_ID).FormatCause(ret.first->second.name.c_str(),
+            resourceId.name.c_str()));
         return false;
     }
     auto checkRet = checkDefinedIds_.find(filePath);
@@ -175,7 +177,8 @@ bool IdDefinedParser::PushResourceId(const std::string &filePath, const Resource
             return (resType == iterItem.first)  && (resourceId.name == iterItem.second);
         });
         if (found) {
-            cerr << "Error: the same resource of '" << resourceId.name << "' exists in the " << filePath << endl;
+            PrintError(GetError(ERR_CODE_ID_DEFINED_SAME_RESOURCE).FormatCause(resourceId.name.c_str(),
+                filePath.c_str()));
             return false;
         }
         checkRet->second.push_back(make_pair(resType, resourceId.name));
@@ -195,23 +198,21 @@ bool IdDefinedParser::PushResourceId(const std::string &filePath, const Resource
 bool IdDefinedParser::ParseId(const cJSON *origId, ResourceId &resourceId)
 {
     if (!origId) {
-        cerr << "Error: id_defined.json seq =" << resourceId.seq << " id empty." << endl;
+        PrintError(GetError(ERR_CODE_ID_DEFINED_NODE_MISSING).FormatCause(resourceId.seq, "id"));
         return false;
     }
     if (!cJSON_IsString(origId)) {
-        cerr << "Error: id_defined.json seq =" << resourceId.seq << " id not string." << endl;
+        PrintError(GetError(ERR_CODE_ID_DEFINED_NODE_MISMATCH).FormatCause(resourceId.seq, "id", "string"));
         return false;
     }
     string idStr = origId->valuestring;
     if (!ResourceUtil::CheckHexStr(idStr)) {
-        cerr << "Error: id_defined.json seq =" << resourceId.seq;
-        cerr << " id must be a hex string, eg:^0[xX][0-9a-fA-F]{8}" << endl;
+        PrintError(GetError(ERR_CODE_ID_DEFINED_INVALID_ID).FormatCause(resourceId.seq));
         return false;
     }
     int64_t id = strtoll(idStr.c_str(), nullptr, 16);
     if (id < 0x01000000 || (id > 0x06FFFFFF && id < 0x08000000) || id > 0xFFFFFFFF) {
-        cerr << "Error: id_defined.json seq = "<< resourceId.seq;
-        cerr << " id must in [0x01000000,0x06FFFFFF],[0x08000000,0xFFFFFFFF]." << endl;
+        PrintError(GetError(ERR_CODE_ID_DEFINED_ID_OUT_RANGE).FormatCause(resourceId.seq));
         return false;
     }
     resourceId.id = id;
@@ -221,16 +222,15 @@ bool IdDefinedParser::ParseId(const cJSON *origId, ResourceId &resourceId)
 bool IdDefinedParser::ParseType(const cJSON *type, ResourceId &resourceId)
 {
     if (!type) {
-        cerr << "Error: id_defined.json seq =" << resourceId.seq << " type empty." << endl;
+        PrintError(GetError(ERR_CODE_ID_DEFINED_NODE_MISSING).FormatCause(resourceId.seq, "type"));
         return false;
     }
     if (!cJSON_IsString(type)) {
-        cerr << "Error: id_defined.json seq =" << resourceId.seq << " type not string." << endl;
+        PrintError(GetError(ERR_CODE_ID_DEFINED_NODE_MISMATCH).FormatCause(resourceId.seq, "type", "string"));
         return false;
     }
     if (ResourceUtil::GetResTypeFromString(type->valuestring) == ResType::INVALID_RES_TYPE) {
-        cerr << "Error: id_defined.json seq =" << resourceId.seq << " type '";
-        cerr << type->valuestring << "' invalid." << endl;
+        PrintError(GetError(ERR_CODE_ID_DEFINED_INVALID_TYPE).FormatCause(resourceId.seq, type->valuestring));
         return false;
     }
     resourceId.type = type->valuestring;
@@ -240,20 +240,19 @@ bool IdDefinedParser::ParseType(const cJSON *type, ResourceId &resourceId)
 bool IdDefinedParser::ParseName(const cJSON *name, ResourceId &resourceId)
 {
     if (!name) {
-        cerr << "Error: id_defined.json seq =" << resourceId.seq << " name empty." << endl;
+        PrintError(GetError(ERR_CODE_ID_DEFINED_NODE_MISSING).FormatCause(resourceId.seq, "name"));
         return false;
     }
     if (!cJSON_IsString(name)) {
-        cerr << "Error: id_defined.json seq =" << resourceId.seq << " name not string." << endl;
+        PrintError(GetError(ERR_CODE_ID_DEFINED_NODE_MISMATCH).FormatCause(resourceId.seq, "name", "string"));
         return false;
     }
     resourceId.name = name->valuestring;
     if (type_ == ResourceIdCluster::RES_ID_SYS &&
         (static_cast<uint64_t>(resourceId.id) & static_cast<uint64_t>(START_SYS_ID)) == START_SYS_ID &&
         !ResourceUtil::IsValidName(resourceId.name)) {
-        cerr << "Error: id_defined.json."<< endl;
-        cerr << SOLUTIONS << endl;
-        cerr << SOLUTIONS_ARROW << "Modify the name '" << resourceId.name << "' to match [a-zA-Z0-9_]." << endl;
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_NAME).FormatCause(resourceId.name.c_str())
+            .SetPosition("id_defined.json"));
         return false;
     }
     return true;
@@ -262,17 +261,16 @@ bool IdDefinedParser::ParseName(const cJSON *name, ResourceId &resourceId)
 bool IdDefinedParser::ParseOrder(const cJSON *order, ResourceId &resourceId)
 {
     if (!order) {
-        cerr << "Error: id_defined.json seq =" << resourceId.seq << " order empty." << endl;
+        PrintError(GetError(ERR_CODE_ID_DEFINED_NODE_MISSING).FormatCause(resourceId.seq, "order"));
         return false;
     }
     if (!ResourceUtil::IsIntValue(order)) {
-        cerr << "Error: id_defined.json seq =" << resourceId.seq << " order not int." << endl;
+        PrintError(GetError(ERR_CODE_ID_DEFINED_NODE_MISMATCH).FormatCause(resourceId.seq, "order", "int"));
         return false;
     }
     int64_t orderId = order->valueint;
     if (orderId != resourceId.seq) {
-        cerr << "Error: id_defined.json seq =" << resourceId.seq << " order value ";
-        cerr << orderId << " vs expect " << resourceId.seq << endl;
+        PrintError(GetError(ERR_CODE_ID_DEFINED_ORDER_MISMATCH).FormatCause(resourceId.seq, orderId, resourceId.seq));
         return false;
     }
     resourceId.id = resourceId.id + orderId;
@@ -283,18 +281,18 @@ int64_t IdDefinedParser::GetStartId() const
 {
     cJSON *startIdNode = cJSON_GetObjectItem(root_, "startId");
     if (!startIdNode) {
-        cerr << "Error: id_defined.json 'startId' empty." << endl;
+        cout << "Warning: id_defined.json 'startId' empty." << endl;
         return -1;
     }
 
     if (!cJSON_IsString(startIdNode)) {
-        cerr << "Error: id_defined.json 'startId' not string." << endl;
+        cout << "Warning: id_defined.json 'startId' not string." << endl;
         return -1;
     }
 
     int64_t id = strtoll(startIdNode->valuestring, nullptr, 16);
     if (id == 0) {
-        cerr << "Error: id_defined.json 'startId' is not a valid hexadecimal string." << endl;
+        cout << "Warning: id_defined.json 'startId' is not a valid hexadecimal string." << endl;
         return -1;
     }
     return id;

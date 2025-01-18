@@ -119,7 +119,7 @@ int64_t IdWorker::GenerateAppId(ResType resType, const string &name)
     }
 
     if (appId_ > maxId_) {
-        cerr << "Error: id count exceed " << appId_ << ">" << maxId_ << endl;
+        PrintError(GetError(ERR_CODE_RESOURCE_ID_EXCEED).FormatCause(appId_, maxId_));
         return -1;
     }
     int64_t id = -1;
@@ -151,7 +151,7 @@ int64_t IdWorker::GetCurId()
         }
         appId_++;
     }
-    cerr << "Error: id count exceed in id_defined." << appId_ << ">" << maxId_ << endl;
+    PrintError(GetError(ERR_CODE_RESOURCE_ID_EXCEED).FormatCause(appId_, maxId_).SetPosition("id_defined.json"));
     return -1;
 }
 

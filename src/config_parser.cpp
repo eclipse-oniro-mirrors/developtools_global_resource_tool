@@ -79,7 +79,7 @@ uint32_t ConfigParser::Init()
     }
 
     if (!root_ || !cJSON_IsObject(root_)) {
-        cerr << "Error: JSON file parsing failed, please check the JSON file." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_FORMAT_ERROR).SetPosition(filePath_));
         return RESTOOL_ERROR;
     }
 
@@ -135,7 +135,7 @@ bool ConfigParser::SetAppIcon(string &icon, int64_t id)
 {
     cJSON *appNode = cJSON_GetObjectItem(root_, "app");
     if (!appNode || !cJSON_IsObject(appNode)) {
-        cerr << "Error: 'app' not object" << endl;
+        cout << "Warning: 'app' not object" << endl;
         return false;
     }
     cJSON_AddStringToObject(appNode, "icon", icon.c_str());
@@ -147,7 +147,7 @@ bool ConfigParser::SetAppLabel(string &label, int64_t id)
 {
     cJSON *appNode = cJSON_GetObjectItem(root_, "app");
     if (!appNode || !cJSON_IsObject(appNode)) {
-        cerr << "Error: 'app' not object" << endl;
+        cout << "Warning: 'app' not object" << endl;
         return false;
     }
     cJSON_AddStringToObject(appNode, "label", label.c_str());
@@ -159,11 +159,11 @@ bool ConfigParser::SetAppLabel(string &label, int64_t id)
 bool ConfigParser::ParseModule(cJSON *moduleNode)
 {
     if (!moduleNode || !cJSON_IsObject(moduleNode)) {
-        cerr << "Error: 'module' not object." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("module", "object").SetPosition(filePath_));
         return false;
     }
     if (cJSON_GetArraySize(moduleNode) == 0) {
-        cerr << "Error: 'module' empty." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_EMPTY).FormatCause("module").SetPosition(filePath_));
         return false;
     }
 
@@ -184,7 +184,7 @@ bool ConfigParser::ParseModule(cJSON *moduleNode)
     }
 
     if (moduleName_.empty()) {
-        cerr << "Error: 'name' don't found in 'module'." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause("module.name").SetPosition(filePath_));
         return false;
     }
     cJSON *typeNode = cJSON_GetObjectItem(moduleNode, "type");
@@ -213,11 +213,11 @@ bool ConfigParser::ParseAbilitiesForDepend(cJSON *moduleNode)
 bool ConfigParser::ParseDistro(cJSON *distroNode)
 {
     if (!distroNode || !cJSON_IsObject(distroNode)) {
-        cerr << "Error: 'distro' not object." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("distro", "object").SetPosition(filePath_));
         return false;
     }
     if (cJSON_GetArraySize(distroNode) == 0) {
-        cerr << "Error: 'distro' empty." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_EMPTY).FormatCause("distro").SetPosition(filePath_));
         return false;
     }
 
@@ -227,7 +227,7 @@ bool ConfigParser::ParseDistro(cJSON *distroNode)
     }
 
     if (moduleName_.empty()) {
-        cerr << "Error: 'moduleName' don't found in 'distro'." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause("distro.moduleName").SetPosition(filePath_));
         return false;
     }
 
@@ -241,7 +241,7 @@ bool ConfigParser::ParseDistro(cJSON *distroNode)
 bool ConfigParser::ParseAbilities(const cJSON *abilities)
 {
     if (!abilities || !cJSON_IsArray(abilities)) {
-        cerr << "Error: abilites not array." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("abilites", "array").SetPosition(filePath_));
         return false;
     }
     if (cJSON_GetArraySize(abilities) == 0) {
@@ -250,7 +250,6 @@ bool ConfigParser::ParseAbilities(const cJSON *abilities)
     bool isMainAbility = false;
     for (cJSON *ability = abilities->child; ability; ability = ability->next) {
         if (!ParseAbilitiy(ability, isMainAbility)) {
-            cerr << "Error: ParseAbilitiy fail." << endl;
             return false;
         }
         if (isMainAbility) {
@@ -263,7 +262,7 @@ bool ConfigParser::ParseAbilities(const cJSON *abilities)
 bool ConfigParser::ParseAbilitiy(const cJSON *ability, bool &isMainAbility)
 {
     if (!ability || !cJSON_IsObject(ability)) {
-        cerr << "Error: ability not object." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("ability", "object").SetPosition(filePath_));
         return false;
     }
     if (cJSON_GetArraySize(ability) == 0) {
@@ -271,6 +270,8 @@ bool ConfigParser::ParseAbilitiy(const cJSON *ability, bool &isMainAbility)
     }
     cJSON *nameNode = cJSON_GetObjectItem(ability, "name");
     if (!nameNode || !cJSON_IsString(nameNode)) {
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("ability.name", "object")
+            .SetPosition(filePath_));
         return false;
     }
     string name = nameNode->valuestring;
@@ -285,7 +286,7 @@ bool ConfigParser::ParseAbilitiy(const cJSON *ability, bool &isMainAbility)
         abilityIconId_ = iconIdNode->valueint;
     }
     if (abilityIconId_ <= 0) {
-        cerr << "Error: iconId don't found in 'ability'." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause("ability.iconId").SetPosition(filePath_));
         return false;
     }
     cJSON *labelIdNode = cJSON_GetObjectItem(ability, "labelId");
@@ -293,7 +294,7 @@ bool ConfigParser::ParseAbilitiy(const cJSON *ability, bool &isMainAbility)
         abilityLabelId_ = labelIdNode->valueint;
     }
     if (abilityLabelId_ <= 0) {
-        cerr << "Error: labelId don't found in 'ability'." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause("ability.labelId").SetPosition(filePath_));
         return false;
     }
     isMainAbility = true;
@@ -363,20 +364,21 @@ bool ConfigParser::ParseRefImpl(cJSON *parent, const string &key, cJSON *node)
 bool ConfigParser::ParseJsonArrayRef(cJSON *parent, const string &key, cJSON *node)
 {
     if (!node || !cJSON_IsArray(node)) {
-        cerr << "Error: '"<< key << "'node not array." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(key.c_str(), "array")
+            .SetPosition(filePath_));
         return false;
     }
     cJSON *array = cJSON_CreateArray();
     for (cJSON *item = node->child; item; item = item->next) {
         if (!cJSON_IsString(item)) {
-            cerr << "Error: '" << key << "' invalid value." << NEW_LINE_PATH << filePath_ << endl;
+            PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(string(key + " value").c_str(), "string")
+                .SetPosition(filePath_));
             cJSON_Delete(array);
             return false;
         }
         string value = item->valuestring;
         bool update = false;
         if (!GetRefIdFromString(value, update, JSON_ARRAY_IDS.at(key))) {
-            cerr << "Error: '" << key << "' value " << value << " invalid." << NEW_LINE_PATH << filePath_ << endl;
             cJSON_Delete(array);
             return false;
         }
@@ -395,16 +397,12 @@ bool ConfigParser::ParseJsonStringRef(cJSON *parent, const string &key, cJSON *n
         return true;
     }
     if (!node || !cJSON_IsString(node)) {
-        cerr << "Error: '" << key << "' invalid value." << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(key.c_str(), "string").SetPosition(filePath_));
         return false;
     }
     string value = node->valuestring;
     bool update = false;
     if (!GetRefIdFromString(value, update, JSON_STRING_IDS.at(key))) {
-        cerr << "Error: '" << key << "' value " << value << " invalid value." << NEW_LINE_PATH << filePath_ << endl;
-        cerr << SOLUTIONS << endl;
-        cerr << SOLUTIONS_ARROW << "Please check the module.json5/config.json file in the src/main directory of the "
-             << GetModuleName() << " module." << endl;
         return false;
     }
     if (update) {
@@ -436,8 +434,7 @@ void ConfigParser::AddCheckNode(const string &key, uint32_t id)
 bool ConfigParser::GetRefIdFromString(string &value, bool &update, const string &match) const
 {
     ReferenceParser refParser;
-    string error = "Error: '" + value + "' must start with '" + match.substr(match.find("\\") + 1) + "'";
-    if (refParser.ParseRefInString(value, update) != RESTOOL_SUCCESS) {
+    if (refParser.ParseRefInString(value, update, filePath_) != RESTOOL_SUCCESS) {
         return false;
     }
     if (!update) {
@@ -448,7 +445,8 @@ bool ConfigParser::GetRefIdFromString(string &value, bool &update, const string 
         value = value.substr(result[0].str().length());
         return true;
     }
-    cerr << error << endl;
+    string ref = match.substr(match.find("\\") + 1);
+    PrintError(GetError(ERR_CODE_INVALID_RESOURCE_REF).FormatCause(value.c_str(), ref.c_str()).SetPosition(filePath_));
     return false;
 }
 
@@ -456,7 +454,7 @@ bool ConfigParser::ParseModuleType(const string &type)
 {
     const auto &result = MODULE_TYPES.find(type);
     if (result == MODULE_TYPES.end()) {
-        cerr << "Error: moduleType='" << type << "' invalid value." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_INVALID_MODULE_TYPE).FormatCause(type.c_str()).SetPosition(filePath_));
         return false;
     }
     moduleType_ = result->second;

@@ -132,7 +132,7 @@ bool FileManager::ScaleIcon(const string &output, ResourceItem &item)
     const string currentData(reinterpret_cast<const char *>(item.GetData()), item.GetDataLength());
     auto outIndex = currentData.find_last_of(SEPARATOR);
     if (outIndex == string::npos) {
-        cerr << "Error: ScaleIcon invalid output name: " << currentData << endl;
+        PrintError(GetError(ERR_CODE_INVALID_OUTPUT).FormatCause(currentData.c_str()));
         return false;
     }
     // get current output file name and full path
@@ -146,7 +146,6 @@ bool FileManager::ScaleIcon(const string &output, ResourceItem &item)
     const string fullOutPath = fullFilePath.GetPath();
     // delete current output file
     if (!ResourceUtil::RmoveFile(fullOutPath)) {
-        cout << "Error: ScaleIcon RmoveFile failed: " << fullOutPath << endl;
         return false;
     }
     // get origin icon output full path with the origin icon file name in src
@@ -166,8 +165,8 @@ bool FileManager::ScaleIcon(const string &output, ResourceItem &item)
     std::string newData = moduleName_ + SEPARATOR + RESOURCES_DIR + SEPARATOR + item.GetLimitKey() + SEPARATOR + media
         + SEPARATOR + newFileName;
     if (!item.SetData(reinterpret_cast<const int8_t *>(newData.c_str()), newData.length())) {
-        cerr << "Error: ScaleIcon resource item set data fail, data: " << newData << NEW_LINE_PATH
-             << item.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_SET_DATA_ERROR).FormatCause(item.GetName().c_str())
+            .SetPosition(item.GetFilePath()));
         return false;
     }
     return true;

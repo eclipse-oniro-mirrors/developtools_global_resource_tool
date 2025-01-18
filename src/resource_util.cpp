@@ -23,6 +23,7 @@
 #include <regex>
 #include <sstream>
 #include "file_entry.h"
+#include "restool_errors.h"
 
 namespace OHOS {
 namespace Global {
@@ -82,17 +83,14 @@ bool ResourceUtil::OpenJsonFile(const string &path, cJSON **root)
 {
     ifstream ifs(FileEntry::AdaptLongPath(path), ios::binary);
     if (!ifs.is_open()) {
-        cerr << "Error: open json failed '" << path << "', reason: " << strerror(errno) << endl;
+        PrintError(GetError(ERR_CODE_OPEN_JSON_FAIL).FormatCause(path.c_str(), strerror(errno)));
         return false;
     }
 
     string jsonString((istreambuf_iterator<char>(ifs)), istreambuf_iterator<char>());
     *root = cJSON_Parse(jsonString.c_str());
     if (!*root) {
-        cerr << "Error: cJSON_Parse failed, please check the JSON file." << NEW_LINE_PATH << path << endl;
-        cerr << SOLUTIONS << endl;
-        cerr << SOLUTIONS_ARROW << "Check the JSON file and delete unnecessary commas (,)." << endl;
-        cerr << SOLUTIONS_ARROW << "Check the JSON file to make sure the root bracket is {}" << endl;
+        PrintError(GetError(ERR_CODE_JSON_FORMAT_ERROR).SetPosition(path));
         ifs.close();
         return false;
     }
@@ -104,7 +102,7 @@ bool ResourceUtil::SaveToJsonFile(const string &path, const cJSON *root)
 {
     ofstream out(FileEntry::AdaptLongPath(path), ofstream::out | ofstream::binary);
     if (!out.is_open()) {
-        cerr << "Error: SaveToJsonFile open failed '" << path <<"', reason: " << strerror(errno) << endl;
+        PrintError(GetError(ERR_CODE_OPEN_FILE_ERROR).FormatCause(path.c_str(), strerror(errno)));
         return false;
     }
     char *jsonString = cJSON_Print(root);
@@ -122,6 +120,15 @@ ResType ResourceUtil::GetResTypeByDir(const string &name)
         return ResType::INVALID_RES_TYPE;
     }
     return ret->second;
+}
+
+string ResourceUtil::GetAllResTypeDirs()
+{
+    string dirs;
+    for (auto iter = g_fileClusterMap.begin(); iter != g_fileClusterMap.end(); ++iter) {
+        dirs.append(iter->first + ", ");
+    }
+    return dirs;
 }
 
 string ResourceUtil::ResTypeToString(ResType type)
@@ -230,7 +237,7 @@ bool ResourceUtil::CreateDirs(const string &filePath)
     }
 
     if (!FileEntry::CreateDirs(filePath)) {
-        cerr << "Error: create dir '" << filePath << "' failed, reason:" << strerror(errno) << endl;
+        PrintError(GetError(ERR_CODE_CREATE_FILE_ERROR).FormatCause(filePath.c_str(), strerror(errno)));
         return false;
     }
     return true;
@@ -462,7 +469,6 @@ bool ResourceUtil::IsIntValue(const cJSON *node)
 bool ResourceUtil::IsValidName(const string &name)
 {
     if (!regex_match(name, regex("[a-zA-Z0-9_]+"))) {
-        cerr << "Error: the name '" << name << "' can only contain [a-zA-Z0-9_]." << endl;
         return false;
     }
     return true;
@@ -471,8 +477,8 @@ bool ResourceUtil::IsValidName(const string &name)
 void ResourceUtil::PrintWarningMsg(vector<pair<ResType, string>> &noBaseResource)
 {
     for (const auto &item : noBaseResource) {
-        cerr << "Warning: the " << ResourceUtil::ResTypeToString(item.first);
-        cerr << " of '" << item.second << "' does not have a base resource." << endl;
+        cout << "Warning: the " << ResourceUtil::ResTypeToString(item.first);
+        cout << " of '" << item.second << "' does not have a base resource." << endl;
     }
 }
 

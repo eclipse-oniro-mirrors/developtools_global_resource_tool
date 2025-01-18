@@ -25,6 +25,7 @@
 #include "windows.h"
 #endif
 #include "resource_data.h"
+#include "restool_errors.h"
 
 namespace OHOS {
 namespace Global {
@@ -49,7 +50,7 @@ bool FileEntry::Init()
 {
     string filePath = filePath_.GetPath();
     if (!Exist(filePath)) {
-        cerr << "Error: '" << filePath << "' not exists." << endl;
+        PrintError(GetError(ERR_CODE_FILE_NOT_EXIST).FormatCause(filePath.c_str()));
         return false;
     }
 
@@ -131,7 +132,7 @@ bool FileEntry::RemoveAllDir(const string &path)
     }
 
     if (f.IsFile()) {
-        cerr << "Error: RemoveAllDir '" << path << "' not directory." << endl;
+        PrintError(GetError(ERR_CODE_REMOVE_FILE_ERROR).FormatCause(path.c_str(), "not directory"));
         return false;
     }
     return RemoveAllDirInner(f);
@@ -155,14 +156,14 @@ bool FileEntry::CopyFileInner(const string &src, const string &dst)
 {
 #ifdef _WIN32
     if (!CopyFile(AdaptLongPath(src).c_str(), AdaptLongPath(dst).c_str(), false)) {
-        cerr << "Error: copy file fail from '" << src << "' to '" << dst << "'. reason:" << strerror(errno) << endl;
+        PrintError(GetError(ERR_CODE_COPY_FILE_ERROR).FormatCause(src.c_str(), dst.c_str(), strerror(errno)));
         return false;
     }
 #else
     ifstream in(src, ios::binary);
     ofstream out(dst, ios::binary);
     if (!in || !out) {
-        cerr << "Error: open failed '" << src << "' or '" << dst << "'. reason:" << strerror(errno) << endl;
+        PrintError(GetError(ERR_CODE_COPY_FILE_ERROR).FormatCause(src.c_str(), dst.c_str(), strerror(errno)));
         return false;
     }
     out << in.rdbuf();
@@ -303,7 +304,7 @@ bool FileEntry::RemoveAllDirInner(const FileEntry &entry)
         bool result = remove(path.c_str()) == 0;
 #endif
         if (!result) {
-            cerr << "Error: remove file '" << path << "' failed, reason: " << strerror(errno) << endl;
+            PrintError(GetError(ERR_CODE_REMOVE_FILE_ERROR).FormatCause(path.c_str(), strerror(errno)));
             return false;
         }
         return true;
@@ -320,7 +321,7 @@ bool FileEntry::RemoveAllDirInner(const FileEntry &entry)
     bool result = rmdir(path.c_str()) == 0;
 #endif
     if (!result) {
-        cerr << "Error: remove directory '" << path << "' failed, reason: " << strerror(errno) << endl;
+        PrintError(GetError(ERR_CODE_REMOVE_FILE_ERROR).FormatCause(path.c_str(), strerror(errno)));
         return false;
     }
     return true;

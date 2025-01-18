@@ -96,9 +96,9 @@ uint32_t ResourceModule::MergeResourceItem(map<int64_t, vector<ResourceItem>> &a
                 continue;
             }
             if (tipError) {
-                cerr << "Error: '"<< resourceItem.GetName() <<"' conflict, first declared.";
-                cerr << NEW_LINE_PATH << ret->GetFilePath() << endl;
-                cerr << "but declared again." <<NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+                PrintError(GetError(ERR_CODE_RESOURCE_DUPLICATE)
+                               .FormatCause(resourceItem.GetName().c_str(), ret->GetFilePath().c_str(),
+                                            resourceItem.GetFilePath().c_str()));
                 return RESTOOL_ERROR;
             }
             cout << "Warning: '"<< resourceItem.GetName() <<"' conflict, first declared.";

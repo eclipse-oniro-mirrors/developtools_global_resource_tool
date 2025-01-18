@@ -16,6 +16,7 @@
 #include "translatable_parser.h"
 #include <algorithm>
 #include <iostream>
+#include "restool_errors.h"
 #include "resource_util.h"
 
 namespace OHOS {
@@ -37,22 +38,22 @@ bool TranslatableParse::ParseTranslatable(cJSON *objectNode, const FileInfo &fil
     }
     cJSON *arrayNode = cJSON_GetObjectItem(objectNode, TAG_VALUE.c_str());
     if (!arrayNode || !cJSON_IsArray(arrayNode)) {
-        cerr << "Error: '" << name << "' value not array.";
-        cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(name.c_str(), "array")
+            .SetPosition(fileInfo.filePath));
         return false;
     }
 
     if (cJSON_GetArraySize(arrayNode) == 0) {
-        cerr << "Error: '" << name << "' value empty.";
-        cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_EMPTY).FormatCause(name.c_str()).SetPosition(fileInfo.filePath));
         return false;
     }
     int32_t index = -1;
     for (cJSON *item = arrayNode->child; item; item = item->next) {
         index++;
         if (!item || !cJSON_IsObject(item)) {
-            cerr << "Error: '" << name << "' value the seq=" << index << " item must be object.";
-            cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
+            PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                           .FormatCause("value's child", "object")
+                           .SetPosition(fileInfo.filePath));
             return false;
         }
         
@@ -65,18 +66,16 @@ bool TranslatableParse::ParseTranslatable(cJSON *objectNode, const FileInfo &fil
 
 bool TranslatableParse::ParseTranslatable(cJSON *objectNode, const string &filePath)
 {
-    if (!CheckBaseStringAttr(objectNode)) {
-        cerr << NEW_LINE_PATH << filePath << endl;
+    if (!CheckBaseStringAttr(objectNode, filePath)) {
         return false;
     }
-    if (!ReplaceTranslateTags(objectNode, TAG_VALUE.c_str())) {
-        cerr << NEW_LINE_PATH << filePath << endl;
+    if (!ReplaceTranslateTags(objectNode, TAG_VALUE.c_str(), filePath)) {
         return false;
     }
     return true;
 }
 
-bool TranslatableParse::CheckBaseStringAttr(const cJSON *objectNode)
+bool TranslatableParse::CheckBaseStringAttr(const cJSON *objectNode, const std::string &filePath)
 {
     cJSON *attrNode = cJSON_GetObjectItem(objectNode, TAG_ATTR.c_str());
     if (!attrNode) {
@@ -84,53 +83,60 @@ bool TranslatableParse::CheckBaseStringAttr(const cJSON *objectNode)
     }
 
     if (!cJSON_IsObject(attrNode)) {
-        cerr << "Error: attr node not obeject.";
+        PrintError(
+            GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(TAG_ATTR.c_str(), "object").SetPosition(filePath));
         return false;
     }
-    return CheckBaseStringTranslatable(attrNode);
+    return CheckBaseStringTranslatable(attrNode, filePath);
 }
 
-bool TranslatableParse::CheckBaseStringTranslatable(const cJSON *attrNode)
+bool TranslatableParse::CheckBaseStringTranslatable(const cJSON *attrNode, const std::string &filePath)
 {
     cJSON *translatableNode = cJSON_GetObjectItem(attrNode, TAG_TRANSLATABLE.c_str());
     if (!translatableNode) {
-        return CheckBaseStringPriority(attrNode);
+        return CheckBaseStringPriority(attrNode, filePath);
     }
     if (!cJSON_IsBool(translatableNode)) {
-        cerr << "Error: invalid value for '" << TAG_TRANSLATABLE << "'. Must be a boolean.";
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                       .FormatCause(TAG_TRANSLATABLE.c_str(), "bool")
+                       .SetPosition(filePath));
         return false;
     }
-    return CheckBaseStringPriority(attrNode);
+    return CheckBaseStringPriority(attrNode, filePath);
 }
 
-bool TranslatableParse::CheckBaseStringPriority(const cJSON *attrNode)
+bool TranslatableParse::CheckBaseStringPriority(const cJSON *attrNode, const std::string &filePath)
 {
     cJSON *priorityNode = cJSON_GetObjectItem(attrNode, TAG_PRIORITY.c_str());
     if (!priorityNode) {
         return true;
     }
     if (!cJSON_IsString(priorityNode)) {
-        cerr << "Error: invalid value for '" << TAG_PRIORITY << "'. Must be a string.";
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                       .FormatCause(TAG_PRIORITY.c_str(), "string")
+                       .SetPosition(filePath));
         return false;
     }
     string priorityValue = priorityNode->valuestring;
     if (find(PRIORITY_ATTRS.begin(), PRIORITY_ATTRS.end(), priorityValue) == PRIORITY_ATTRS.end()) {
-        string message("[ ");
+        string message("");
         for (const auto &value : PRIORITY_ATTRS) {
             message.append("'" + value + "' ");
         }
-        message.append("]");
-        cerr << "Error: invalid value for '" << TAG_PRIORITY << "'. Must in " << message;
+        PrintError(GetError(ERR_CODE_INVALID_TRANSLATE_PRIORITY)
+                       .FormatCause(priorityValue.c_str(), message.c_str())
+                       .SetPosition(filePath));
         return false;
     }
     return true;
 }
 
-bool TranslatableParse::ReplaceTranslateTags(cJSON *node, const char *key)
+bool TranslatableParse::ReplaceTranslateTags(cJSON *node, const char *key, const std::string &filePath)
 {
     cJSON *valueNode = cJSON_GetObjectItem(node, TAG_VALUE.c_str());
     if (!valueNode || !cJSON_IsString(valueNode)) {
-        cerr << "Error: value not string.";
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(TAG_VALUE.c_str(), "string")
+            .SetPosition(filePath));
         return false;
     }
 

@@ -31,7 +31,7 @@ public:
     uint32_t ParseRefInResources(std::map<int64_t, std::vector<ResourceItem>> &items, const std::string &output);
     uint32_t ParseRefInResourceItem(ResourceItem &resourceItem) const;
     uint32_t ParseRefInJsonFile(ResourceItem &resourceItem, const std::string &output, const bool isIncrement = false);
-    uint32_t ParseRefInString(std::string &value, bool &update) const;
+    uint32_t ParseRefInString(std::string &value, bool &update, const std::string &filePath = "") const;
     static std::map<int64_t, std::set<int64_t>> &GetLayerIconIds();
 private:
     bool ParseRefJson(const std::string &from, const std::string &to);
@@ -42,9 +42,10 @@ private:
     bool IsMediaRef(const ResourceItem &resourceItem) const;
     bool IsProfileRef(const ResourceItem &resourceItem) const;
     bool ParseRefString(std::string &key) const;
-    bool ParseRefString(std::string &key, bool &update) const;
-    bool ParseRefImpl(std::string &key, const std::map<std::string, ResType> &refs, bool isSystem) const;
-    bool ParseRefJsonImpl(cJSON *root, bool &needSave) const;
+    bool ParseRefString(std::string &key, bool &update, const std::string &filePath = "") const;
+    bool ParseRefImpl(std::string &key, const std::map<std::string, ResType> &refs, bool isSystem,
+        const std::string &filePath = "") const;
+    bool ParseRefJsonImpl(cJSON *root, bool &needSave, const std::string &filePath) const;
     const IdWorker &idWorker_;
     static const std::map<std::string, ResType> ID_REFS;
     static const std::map<std::string, ResType> ID_OHOS_REFS;

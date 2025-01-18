@@ -87,6 +87,12 @@ public:
     static ResType GetResTypeByDir(const std::string &name);
 
     /**
+     * @brief get all resource type directorys.
+     * @return all resource type.
+     */
+    static std::string GetAllResTypeDirs();
+
+    /**
      * @brief ResType to string
      * @param type: ResType
      * @return resource type string.

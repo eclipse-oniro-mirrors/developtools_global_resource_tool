@@ -33,7 +33,8 @@ uint32_t AppendCompiler::CompileSingleFile(const FileInfo &fileInfo)
 
     string data = fileInfo.filePath;
     if (!resourceItem.SetData(reinterpret_cast<const int8_t *>(data.c_str()), data.length())) {
-        cerr << "Error: resource item set data fail, data: " << data << NEW_LINE_PATH << fileInfo.filePath << endl;
+        PrintError(GetError(ERR_CODE_SET_DATA_ERROR).FormatCause(resourceItem.GetName().c_str())
+            .SetPosition(fileInfo.filePath));
         return RESTOOL_ERROR;
     }
 

@@ -53,7 +53,7 @@ uint32_t Header::Create(HandleHeaderTail headerHandler, HandleBody bodyHandler, 
 
     ofstream out(outputPath_, ofstream::out | ofstream::binary);
     if (!out.is_open()) {
-        cerr << "Error: open failed '" << outputPath_ << "', reason: " << strerror(errno) << endl;
+        PrintError(GetError(ERR_CODE_OPEN_FILE_ERROR).FormatCause(outputPath_.c_str(), strerror(errno)));
         return RESTOOL_ERROR;
     }
 

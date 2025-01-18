@@ -27,10 +27,10 @@ public:
     static bool ParseTranslatable(cJSON *objectNode, const FileInfo &fileInfo, const std::string &name);
 private:
     static bool ParseTranslatable(cJSON *objectNode, const std::string &filePath);
-    static bool CheckBaseStringAttr(const cJSON *objectNode);
-    static bool CheckBaseStringTranslatable(const cJSON *attrNode);
-    static bool CheckBaseStringPriority(const cJSON *attrNode);
-    static bool ReplaceTranslateTags(cJSON *node, const char *key);
+    static bool CheckBaseStringAttr(const cJSON *objectNode, const std::string &filePath);
+    static bool CheckBaseStringTranslatable(const cJSON *attrNode, const std::string &filePath);
+    static bool CheckBaseStringPriority(const cJSON *attrNode, const std::string &filePath);
+    static bool ReplaceTranslateTags(cJSON *node, const char *key, const std::string &filePath);
     static bool GetReplaceStringTranslate(std::string &str);
     static bool FindTranslatePairs(const std::string &str, std::vector<size_t> &posData);
 };

@@ -92,7 +92,7 @@ uint32_t CompressionParser::Init()
         return RESTOOL_ERROR;
     }
     if (!root_ || !cJSON_IsObject(root_)) {
-        cerr << "Error: JSON file parsing failed, please check the JSON file." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_FORMAT_ERROR).SetPosition(filePath_));
         return RESTOOL_ERROR;
     }
     cJSON *contextNode = cJSON_GetObjectItem(root_, "context");
@@ -112,13 +112,11 @@ uint32_t CompressionParser::Init()
     }
     cJSON *filtersNode = cJSON_GetObjectItem(compressionNode, "filters");
     if (!ParseFilters(filtersNode)) {
-        cerr << NEW_LINE_PATH << filePath_ << endl;
         return RESTOOL_ERROR;
     }
     string caches = outPath_;
     caches.append(SEPARATOR_FILE).append(CACHES_DIR);
     if (!ResourceUtil::CreateDirs(caches)) {
-        cerr << "Error: create caches dir failed. dir = " << caches << endl;
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
@@ -127,32 +125,32 @@ uint32_t CompressionParser::Init()
 bool CompressionParser::ParseCompression(const cJSON *compressionNode)
 {
     if (!compressionNode) {
-        cerr << "Warning: get 'compression' node is empty, the compiled images are not transcoded.";
-        cerr << NEW_LINE_PATH << filePath_ << endl;
+        cout << "Warning: get 'compression' node is empty, the compiled images are not transcoded.";
+        cout << NEW_LINE_PATH << filePath_ << endl;
         return true;
     }
     if (!cJSON_IsObject(compressionNode)) {
-        cerr << "Error: 'compression' must be object." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("compression", "object"));
         return false;
     }
     cJSON *mediaNode = cJSON_GetObjectItem(compressionNode, "media");
     if (!mediaNode) {
-        cerr << "Warning: get 'media' node is empty, the compiled images are not transcoded.";
-        cerr << NEW_LINE_PATH << filePath_ << endl;
+        cout << "Warning: get 'media' node is empty, the compiled images are not transcoded.";
+        cout << NEW_LINE_PATH << filePath_ << endl;
         return true;
     }
     if (!cJSON_IsObject(mediaNode)) {
-        cerr << "Error: 'media' must be object." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("media", "object"));
         return false;
     }
     cJSON *enableNode = cJSON_GetObjectItem(mediaNode, "enable");
     if (!enableNode) {
-        cerr << "Warning: get 'enable' node is empty, the compiled images are not transcoded.";
-        cerr << NEW_LINE_PATH << filePath_ << endl;
+        cout << "Warning: get 'enable' node is empty, the compiled images are not transcoded.";
+        cout << NEW_LINE_PATH << filePath_ << endl;
         return true;
     }
     if (!cJSON_IsBool(enableNode)) {
-        cerr << "Error: 'enable' must be bool." << NEW_LINE_PATH << filePath_ << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("enable", "bool"));
         return false;
     }
     mediaSwitch_ = cJSON_IsTrue(enableNode);
@@ -189,29 +187,30 @@ bool CompressionParser::ParseContext(const cJSON *contextNode)
 bool CompressionParser::ParseFilters(const cJSON *filtersNode)
 {
     if (!filtersNode) {
-        cerr << "Error: if image transcoding is supported, the 'filters' node cannot be empty.";
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause("filters").SetPosition(filePath_));
         return false;
     }
     if (!cJSON_IsArray(filtersNode)) {
-        cerr << "Error: 'filters' must be array.";
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("filters", "array").SetPosition(filePath_));
         return false;
     }
     if (cJSON_GetArraySize(filtersNode) == 0) {
-        cerr << "Error: 'filters' value cannot be empty.";
+        PrintError(GetError(ERR_CODE_JSON_NODE_EMPTY).FormatCause("filters").SetPosition(filePath_));
         return false;
     }
     for (cJSON *item = filtersNode->child; item; item = item->next) {
         if (!cJSON_IsObject(item)) {
-            cerr << "Error: 'filters' value type must be object.";
+            PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("filters's value", "object")
+                .SetPosition(filePath_));
             return false;
         }
         cJSON *methodNode = cJSON_GetObjectItem(item, "method");
         if (!methodNode) {
-            cerr << "Error: if image transcoding is supported, the 'method' node cannot be empty.";
+            PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause("method").SetPosition(filePath_));
             return false;
         }
         if (!cJSON_IsObject(methodNode)) {
-            cerr << "Error: 'method' must be object.";
+            PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("method", "object").SetPosition(filePath_));
             return false;
         }
         shared_ptr<CompressFilter> compressFilter = make_shared<CompressFilter>();
@@ -310,9 +309,9 @@ bool CompressionParser::LoadImageTranscoder()
             LPVOID lpMsgBuf;
             FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                 NULL, err, MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
-            const char *msg = static_cast<const char*>(lpMsgBuf);
-            cerr << "Error: open '" << extensionPath_.c_str() << "' fail." << endl;
-            cerr << "Error: LoadLibrary failed with error: " << err << ", " << msg << endl;
+            const char *msg = static_cast<const char *>(lpMsgBuf);
+            std::string errMsg = "(" + std::to_string(err) + ")" + string(msg);
+            PrintError(GetError(ERR_CODE_LOAD_LIBRARY_FAIL).FormatCause(extensionPath_.c_str(), errMsg.c_str()));
             LocalFree(lpMsgBuf);
             return false;
         }
@@ -321,14 +320,13 @@ bool CompressionParser::LoadImageTranscoder()
     if (!handle_) {
         string realPath = ResourceUtil::RealPath(extensionPath_);
         if (realPath.empty()) {
-            cerr << "Error: open '" << extensionPath_.c_str() << "' fail, real path empty." << endl;
+            PrintError(GetError(ERR_CODE_LOAD_LIBRARY_FAIL).FormatCause(extensionPath_.c_str(), "path invalid"));
             return false;
         }
         handle_ = dlopen(realPath.c_str(), RTLD_LAZY);
         if (!handle_) {
             char *err = dlerror();
-            cerr << "Error: open '" << realPath.c_str() << "' fail." << endl;
-            cerr << "Error: dlopen failed with error: " << err << endl;
+            PrintError(GetError(ERR_CODE_LOAD_LIBRARY_FAIL).FormatCause(realPath.c_str(), err));
             return false;
         }
     }
@@ -592,7 +590,7 @@ bool CompressionParser::CopyAndTranscode(const string &src, string &dst, const b
 
     auto index = dst.find_last_of(SEPARATOR_FILE);
     if (index == string::npos) {
-        cerr << "Error: invalid output path." << NEW_LINE_PATH << dst << endl;
+        PrintError(GetError(ERR_CODE_INVALID_FILE_PATH).FormatCause(dst.c_str()));
         return false;
     }
     uint32_t startIndex = outPath_.size() + RESOURCES_DIR.size() + 1;
@@ -600,7 +598,6 @@ bool CompressionParser::CopyAndTranscode(const string &src, string &dst, const b
     string output = outPath_ + SEPARATOR_FILE + CACHES_DIR + endStr;
     string originDst = dst;
     if (!ResourceUtil::CreateDirs(output)) {
-        cerr << "Error: create output dir failed. dir = " << output << endl;
         return false;
     }
     for (const auto &compressFilter : compressFilters_) {
@@ -624,14 +621,13 @@ bool CompressionParser::CheckAndScaleIcon(const std::string &src, const std::str
     }
     auto index = originDst.find_last_of(SEPARATOR_FILE);
     if (index == string::npos) {
-        cerr << "Error: invalid output path." << NEW_LINE_PATH << originDst << endl;
+        PrintError(GetError(ERR_CODE_INVALID_FILE_PATH).FormatCause(originDst.c_str()));
         return false;
     }
     uint32_t startIndex = outPath_.size() + RESOURCES_DIR.size() + 1;
     string qualifierDir = originDst.substr(startIndex, index - startIndex);
     string outputCache = outPath_ + SEPARATOR_FILE + CACHES_DIR + qualifierDir;
     if (!ResourceUtil::CreateDirs(outputCache)) {
-        cerr << "Error: scale icon create output dir failed. dir = " << outputCache << endl;
         return false;
     }
     string fileName = originDst.substr(index + 1);

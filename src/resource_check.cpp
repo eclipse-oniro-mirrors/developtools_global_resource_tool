@@ -72,7 +72,7 @@ void ResourceCheck::CheckNodeInResourceItem(const string &key, const ResourceIte
         return;
     }
     if (width != height) {
-        cerr << "Warning: the png width and height not equal" << NEW_LINE_PATH << filePath << endl;
+        cout << "Warning: the png width and height not equal" << NEW_LINE_PATH << filePath << endl;
         return;
     }
     auto result = g_keyNodeIndexs.find(key);
@@ -83,7 +83,7 @@ void ResourceCheck::CheckNodeInResourceItem(const string &key, const ResourceIte
     if (normalSize != 0 && width > normalSize) {
         string warningMsg = "Warning: The width or height of the png file referenced by the " + key + \
             " exceeds the limit (" + to_string(normalSize) + " pixels)" + NEW_LINE_PATH + filePath;
-        cerr << warningMsg << endl;
+        cout << warningMsg << endl;
     }
 }
 

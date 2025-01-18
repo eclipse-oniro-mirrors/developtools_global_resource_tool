@@ -56,22 +56,19 @@ uint32_t JsonCompiler::CompileSingleFile(const FileInfo &fileInfo)
         return RESTOOL_ERROR;
     }
     if (!root_ || !cJSON_IsObject(root_)) {
-        cerr << "Error: JSON file parsing failed, please check the JSON file.";
-        cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
+        PrintError(GetError(ERR_CODE_JSON_FORMAT_ERROR).SetPosition(fileInfo.filePath));
         return RESTOOL_ERROR;
     }
     cJSON *item = root_->child;
     if (cJSON_GetArraySize(root_) != 1) {
-        cerr << "Error: node of a JSON file can only have one member, please check the JSON file.";
-        cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
+        PrintError(GetError(ERR_CODE_JSON_NOT_ONE_MEMBER).FormatCause("root").SetPosition(fileInfo.filePath));
         return RESTOOL_ERROR;
     }
 
     string tag = item->string;
     auto ret = g_contentClusterMap.find(tag);
     if (ret == g_contentClusterMap.end()) {
-        cerr << "Error: invalid tag name '" << tag << "', please check the JSON file.";
-        cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
+        PrintError(GetError(ERR_CODE_JSON_INVALID_NODE_NAME).FormatCause(tag.c_str()).SetPosition(fileInfo.filePath));
         return RESTOOL_ERROR;
     }
     isBaseString_ = (fileInfo.limitKey == "base" &&
@@ -104,21 +101,24 @@ void JsonCompiler::InitParser()
 bool JsonCompiler::ParseJsonArrayLevel(const cJSON *arrayNode, const FileInfo &fileInfo)
 {
     if (!arrayNode || !cJSON_IsArray(arrayNode)) {
-        cerr << "Error: '" << ResourceUtil::ResTypeToString(fileInfo.fileType) << "' must be array.";
-        cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                       .FormatCause(ResourceUtil::ResTypeToString(fileInfo.fileType).c_str(), "array")
+                       .SetPosition(fileInfo.filePath));
         return false;
     }
 
     if (cJSON_GetArraySize(arrayNode) == 0) {
-        cerr << "Error: '" << ResourceUtil::ResTypeToString(fileInfo.fileType) << "' empty.";
-        cerr << NEW_LINE_PATH << fileInfo.filePath << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_EMPTY)
+                       .FormatCause(ResourceUtil::ResTypeToString(fileInfo.fileType).c_str())
+                       .SetPosition(fileInfo.filePath));
         return false;
     }
     int32_t index = -1;
     for (cJSON *item = arrayNode->child; item; item = item->next) {
         index++;
         if (!item || !cJSON_IsObject(item)) {
-            cerr << "Error: the seq=" << index << " item must be object." << NEW_LINE_PATH << fileInfo.filePath << endl;
+            PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("item", "object")
+                .SetPosition(fileInfo.filePath));
             return false;
         }
         if (!ParseJsonObjectLevel(item, fileInfo)) {
@@ -132,12 +132,13 @@ bool JsonCompiler::ParseJsonObjectLevel(cJSON *objectNode, const FileInfo &fileI
 {
     cJSON *nameNode = cJSON_GetObjectItem(objectNode, TAG_NAME.c_str());
     if (!nameNode) {
-        cerr << "Error: name empty." << NEW_LINE_PATH << fileInfo.filePath << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause("name").SetPosition(fileInfo.filePath));
         return false;
     }
 
     if (!cJSON_IsString(nameNode)) {
-        cerr << "Error: name must string." << NEW_LINE_PATH << fileInfo.filePath << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(TAG_NAME.c_str(), "string")
+            .SetPosition(fileInfo.filePath));
         return false;
     }
 
@@ -149,7 +150,8 @@ bool JsonCompiler::ParseJsonObjectLevel(cJSON *objectNode, const FileInfo &fileI
     resourceItem.SetLimitKey(fileInfo.limitKey);
     auto ret = handles_.find(fileInfo.fileType);
     if (ret == handles_.end()) {
-        cerr << "Error: json parser don't support " << ResourceUtil::ResTypeToString(fileInfo.fileType) << endl;
+        PrintError(GetError(ERR_CODE_INVALID_ELEMENT_TYPE)
+                       .FormatCause(ResourceUtil::ResTypeToString(fileInfo.fileType).c_str()));
         return false;
     }
 
@@ -192,22 +194,23 @@ bool JsonCompiler::HandleBoolean(const cJSON *objectNode, ResourceItem &resource
 {
     cJSON *valueNode = cJSON_GetObjectItem(objectNode, TAG_VALUE.c_str());
     if (valueNode == nullptr) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value not json.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause(string(resourceItem.GetName() + " value").c_str())
+            .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
     if (cJSON_IsString(valueNode)) {
         regex ref("^\\$(ohos:)?boolean:.*");
         if (!regex_match(valueNode->valuestring, ref)) {
-            cerr << "Error: '" << valueNode->valuestring << "' only refer '$boolean:xxx'.";
-            cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_REF).FormatCause(valueNode->valuestring, "$(ohos:)?boolean:")
+                .SetPosition(resourceItem.GetFilePath()));
             return false;
         }
         return PushString(valueNode->valuestring, resourceItem);
     }
     if (!cJSON_IsBool(valueNode)) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value not boolean.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                       .FormatCause(string(resourceItem.GetName() + " value").c_str(), "bool")
+                       .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
     return PushString(cJSON_IsTrue(valueNode) == 1 ? "true" : "false", resourceItem);
@@ -229,8 +232,9 @@ bool JsonCompiler::HandleStringArray(const cJSON *objectNode, ResourceItem &reso
     return ParseValueArray(objectNode, resourceItem, extra,
         [this](const cJSON *arrayItem, const ResourceItem &resourceItem, vector<string> &values) -> bool {
             if (!cJSON_IsObject(arrayItem)) {
-                cerr << "Error: '" << resourceItem.GetName() << "' value array item not object.";
-                cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+                PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                               .FormatCause(string(resourceItem.GetName() + " value").c_str(), "object")
+                               .SetPosition(resourceItem.GetFilePath()));
                 return false;
             }
             cJSON *valueNode = cJSON_GetObjectItem(arrayItem, TAG_VALUE.c_str());
@@ -291,8 +295,9 @@ bool JsonCompiler::HandlePlural(const cJSON *objectNode, ResourceItem &resourceI
             }
             string quantityValue = quantityNode->valuestring;
             if (find(attrs.begin(), attrs.end(), quantityValue) != attrs.end()) {
-                cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity '" << quantityValue;
-                cerr << "' duplicated." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+                PrintError(GetError(ERR_CODE_DUPLICATE_QUANTITY)
+                               .FormatCause(resourceItem.GetName().c_str(), quantityValue.c_str())
+                               .SetPosition(resourceItem.GetFilePath()));
                 return false;
             }
             attrs.push_back(quantityValue);
@@ -308,8 +313,8 @@ bool JsonCompiler::HandlePlural(const cJSON *objectNode, ResourceItem &resourceI
         return false;
     }
     if (find(attrs.begin(), attrs.end(), "other") == attrs.end()) {
-        cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity must contains 'other'.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_QUANTITY_NO_OTHER).FormatCause(resourceItem.GetName().c_str())
+            .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
     return true;
@@ -327,8 +332,8 @@ bool JsonCompiler::HandleSymbol(const cJSON *objectNode, ResourceItem &resourceI
 bool JsonCompiler::PushString(const string &value, ResourceItem &resourceItem) const
 {
     if (!resourceItem.SetData(reinterpret_cast<const int8_t *>(value.c_str()), value.length())) {
-        cerr << "Error: resourceItem setdata fail,'" << resourceItem.GetName() << "'.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_SET_DATA_ERROR).FormatCause(resourceItem.GetName().c_str())
+            .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
     return true;
@@ -337,8 +342,9 @@ bool JsonCompiler::PushString(const string &value, ResourceItem &resourceItem) c
 bool JsonCompiler::CheckJsonStringValue(const cJSON *valueNode, const ResourceItem &resourceItem) const
 {
     if (!valueNode || !cJSON_IsString(valueNode)) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value not string.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                       .FormatCause(string(resourceItem.GetName() + " value").c_str(), "string")
+                       .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
 
@@ -352,16 +358,15 @@ bool JsonCompiler::CheckJsonStringValue(const cJSON *valueNode, const ResourceIt
     string value = valueNode->valuestring;
     ResType type = resourceItem.GetResType();
     if (type ==  ResType::COLOR && !CheckColorValue(value.c_str())) {
-        string error = "invalid color value '" + value + \
-                        "', only support refer '$color:xxx' or '#rgb','#argb','#rrggbb','#aarrggbb'.";
-        cerr << "Error: " << error << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_INVALID_COLOR_VALUE).FormatCause(value.c_str())
+            .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
     regex ref("^\\$.+:");
     smatch result;
     if (regex_search(value, result, ref) && !regex_match(result[0].str(), regex(REFS.at(type)))) {
-        cerr << "Error: '" << value << "', only refer '"<< REFS.at(type) << "xxx'.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_REF).FormatCause(value.c_str(), REFS.at(type).c_str())
+            .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
     return true;
@@ -370,20 +375,21 @@ bool JsonCompiler::CheckJsonStringValue(const cJSON *valueNode, const ResourceIt
 bool JsonCompiler::CheckJsonIntegerValue(const cJSON *valueNode, const ResourceItem &resourceItem) const
 {
     if (!valueNode) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value is empty";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause(string(resourceItem.GetName() + " value").c_str())
+            .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
     if (cJSON_IsString(valueNode)) {
         regex ref("^\\$(ohos:)?integer:.*");
         if (!regex_match(valueNode->valuestring, ref)) {
-            cerr << "Error: '" << valueNode->valuestring << "', only refer '$integer:xxx'.";
-            cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_REF).FormatCause(valueNode->valuestring, "$(ohos:)?integer:")
+                .SetPosition(resourceItem.GetFilePath()));
             return false;
         }
     } else if (!ResourceUtil::IsIntValue(valueNode)) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value not integer.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                       .FormatCause(string(resourceItem.GetName() + " value").c_str(), "integer")
+                       .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
     return true;
@@ -392,8 +398,9 @@ bool JsonCompiler::CheckJsonIntegerValue(const cJSON *valueNode, const ResourceI
 bool JsonCompiler::CheckJsonSymbolValue(const cJSON *valueNode, const ResourceItem &resourceItem) const
 {
     if (!valueNode || !cJSON_IsString(valueNode)) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value not string.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                       .FormatCause(string(resourceItem.GetName() + " value").c_str(), "string")
+                       .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
     string unicodeStr = valueNode->valuestring;
@@ -402,8 +409,8 @@ bool JsonCompiler::CheckJsonSymbolValue(const cJSON *valueNode, const ResourceIt
     }
     int unicode = strtol(unicodeStr.c_str(), nullptr, 16);
     if (!ResourceUtil::isUnicodeInPlane15or16(unicode)) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value must in 0xF0000 ~ 0xFFFFF or 0x100000 ~ 0x10FFFF.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_INVALID_SYMBOL).FormatCause(resourceItem.GetName().c_str())
+            .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
     return true;
@@ -414,20 +421,23 @@ bool JsonCompiler::ParseValueArray(const cJSON *objectNode, ResourceItem &resour
 {
     cJSON *arrayNode = cJSON_GetObjectItem(objectNode, TAG_VALUE.c_str());
     if (arrayNode == nullptr) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value not json.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING)
+                       .FormatCause(string(resourceItem.GetName() + " value").c_str())
+                       .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
 
     if (!cJSON_IsArray(arrayNode)) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value not array.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                       .FormatCause(string(resourceItem.GetName() + " value").c_str(), "array")
+                       .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
 
     if (cJSON_GetArraySize(arrayNode) == 0) {
-        cerr << "Error: '" << resourceItem.GetName() << "' value empty.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_EMPTY)
+                       .FormatCause(string(resourceItem.GetName() + " value").c_str())
+                       .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
 
@@ -445,8 +455,8 @@ bool JsonCompiler::ParseValueArray(const cJSON *objectNode, ResourceItem &resour
 
     string data = ResourceUtil::ComposeStrings(contents);
     if (data.empty()) {
-        cerr << "Error: '" << resourceItem.GetName() << "' array too large.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_ARRAY_TOO_LARGE).FormatCause(resourceItem.GetName().c_str())
+            .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
     return PushString(data, resourceItem);
@@ -459,14 +469,16 @@ bool JsonCompiler::ParseParent(const cJSON *objectNode, const ResourceItem &reso
     string type = ResourceUtil::ResTypeToString(resourceItem.GetResType());
     if (parentNode) {
         if (!cJSON_IsString(parentNode)) {
-            cerr << "Error: " << type << " '" << resourceItem.GetName() << "' parent not string.";
-            cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+            PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                           .FormatCause(string(resourceItem.GetName() + " parent").c_str(), "string")
+                           .SetPosition(resourceItem.GetFilePath()));
             return false;
         }
         string parentValue = parentNode->valuestring;
         if (parentValue.empty()) {
-            cerr << "Error: " << type << " '"<< resourceItem.GetName() << "' parent empty.";
-            cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+            PrintError(GetError(ERR_CODE_PARENT_EMPTY)
+                           .FormatCause(type.c_str(), resourceItem.GetName().c_str())
+                           .SetPosition(resourceItem.GetFilePath()));
             return false;
         }
         if (regex_match(parentValue, regex("^ohos:" + type + ":.+"))) {
@@ -483,33 +495,36 @@ bool JsonCompiler::ParseAttribute(const cJSON *arrayItem, const ResourceItem &re
                                   vector<string> &values) const
 {
     string type = ResourceUtil::ResTypeToString(resourceItem.GetResType());
+    string nodeAttr = string(resourceItem.GetName() + " attribute");
+    string filePath = resourceItem.GetFilePath();
     if (!arrayItem || !cJSON_IsObject(arrayItem)) {
-        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute not object.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(nodeAttr.c_str(), "object")
+            .SetPosition(filePath));
         return false;
     }
     cJSON *nameNode = cJSON_GetObjectItem(arrayItem, TAG_NAME.c_str());
     if (!nameNode) {
-        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute name empty.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause(nodeAttr.c_str()).SetPosition(filePath));
         return false;
     }
     if (!cJSON_IsString(nameNode)) {
-        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute name not string.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(string(nodeAttr + " name").c_str(), "string")
+            .SetPosition(filePath));
         return false;
     }
     values.push_back(nameNode->valuestring);
 
     cJSON *valueNode = cJSON_GetObjectItem(arrayItem, TAG_VALUE.c_str());
     if (!valueNode) {
-        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute '" << nameNode->valuestring;
-        cerr << "' value empty." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING)
+                       .FormatCause(string(nodeAttr + " '" + nameNode->valuestring + "'").c_str())
+                       .SetPosition(filePath));
         return false;
     }
     if (!cJSON_IsString(valueNode)) {
-        cerr << "Error: " << type << " '" << resourceItem.GetName() << "' attribute '" << nameNode->valuestring;
-        cerr << "' value not string." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                       .FormatCause(string(nodeAttr + " '" + nameNode->valuestring + "'").c_str(), "object")
+                       .SetPosition(filePath));
         return false;
     }
     values.push_back(valueNode->valuestring);
@@ -518,20 +533,24 @@ bool JsonCompiler::ParseAttribute(const cJSON *arrayItem, const ResourceItem &re
 
 bool JsonCompiler::CheckPluralValue(const cJSON *arrayItem, const ResourceItem &resourceItem) const
 {
+    string filePath = resourceItem.GetFilePath();
     if (!arrayItem || !cJSON_IsObject(arrayItem)) {
-        cerr << "Error: Plural '" << resourceItem.GetName() << "' array item not object.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                       .FormatCause(string(resourceItem.GetName() + " array item").c_str(), "object")
+                       .SetPosition(filePath));
         return false;
     }
     cJSON *quantityNode = cJSON_GetObjectItem(arrayItem, TAG_QUANTITY.c_str());
     if (!quantityNode) {
-        cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity empty.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING)
+                       .FormatCause(string(resourceItem.GetName() + " quantity").c_str())
+                       .SetPosition(filePath));
         return false;
     }
     if (!cJSON_IsString(quantityNode)) {
-        cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity not string.";
-        cerr << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                       .FormatCause(string(resourceItem.GetName() + " quantity").c_str(), "string")
+                       .SetPosition(filePath));
         return false;
     }
     string quantityValue = quantityNode->valuestring;
@@ -540,20 +559,23 @@ bool JsonCompiler::CheckPluralValue(const cJSON *arrayItem, const ResourceItem &
         for_each(QUANTITY_ATTRS.begin(), QUANTITY_ATTRS.end(), [&buffer](auto iter) {
                 buffer.append(iter).append(" ");
             });
-        cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity '" << quantityValue;
-        cerr << "' not in [" << buffer << "]." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_INVALID_QUANTITY)
+                       .FormatCause(resourceItem.GetName().c_str(), quantityValue.c_str(), buffer.c_str())
+                       .SetPosition(filePath));
         return false;
     }
 
     cJSON *valueNode = cJSON_GetObjectItem(arrayItem, TAG_VALUE.c_str());
     if (!valueNode) {
-        cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity '" << quantityValue;
-        cerr << "' value empty." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING)
+                       .FormatCause(string(resourceItem.GetName() + " '" + quantityValue + "' value").c_str())
+                       .SetPosition(filePath));
         return false;
     }
     if (!cJSON_IsString(valueNode)) {
-        cerr << "Error: Plural '" << resourceItem.GetName() << "' quantity '" << quantityValue;
-        cerr << "' value not string." << NEW_LINE_PATH << resourceItem.GetFilePath() << endl;
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                       .FormatCause(string(resourceItem.GetName() + " '" + quantityValue + "' value").c_str(), "string")
+                       .SetPosition(filePath));
         return false;
     }
     return true;

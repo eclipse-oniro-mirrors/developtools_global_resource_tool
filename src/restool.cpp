@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     SetConsoleOutputCP(CP_UTF8);
 #endif
     if (argv == nullptr) {
-        cerr << "Error: argv null" << endl;
+        PrintError(GetError(ERR_CODE_UNKNOWN_COMMAND_ERROR).FormatCause("argv null"));
         return RESTOOL_ERROR;
     }
     auto &parser = CmdParser::GetInstance();
