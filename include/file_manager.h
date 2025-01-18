@@ -35,6 +35,10 @@ public:
     {
         moduleName_ = moduleName;
     };
+    const std::string &GetModuleName() const
+    {
+        return moduleName_;
+    };
     uint32_t MergeResourceItem(const std::map<int64_t, std::vector<ResourceItem>> &resourceInfos);
     bool ScaleIcons(const std::string &output, const std::map<std::string, std::set<uint32_t>> &iconMap);
     void SetScanHap(bool state);
