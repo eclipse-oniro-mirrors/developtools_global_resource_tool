@@ -84,7 +84,7 @@ int64_t IdWorker::GetSystemId(ResType resType, const string &name) const
     return result->second.id;
 }
 
-void IdWorker::LoadIdFromHap(const map<int64_t, vector<ResourceItem>> &items)
+int64_t IdWorker::LoadIdFromHap(const map<int64_t, vector<ResourceItem>> &items)
 {
     int64_t minId = 0xffffffff;
     int64_t maxId = 0x01000000;
@@ -96,7 +96,12 @@ void IdWorker::LoadIdFromHap(const map<int64_t, vector<ResourceItem>> &items)
         maxId = max(maxId, item.first);
     }
     maxId_ = GetMaxId(minId);
-    appId_ = maxId + 1;
+    if (static_cast<uint64_t>(maxId) > maxId_) {
+        PrintError(GetError(ERR_CODE_RESOURCE_ID_EXCEED).FormatCause(static_cast<uint64_t>(maxId), maxId_));
+        return RESTOOL_ERROR;
+    }
+    appId_ = static_cast<uint64_t>(maxId) + 1;
+    return RESTOOL_SUCCESS;
 }
 
 int64_t IdWorker::GenerateAppId(ResType resType, const string &name)
