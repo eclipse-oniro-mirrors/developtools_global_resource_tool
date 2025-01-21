@@ -47,7 +47,11 @@ uint32_t ResourcePack::Package()
         }
         unique_ptr<ResourcePack> resourcePacker =
                 ResourcePackerFactory::CreatePacker(packType_, packageParser_);
-        errorCode = resourcePacker->Pack();
+        if (!resourcePacker) {
+            errorCode = RESTOOL_ERROR;
+        } else {
+            errorCode = resourcePacker->Pack();
+        }
     }
     if (errorCode == RESTOOL_SUCCESS) {
         ShowPackSuccess();

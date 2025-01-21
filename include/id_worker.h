@@ -33,7 +33,7 @@ public:
     std::vector<ResourceId> GetHeaderId() const;
     int64_t GetId(ResType resType, const std::string &name) const;
     int64_t GetSystemId(ResType resType, const std::string &name) const;
-    void LoadIdFromHap(std::map<int64_t, std::vector<ResourceItem>> &items);
+    int64_t LoadIdFromHap(std::map<int64_t, std::vector<ResourceItem>> &items);
 
 private:
     int64_t GenerateAppId(ResType resType, const std::string &name);

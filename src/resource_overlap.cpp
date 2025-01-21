@@ -88,7 +88,9 @@ uint32_t ResourceOverlap::LoadHapResources()
         return RESTOOL_ERROR;
     }
     
-    IdWorker::GetInstance().LoadIdFromHap(items);
+    if (IdWorker::GetInstance().LoadIdFromHap(items) != RESTOOL_SUCCESS) {
+        return RESTOOL_ERROR;
+    }
 
     FileManager &fileManager = FileManager::GetInstance();
     fileManager.SetModuleName(moduleName_);
