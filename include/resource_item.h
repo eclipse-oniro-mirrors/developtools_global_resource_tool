@@ -47,6 +47,7 @@ public:
     const std::vector<std::string> SplitValue() const;
     bool IsArray() const;
     bool IsPair() const;
+    void CheckData();
 
     ResourceItem &operator=(const ResourceItem &other);
 private:

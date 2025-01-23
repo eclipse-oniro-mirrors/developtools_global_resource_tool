@@ -510,9 +510,6 @@ bool ResourceTable::ReadDataRecordStart(basic_istream<char> &in, RecordItem &rec
     const vector<KeyParam> &keyparams = limitKeys.find(datas.find(offset)->second.second)->second;
     ResourceItem resourceitem(filename, keyparams, g_resTypeMap.find(record.resType)->second);
     resourceitem.SetLimitKey(ResourceUtil::PaserKeyParam(keyparams));
-    if (values[value_size - 1] == '\0') {
-        value_size--;
-    }
     resourceitem.SetData(values, value_size);
     resourceitem.MarkCoverable();
     resInfos[record.id].push_back(resourceitem);

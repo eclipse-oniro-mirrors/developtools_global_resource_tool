@@ -84,12 +84,13 @@ int64_t IdWorker::GetSystemId(ResType resType, const string &name) const
     return result->second.id;
 }
 
-int64_t IdWorker::LoadIdFromHap(const map<int64_t, vector<ResourceItem>> &items)
+int64_t IdWorker::LoadIdFromHap(map<int64_t, vector<ResourceItem>> &items)
 {
     int64_t minId = 0xffffffff;
     int64_t maxId = 0x01000000;
-    for (const auto &item : items) {
-        for (const auto &resourceItem : item.second) {
+    for (auto &item : items) {
+        for (auto &resourceItem : item.second) {
+            resourceItem.CheckData();
             ids_.emplace(make_pair(resourceItem.GetResType(), resourceItem.GetName()), item.first);
         }
         minId = min(minId, item.first);
