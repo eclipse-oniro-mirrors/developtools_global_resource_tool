@@ -174,7 +174,7 @@ uint32_t ResConfigParser::GetNumber(const cJSON *node, int c, HandleBack callbac
         return RESTOOL_ERROR;
     }
 
-    if (callback(c, std::to_string(node->valuedouble)) != RESTOOL_SUCCESS) {
+    if (callback(c, std::to_string(node->valueint)) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
