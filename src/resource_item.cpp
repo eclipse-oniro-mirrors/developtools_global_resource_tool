@@ -163,7 +163,7 @@ const std::vector<std::string> ResourceItem::SplitValue() const
 void ResourceItem::CheckData()
 {
     int8_t data[GetDataLength()];
-    for (int i = 0; i < GetDataLength(); i++) {
+    for (uint32_t i = 0; i < GetDataLength(); i++) {
         data[i] = GetData()[i];
     }
     if (data[GetDataLength() - 1] == '\0') {
