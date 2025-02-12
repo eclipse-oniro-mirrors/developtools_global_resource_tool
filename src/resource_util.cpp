@@ -288,9 +288,17 @@ void ResourceUtil::StringReplace(string &sourceStr, const string &oldStr, const 
 
 string ResourceUtil::GetLocaleLimitkey(const KeyParam &KeyParam)
 {
-    string str(reinterpret_cast<const char *>(&KeyParam.value));
-    reverse(str.begin(), str.end());
-    return str;
+    const char *rawValue = reinterpret_cast<const char *>(&KeyParam.value);
+    size_t len = sizeof(KeyParam.value);
+    char tmp[len + 1];
+    int j = 0;
+    for (size_t i = 1; i <= len; i++) {
+        if (*(rawValue + len - i)) {
+            tmp[j++] = *(rawValue + len - i);
+        }
+    }
+    tmp[j] = '\0';
+    return string(tmp);
 }
 
 string ResourceUtil::GetDeviceTypeLimitkey(const KeyParam &KeyParam)
@@ -332,6 +340,7 @@ string ResourceUtil::GetKeyParamValue(const KeyParam &KeyParam)
             val = GetResolutionLimitkey(KeyParam);
             break;
         case KeyType::LANGUAGE:
+        case KeyType::SCRIPT:
         case KeyType::REGION:
             val = GetLocaleLimitkey(KeyParam);
             break;
