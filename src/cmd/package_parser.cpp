@@ -251,7 +251,10 @@ uint32_t PackageParser::PrintVersion()
 uint32_t PackageParser::AddMoudleNames(const string& argValue)
 {
     if (!moduleNames_.empty()) {
-        PrintError(GetError(ERR_CODE_DOUBLE_MODULES).FormatCause(argValue.c_str()));
+        std::string existModuleNames;
+        for (const auto &module : moduleNames_) { existModuleNames.append(module).append(","); }
+        existModuleNames.pop_back();
+        PrintError(GetError(ERR_CODE_DOUBLE_MODULES).FormatCause(existModuleNames.c_str(), argValue.c_str()));
         return RESTOOL_ERROR;
     }
 
@@ -279,8 +282,19 @@ uint32_t PackageParser::AddConfig(const string& argValue)
 
 uint32_t PackageParser::AddStartId(const string& argValue)
 {
-    startId_ = strtoll(argValue.c_str(), nullptr, 16); // 16 is hexadecimal number
-    if ((startId_ >= 0x01000000 && startId_ < 0x06ffffff) || (startId_ >= 0x08000000 && startId_ < 0xffffffff)) {
+    char *end;
+    errno = 0;
+    long long id = static_cast<long long>(strtoll(argValue.c_str(), &end, 16)); // 16 is hexadecimal number
+    if (end == argValue.c_str() || errno == ERANGE || *end != '\0' || id == LLONG_MAX || id == LLONG_MIN) {
+        PrintError(GetError(ERR_CODE_INVALID_START_ID).FormatCause(argValue.c_str()));
+        return RESTOOL_ERROR;
+    }
+    if (id <= 0) {
+        PrintError(GetError(ERR_CODE_INVALID_START_ID).FormatCause(argValue.c_str()));
+        return RESTOOL_ERROR;
+    }
+    if ((id >= 0x01000000 && id < 0x06ffffff) || (id >= 0x08000000 && id < 0xffffffff)) {
+        startId_ = static_cast<uint32_t>(id);
         return RESTOOL_SUCCESS;
     }
     PrintError(GetError(ERR_CODE_INVALID_START_ID).FormatCause(argValue.c_str()));
@@ -309,7 +323,7 @@ uint32_t PackageParser::CheckParam() const
         return RESTOOL_ERROR;
     }
 
-    if (isTtargetConfig_ && !append_.empty()) {
+    if (isTargetConfig_ && !append_.empty()) {
         PrintError(GetError(ERR_CODE_EXCLUSIVE_OPTION).FormatCause("-x", "--target-config"));
         return RESTOOL_ERROR;
     }
@@ -425,15 +439,16 @@ bool PackageParser::GetIconCheck() const
 
 uint32_t PackageParser::ParseTargetConfig(const string& argValue)
 {
-    if (isTtargetConfig_) {
-        PrintError(ERR_CODE_DOUBLE_TARGET_CONFIG);
+    if (isTargetConfig_) {
+        PrintError(GetError(ERR_CODE_DOUBLE_TARGET_CONFIG).FormatCause(targetConfigValue_.c_str(), argValue.c_str()));
         return RESTOOL_ERROR;
     }
     if (!SelectCompileParse::ParseTargetConfig(argValue, targetConfig_)) {
         PrintError(GetError(ERR_CODE_INVALID_TARGET_CONFIG).FormatCause(argValue.c_str()));
         return RESTOOL_ERROR;
     }
-    isTtargetConfig_ = true;
+    isTargetConfig_ = true;
+    targetConfigValue_ = argValue;
     return RESTOOL_SUCCESS;
 }
 
@@ -453,7 +468,7 @@ uint32_t PackageParser::ParseThread(const std::string &argValue)
         PrintError(GetError(ERR_CODE_INVALID_THREAD_COUNT).FormatCause(argValue.c_str()));
         return RESTOOL_ERROR;
     }
-    threadCount_ = count;
+    threadCount_ = static_cast<size_t>(count);
     return RESTOOL_SUCCESS;
 }
 
@@ -469,7 +484,7 @@ const TargetConfig &PackageParser::GetTargetConfigValues() const
 
 bool PackageParser::IsTargetConfig() const
 {
-    return isTtargetConfig_;
+    return isTargetConfig_;
 }
 
 bool PackageParser::IsAscii(const string& argValue) const
@@ -606,8 +621,9 @@ uint32_t PackageParser::ParseCommand(int argc, char *argv[])
             }
             string errmsg;
             for (int i = optind; i < argc; i++) {
-                errmsg.append(argv[i]).append(" ");
+                errmsg.append(argv[i]).append(",");
             }
+            errmsg.pop_back();
             PrintError(GetError(ERR_CODE_INVALID_ARGUMENT).FormatCause(errmsg.c_str()));
             return RESTOOL_ERROR;
         }

@@ -40,7 +40,8 @@ bool ResourceDirectory::ScanResources(const string &resourcesDir, function<bool(
         }
 
         if (it->IsFile()) {
-            PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_DIR).FormatCause(it->GetFilePath().GetPath().c_str()));
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_PATH)
+                .FormatCause(it->GetFilePath().GetPath().c_str(), "not a directory"));
             return false;
         }
 
@@ -79,16 +80,12 @@ bool ResourceDirectory::ScanResourceLimitKeyDir(const string &resourceTypeDir, c
         }
 
         if (it->IsFile()) {
-            PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_DIR).FormatCause(dirPath.c_str()));
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_PATH).FormatCause(dirPath.c_str(), "not a directory"));
             return false;
         }
 
         ResType type = ResourceUtil::GetResTypeByDir(fileCluster);
         if (type == ResType::INVALID_RES_TYPE) {
-            string array;
-            for (auto item : g_fileClusterMap) {
-                array.append("'" + item.first + "' ");
-            }
             PrintError(GetError(ERR_CODE_INVALID_RESOURCE_DIR)
                            .FormatCause(fileCluster.c_str(), ResourceUtil::GetAllResTypeDirs().c_str())
                            .SetPosition(dirPath));

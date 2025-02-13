@@ -68,7 +68,9 @@ uint32_t JsonCompiler::CompileSingleFile(const FileInfo &fileInfo)
     string tag = item->string;
     auto ret = g_contentClusterMap.find(tag);
     if (ret == g_contentClusterMap.end()) {
-        PrintError(GetError(ERR_CODE_JSON_INVALID_NODE_NAME).FormatCause(tag.c_str()).SetPosition(fileInfo.filePath));
+        PrintError(GetError(ERR_CODE_JSON_INVALID_NODE_NAME)
+                       .FormatCause(tag.c_str(), ResourceUtil::GetAllRestypeString().c_str())
+                       .SetPosition(fileInfo.filePath));
         return RESTOOL_ERROR;
     }
     isBaseString_ = (fileInfo.limitKey == "base" &&
@@ -150,8 +152,15 @@ bool JsonCompiler::ParseJsonObjectLevel(cJSON *objectNode, const FileInfo &fileI
     resourceItem.SetLimitKey(fileInfo.limitKey);
     auto ret = handles_.find(fileInfo.fileType);
     if (ret == handles_.end()) {
+        std::string elementTypes = "[";
+        for (const auto &handle : handles_) {
+            elementTypes.append("\"").append(ResourceUtil::ResTypeToString(handle.first)).append("\",");
+        }
+        elementTypes.pop_back();
+        elementTypes.append("]");
         PrintError(GetError(ERR_CODE_INVALID_ELEMENT_TYPE)
-                       .FormatCause(ResourceUtil::ResTypeToString(fileInfo.fileType).c_str()));
+                       .FormatCause(ResourceUtil::ResTypeToString(fileInfo.fileType).c_str(), elementTypes.c_str())
+                       .SetPosition(fileInfo.filePath));
         return false;
     }
 
@@ -296,7 +305,7 @@ bool JsonCompiler::HandlePlural(const cJSON *objectNode, ResourceItem &resourceI
             string quantityValue = quantityNode->valuestring;
             if (find(attrs.begin(), attrs.end(), quantityValue) != attrs.end()) {
                 PrintError(GetError(ERR_CODE_DUPLICATE_QUANTITY)
-                               .FormatCause(resourceItem.GetName().c_str(), quantityValue.c_str())
+                               .FormatCause(quantityValue.c_str(), resourceItem.GetName().c_str())
                                .SetPosition(resourceItem.GetFilePath()));
                 return false;
             }
@@ -332,8 +341,8 @@ bool JsonCompiler::HandleSymbol(const cJSON *objectNode, ResourceItem &resourceI
 bool JsonCompiler::PushString(const string &value, ResourceItem &resourceItem) const
 {
     if (!resourceItem.SetData(reinterpret_cast<const int8_t *>(value.c_str()), value.length())) {
-        PrintError(GetError(ERR_CODE_SET_DATA_ERROR).FormatCause(resourceItem.GetName().c_str())
-            .SetPosition(resourceItem.GetFilePath()));
+        std::string msg = "item data is null, resource name: " + resourceItem.GetName();
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause(msg.c_str()).SetPosition(resourceItem.GetFilePath()));
         return false;
     }
     return true;
@@ -358,7 +367,7 @@ bool JsonCompiler::CheckJsonStringValue(const cJSON *valueNode, const ResourceIt
     string value = valueNode->valuestring;
     ResType type = resourceItem.GetResType();
     if (type ==  ResType::COLOR && !CheckColorValue(value.c_str())) {
-        PrintError(GetError(ERR_CODE_INVALID_COLOR_VALUE).FormatCause(value.c_str())
+        PrintError(GetError(ERR_CODE_INVALID_COLOR_VALUE).FormatCause(value.c_str(), resourceItem.GetName().c_str())
             .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
@@ -409,7 +418,7 @@ bool JsonCompiler::CheckJsonSymbolValue(const cJSON *valueNode, const ResourceIt
     }
     int unicode = strtol(unicodeStr.c_str(), nullptr, 16);
     if (!ResourceUtil::isUnicodeInPlane15or16(unicode)) {
-        PrintError(GetError(ERR_CODE_INVALID_SYMBOL).FormatCause(resourceItem.GetName().c_str())
+        PrintError(GetError(ERR_CODE_INVALID_SYMBOL).FormatCause(unicode, resourceItem.GetName().c_str())
             .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
@@ -476,9 +485,8 @@ bool JsonCompiler::ParseParent(const cJSON *objectNode, const ResourceItem &reso
         }
         string parentValue = parentNode->valuestring;
         if (parentValue.empty()) {
-            PrintError(GetError(ERR_CODE_PARENT_EMPTY)
-                           .FormatCause(type.c_str(), resourceItem.GetName().c_str())
-                           .SetPosition(resourceItem.GetFilePath()));
+            PrintError(GetError(ERR_CODE_PARENT_EMPTY).FormatCause(resourceItem.GetName().c_str())
+                .SetPosition(resourceItem.GetFilePath()));
             return false;
         }
         if (regex_match(parentValue, regex("^ohos:" + type + ":.+"))) {
@@ -555,12 +563,14 @@ bool JsonCompiler::CheckPluralValue(const cJSON *arrayItem, const ResourceItem &
     }
     string quantityValue = quantityNode->valuestring;
     if (find(QUANTITY_ATTRS.begin(), QUANTITY_ATTRS.end(), quantityValue) == QUANTITY_ATTRS.end()) {
-        string buffer(" ");
+        string buffer("[");
         for_each(QUANTITY_ATTRS.begin(), QUANTITY_ATTRS.end(), [&buffer](auto iter) {
-                buffer.append(iter).append(" ");
-            });
+            buffer.append("\"").append(iter).append("\",");
+        });
+        buffer.pop_back();
+        buffer.append("]");
         PrintError(GetError(ERR_CODE_INVALID_QUANTITY)
-                       .FormatCause(resourceItem.GetName().c_str(), quantityValue.c_str(), buffer.c_str())
+                       .FormatCause(quantityValue.c_str(), resourceItem.GetName().c_str(), buffer.c_str())
                        .SetPosition(filePath));
         return false;
     }

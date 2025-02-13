@@ -162,6 +162,9 @@ const std::vector<std::string> ResourceItem::SplitValue() const
 
 void ResourceItem::CheckData()
 {
+    if (GetDataLength() == 0) {
+        return;
+    }
     int8_t data[GetDataLength()];
     for (uint32_t i = 0; i < GetDataLength(); i++) {
         data[i] = GetData()[i];

@@ -52,7 +52,8 @@ uint32_t IResourceCompiler::Compile(const vector<DirectoryInfo> &directoryInfos)
             }
 
             if (!it->IsFile()) {
-                PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_FILE).FormatCause(it->GetFilePath().GetPath().c_str()));
+                PrintError(GetError(ERR_CODE_INVALID_RESOURCE_PATH)
+                    .FormatCause(it->GetFilePath().GetPath().c_str(), "not a file"));
                 return RESTOOL_ERROR;
             }
 
@@ -121,8 +122,8 @@ uint32_t IResourceCompiler::PostCommit()
         int64_t id = idWorker.GenerateId(nameInfo.first.first, nameInfo.first.second);
         if (id < 0) {
             PrintError(GetError(ERR_CODE_RESOURCE_ID_NOT_DEFINED)
-                           .FormatCause(ResourceUtil::ResTypeToString(nameInfo.first.first).c_str(),
-                                        nameInfo.first.second.c_str()));
+                           .FormatCause(nameInfo.first.second.c_str(),
+                                        ResourceUtil::ResTypeToString(nameInfo.first.first).c_str()));
             return RESTOOL_ERROR;
         }
         resourceInfos_.emplace(id, nameInfo.second);

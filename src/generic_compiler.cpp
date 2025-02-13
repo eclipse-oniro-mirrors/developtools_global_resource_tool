@@ -76,15 +76,15 @@ bool GenericCompiler::PostMediaFile(const FileInfo &fileInfo, const std::string 
 
     auto index = output.find_last_of(SEPARATOR_FILE);
     if (index == string::npos) {
-        PrintError(GetError(ERR_CODE_INVALID_FILE_PATH).FormatCause(output.c_str()));
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_PATH).FormatCause(output.c_str(), "missing separator"));
         return false;
     }
     string data = output.substr(index + 1);
     data = moduleName_ + SEPARATOR + RESOURCES_DIR + SEPARATOR + \
         fileInfo.limitKey + SEPARATOR + fileInfo.fileCluster + SEPARATOR + data;
     if (!resourceItem.SetData(reinterpret_cast<const int8_t *>(data.c_str()), data.length())) {
-        PrintError(GetError(ERR_CODE_SET_DATA_ERROR).FormatCause(resourceItem.GetName().c_str())
-            .SetPosition(fileInfo.filePath));
+        std::string msg = "item data is null, resource name: " + resourceItem.GetName();
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause(msg.c_str()).SetPosition(fileInfo.filePath));
         return false;
     }
 

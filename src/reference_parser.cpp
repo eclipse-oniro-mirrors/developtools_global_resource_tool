@@ -92,7 +92,8 @@ uint32_t ReferenceParser::ParseRefInResourceItem(ResourceItem &resourceItem) con
     bool update = false;
     if (IsStringOfResourceItem(resType)) {
         if (resourceItem.GetData() == nullptr) {
-            PrintError(GetError(ERR_CODE_ITEM_DATA_NULL).FormatCause(resourceItem.GetName().c_str()));
+            std::string msg = "item data is null, resource name: " + resourceItem.GetName();
+            PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause(msg.c_str()));
             return RESTOOL_ERROR;
         }
         data = string(reinterpret_cast<const char *>(resourceItem.GetData()), resourceItem.GetDataLength());
@@ -111,8 +112,8 @@ uint32_t ReferenceParser::ParseRefInResourceItem(ResourceItem &resourceItem) con
         }
     }
     if (update && !resourceItem.SetData(reinterpret_cast<const int8_t *>(data.c_str()), data.length())) {
-         PrintError(GetError(ERR_CODE_SET_DATA_ERROR).FormatCause(resourceItem.GetName().c_str())
-            .SetPosition(resourceItem.GetFilePath()));
+        std::string msg = "item data is null, resource name: " + resourceItem.GetName();
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause(msg.c_str()).SetPosition(resourceItem.GetFilePath()));
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
@@ -188,13 +189,14 @@ bool ReferenceParser::ParseRefJson(const string &from, const string &to)
 bool ReferenceParser::ParseRefResourceItemData(const ResourceItem &resourceItem, string &data, bool &update) const
 {
     if (resourceItem.GetData() == nullptr) {
-        PrintError(GetError(ERR_CODE_ITEM_DATA_NULL).FormatCause(resourceItem.GetName().c_str()));
+        std::string msg = "item data is null, resource name: " + resourceItem.GetName();
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause(msg.c_str()));
         return false;
     }
     data = string(reinterpret_cast<const char *>(resourceItem.GetData()), resourceItem.GetDataLength());
     vector<string> contents = ResourceUtil::DecomposeStrings(data);
     if (contents.empty()) {
-        PrintError(GetError(ERR_CODE_ARRAY_DECOMPOSE_ERROR).FormatCause(resourceItem.GetName().c_str(), data.c_str())
+        PrintError(GetError(ERR_CODE_ARRAY_TOO_LARGE).FormatCause(resourceItem.GetName().c_str())
             .SetPosition(resourceItem.GetFilePath()));
         return false;
     }
@@ -213,7 +215,7 @@ bool ReferenceParser::ParseRefResourceItemData(const ResourceItem &resourceItem,
 
     data = ResourceUtil::ComposeStrings(contents);
     if (data.empty()) {
-        PrintError(GetError(ERR_CODE_ARRAY_COMPOSE_ERROR).FormatCause(resourceItem.GetName().c_str(), contents.size())
+        PrintError(GetError(ERR_CODE_ARRAY_TOO_LARGE).FormatCause(resourceItem.GetName().c_str())
             .SetPosition(resourceItem.GetFilePath()));
         return false;
     }

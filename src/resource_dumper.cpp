@@ -152,7 +152,7 @@ uint32_t CommonDumper::DumpRes(std::string &out) const
     std::unique_ptr<cJSON, std::function<void(cJSON*)>> root(cJSON_CreateObject(),
         [](cJSON* node) { cJSON_Delete(node); });
     if (!root) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for root object"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for root object"));
         return RESTOOL_ERROR;
     }
     if (!bundleName_.empty() && !moduleName_.empty()) {
@@ -167,7 +167,7 @@ uint32_t CommonDumper::DumpRes(std::string &out) const
     }
     cJSON *resource = cJSON_CreateArray();
     if (!resource) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR)
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR)
             .FormatCause("unable to create cJSON object for resource array"));
         return RESTOOL_ERROR;
     }
@@ -179,7 +179,7 @@ uint32_t CommonDumper::DumpRes(std::string &out) const
     }
     char *rawStr = cJSON_Print(root.get());
     if (!rawStr) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("covert json object to str failed"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("covert json object to str failed"));
         return RESTOOL_ERROR;
     }
     out = rawStr;
@@ -191,14 +191,14 @@ uint32_t CommonDumper::DumpRes(std::string &out) const
 uint32_t CommonDumper::AddKeyParamsToJson(const std::vector<KeyParam> &keyParams, cJSON *json) const
 {
     if (!json) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("add keyparam to null json object"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("add keyparam to null json object"));
         return RESTOOL_ERROR;
     }
     for (const auto &keyParam : keyParams) {
         std::string valueStr = ResourceUtil::GetKeyParamValue(keyParam);
         cJSON *value = cJSON_CreateString(valueStr.c_str());
         if (!value) {
-            PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for keyparam"));
+            PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for keyparam"));
             return RESTOOL_ERROR;
         }
         cJSON_AddItemToObject(json, ResourceUtil::KeyTypeToStr(keyParam.keyType).c_str(), value);
@@ -209,26 +209,26 @@ uint32_t CommonDumper::AddKeyParamsToJson(const std::vector<KeyParam> &keyParams
 uint32_t CommonDumper::AddItemCommonPropToJson(int32_t resId, const ResourceItem &item, cJSON* json) const
 {
     if (!json) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("add item common property to null json object"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("add item common property to null json object"));
         return RESTOOL_ERROR;
     }
     cJSON *id = cJSON_CreateNumber(resId);
     if (!id) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for resource id"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for resource id"));
         return RESTOOL_ERROR;
     }
     cJSON_AddItemToObject(json, "id", id);
 
     cJSON *name = cJSON_CreateString(item.GetName().c_str());
     if (!name) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for resource name"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for resource name"));
         return RESTOOL_ERROR;
     }
     cJSON_AddItemToObject(json, "name", name);
 
     cJSON *type = cJSON_CreateString((ResourceUtil::ResTypeToString(item.GetResType())).c_str());
     if (!type) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for resource type"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for resource type"));
         return RESTOOL_ERROR;
     }
     cJSON_AddItemToObject(json, "type", type);
@@ -238,16 +238,16 @@ uint32_t CommonDumper::AddItemCommonPropToJson(int32_t resId, const ResourceItem
 uint32_t CommonDumper::AddResourceToJson(int64_t resId, const std::vector<ResourceItem> &items, cJSON *json) const
 {
     if (items.empty()) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("resource items is empty"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("resource items is empty"));
         return  RESTOOL_ERROR;
     }
     if (!json) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("add resource to null json object"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("add resource to null json object"));
         return RESTOOL_ERROR;
     }
     cJSON *resource = cJSON_CreateObject();
     if (!resource) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for resource item"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for resource item"));
         return RESTOOL_ERROR;
     }
     cJSON_AddItemToArray(json, resource);
@@ -257,7 +257,7 @@ uint32_t CommonDumper::AddResourceToJson(int64_t resId, const std::vector<Resour
     cJSON *entryCount = cJSON_CreateNumber(items.size());
     if (!entryCount) {
         PrintError(
-            GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for resource value count"));
+            GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for resource value count"));
         return RESTOOL_ERROR;
     }
     cJSON_AddItemToObject(resource, "entryCount", entryCount);
@@ -265,7 +265,7 @@ uint32_t CommonDumper::AddResourceToJson(int64_t resId, const std::vector<Resour
     cJSON *entryValues = cJSON_CreateArray();
     if (!resource) {
         PrintError(
-            GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for resource value array"));
+            GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for resource value array"));
         return RESTOOL_ERROR;
     }
     cJSON_AddItemToObject(resource, "entryValues", entryValues);
@@ -273,7 +273,7 @@ uint32_t CommonDumper::AddResourceToJson(int64_t resId, const std::vector<Resour
     for (const ResourceItem &item : items) {
         cJSON *value = cJSON_CreateObject();
         if (!value) {
-            PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR)
+            PrintError(GetError(ERR_CODE_UNDEFINED_ERROR)
                 .FormatCause("unable to create cJSON object for value item"));
             return RESTOOL_ERROR;
         }
@@ -291,12 +291,12 @@ uint32_t CommonDumper::AddResourceToJson(int64_t resId, const std::vector<Resour
 uint32_t CommonDumper::AddPairVauleToJson(const ResourceItem &item, cJSON *json) const
 {
     if (!json) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("add pair vaule to null json object"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("add pair vaule to null json object"));
         return RESTOOL_ERROR;
     }
     cJSON *value = cJSON_CreateObject();
     if (!value) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for value object"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for value object"));
         return RESTOOL_ERROR;
     }
     cJSON_AddItemToObject(json, "value", value);
@@ -305,7 +305,7 @@ uint32_t CommonDumper::AddPairVauleToJson(const ResourceItem &item, cJSON *json)
     if (rawValues.size() % PAIR_SIZE != 0) {
         cJSON *parent = cJSON_CreateString(rawValues[0].c_str());
         if (!parent) {
-            PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for parent"));
+            PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for parent"));
             return RESTOOL_ERROR;
         }
         cJSON_AddItemToObject(json, "parent", parent);
@@ -314,7 +314,7 @@ uint32_t CommonDumper::AddPairVauleToJson(const ResourceItem &item, cJSON *json)
     for (; index < rawValues.size(); index += PAIR_SIZE) {
         cJSON *item = cJSON_CreateString(rawValues[index].c_str());
         if (!item) {
-            PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR)
+            PrintError(GetError(ERR_CODE_UNDEFINED_ERROR)
                 .FormatCause("unable to create cJSON object for value item"));
             return RESTOOL_ERROR;
         }
@@ -326,13 +326,13 @@ uint32_t CommonDumper::AddPairVauleToJson(const ResourceItem &item, cJSON *json)
 uint32_t CommonDumper::AddValueToJson(const ResourceItem &item, cJSON *json) const
 {
     if (!json) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("add value to null json object"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("add value to null json object"));
         return RESTOOL_ERROR;
     }
     if (item.IsArray()) {
         cJSON *values = cJSON_CreateArray();
         if (!values) {
-            PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR)
+            PrintError(GetError(ERR_CODE_UNDEFINED_ERROR)
                 .FormatCause("unable to create cJSON object for value array"));
             return RESTOOL_ERROR;
         }
@@ -342,7 +342,7 @@ uint32_t CommonDumper::AddValueToJson(const ResourceItem &item, cJSON *json) con
             cJSON *valueItem = cJSON_CreateString(value.c_str());
             if (!valueItem) {
                 PrintError(
-                    GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for value item"));
+                    GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for value item"));
                 return RESTOOL_ERROR;
             }
             cJSON_AddItemToArray(values, valueItem);
@@ -355,7 +355,7 @@ uint32_t CommonDumper::AddValueToJson(const ResourceItem &item, cJSON *json) con
     std::string rawValue = std::string(reinterpret_cast<const char*>(item.GetData()), item.GetDataLength());
     cJSON *value = cJSON_CreateString(rawValue.c_str());
     if (!value) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for value"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for value"));
         return RESTOOL_ERROR;
     }
     cJSON_AddItemToObject(json, "value", value);
@@ -367,12 +367,12 @@ uint32_t ConfigDumper::DumpRes(std::string &out) const
     std::unique_ptr<cJSON, std::function<void(cJSON*)>> root(cJSON_CreateObject(),
         [](cJSON* node) { cJSON_Delete(node); });
     if (!root) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for root object"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for root object"));
         return RESTOOL_ERROR;
     }
     cJSON *configs = cJSON_CreateArray();
     if (!configs) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for config array"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for config array"));
         return RESTOOL_ERROR;
     }
     cJSON_AddItemToObject(root.get(), "config", configs);
@@ -388,7 +388,7 @@ uint32_t ConfigDumper::DumpRes(std::string &out) const
             cJSON *config = cJSON_CreateString(limitKey.c_str());
             if (!config) {
                 PrintError(
-                    GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("unable to create cJSON object for limitkey"));
+                    GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("unable to create cJSON object for limitkey"));
                 return RESTOOL_ERROR;
             }
             cJSON_AddItemToArray(configs, config);
@@ -396,7 +396,7 @@ uint32_t ConfigDumper::DumpRes(std::string &out) const
     }
     char *rawStr = cJSON_Print(root.get());
     if (!rawStr) {
-        PrintError(GetError(ERR_CODE_CREATE_JSON_ERROR).FormatCause("covert config json object to str failed"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("covert config json object to str failed"));
         return RESTOOL_ERROR;
     }
     out = rawStr;

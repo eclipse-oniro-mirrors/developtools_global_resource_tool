@@ -130,7 +130,7 @@ bool CompressionParser::ParseCompression(const cJSON *compressionNode)
         return true;
     }
     if (!cJSON_IsObject(compressionNode)) {
-        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("compression", "object"));
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("compression", "object").SetPosition(filePath_));
         return false;
     }
     cJSON *mediaNode = cJSON_GetObjectItem(compressionNode, "media");
@@ -140,7 +140,7 @@ bool CompressionParser::ParseCompression(const cJSON *compressionNode)
         return true;
     }
     if (!cJSON_IsObject(mediaNode)) {
-        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("media", "object"));
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("media", "object").SetPosition(filePath_));
         return false;
     }
     cJSON *enableNode = cJSON_GetObjectItem(mediaNode, "enable");
@@ -150,7 +150,7 @@ bool CompressionParser::ParseCompression(const cJSON *compressionNode)
         return true;
     }
     if (!cJSON_IsBool(enableNode)) {
-        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("enable", "bool"));
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause("enable", "bool").SetPosition(filePath_));
         return false;
     }
     mediaSwitch_ = cJSON_IsTrue(enableNode);
@@ -590,7 +590,7 @@ bool CompressionParser::CopyAndTranscode(const string &src, string &dst, const b
 
     auto index = dst.find_last_of(SEPARATOR_FILE);
     if (index == string::npos) {
-        PrintError(GetError(ERR_CODE_INVALID_FILE_PATH).FormatCause(dst.c_str()));
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_PATH).FormatCause(dst.c_str(), "missing separator"));
         return false;
     }
     uint32_t startIndex = outPath_.size() + RESOURCES_DIR.size() + 1;
@@ -621,7 +621,7 @@ bool CompressionParser::CheckAndScaleIcon(const std::string &src, const std::str
     }
     auto index = originDst.find_last_of(SEPARATOR_FILE);
     if (index == string::npos) {
-        PrintError(GetError(ERR_CODE_INVALID_FILE_PATH).FormatCause(originDst.c_str()));
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_PATH).FormatCause(originDst.c_str(), "missing separator"));
         return false;
     }
     uint32_t startIndex = outPath_.size() + RESOURCES_DIR.size() + 1;

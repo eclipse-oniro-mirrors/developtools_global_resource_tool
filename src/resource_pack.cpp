@@ -121,11 +121,14 @@ uint32_t ResourcePack::InitModule()
                 return moduleName_ == iter;
             });
         if (it == moduleNames.end()) {
-            string buffer(" ");
+            string buffer("[");
             for_each(moduleNames.begin(), moduleNames.end(), [&buffer](const auto &iter) {
-                    buffer.append(" " + iter + " ");
-                });
-            PrintError(GetError(ERR_CODE_MODULE_NAME_NOT_FOUND).FormatCause(moduleName_.c_str(), buffer.c_str()));
+                buffer.append("\"" + iter + "\"").append(",");
+            });
+            buffer.pop_back();
+            buffer.append("]");
+            PrintError(GetError(ERR_CODE_MODULE_NAME_NOT_FOUND).FormatCause(moduleName_.c_str(), buffer.c_str())
+                .SetPosition(configJson_.GetConfigFilePath()));
             return RESTOOL_ERROR;
         }
 
@@ -382,7 +385,6 @@ uint32_t ResourcePack::HandleFeature()
     int64_t labelId = entryJson.GetAbilityLabelId();
     int64_t iconId = entryJson.GetAbilityIconId();
     if (labelId <= 0 || iconId <= 0) {
-        PrintError(ERR_CODE_FA_ENTRY_NO_ICON_LABEL);
         return RESTOOL_ERROR;
     }
     string path = FileEntry::FilePath(featureDependEntry).Append(RESOURCE_INDEX_FILE).GetPath();
@@ -419,13 +421,15 @@ uint32_t ResourcePack::FindResourceItems(const map<int64_t, vector<ResourceItem>
 {
     auto ret = resInfoLocal.find(id);
     if (ret == resInfoLocal.end()) {
-        PrintError(GetError(ERR_CODE_RESOURCE_INDEX_ID_NOT_FOUND).FormatCause(id));
+        string msg = "the id '" + std::to_string(id) + "' not found";
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause(msg.c_str()));
         return RESTOOL_ERROR;
     }
     ResType type = ResType::INVALID_RES_TYPE;
     items = ret->second;
     if (items.empty()) {
-        PrintError(GetError(ERR_CODE_RESOURCE_INDEX_ITEM_EMPTY).FormatCause(id));
+        string msg = "the items of id '" + std::to_string(id) + "' is empty";
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause(msg.c_str()));
         return RESTOOL_ERROR;
     }
     for (auto &it : items) {
@@ -435,7 +439,8 @@ uint32_t ResourcePack::FindResourceItems(const map<int64_t, vector<ResourceItem>
         if (type != it.GetResType()) {
             string typePre = ResourceUtil::ResTypeToString(type);
             string typeCur = ResourceUtil::ResTypeToString(it.GetResType());
-            PrintError(GetError(ERR_CODE_RESOURCE_INDEX_INVALID_RESTYPE).FormatCause(typeCur.c_str(), typePre.c_str()));
+            string msg = "invalid restype '" + typePre + "', expected type is '" + typeCur + "'";
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause(msg.c_str()));
             return RESTOOL_ERROR;
         }
     }
@@ -448,9 +453,10 @@ uint32_t ResourcePack::HandleLabel(vector<ResourceItem> &items, ConfigParser &co
     string idName;
     for (auto it : items) {
         if (it.GetResType() != ResType::STRING) {
-            PrintError(GetError(ERR_CODE_RESOURCE_INDEX_INVALID_RESTYPE)
-                           .FormatCause(ResourceUtil::ResTypeToString(it.GetResType()).c_str(),
-                                        ResourceUtil::ResTypeToString(ResType::STRING).c_str()));
+            string typeCur = ResourceUtil::ResTypeToString(it.GetResType());
+            string typeExpect = ResourceUtil::ResTypeToString(ResType::STRING);
+            string msg = "invalid restype '" + typeCur + "', expected type is '" + typeExpect + "'";
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause(msg.c_str()));
             return RESTOOL_ERROR;
         }
         idName = it.GetName() + "_entry";
@@ -499,15 +505,16 @@ uint32_t ResourcePack::HandleIcon(vector<ResourceItem> &items, ConfigParser &con
     string idName;
     for (auto it : items) {
         if (it.GetResType() != ResType::MEDIA) {
-            PrintError(GetError(ERR_CODE_RESOURCE_INDEX_INVALID_RESTYPE)
-                           .FormatCause(ResourceUtil::ResTypeToString(it.GetResType()).c_str(),
-                                        ResourceUtil::ResTypeToString(ResType::MEDIA).c_str()));
+            string typeCur = ResourceUtil::ResTypeToString(it.GetResType());
+            string typeExpect = ResourceUtil::ResTypeToString(ResType::MEDIA);
+            string msg = "invalid restype '" + typeCur + "', expected type is '" + typeExpect + "'";
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause(msg.c_str()));
             return RESTOOL_ERROR;
         }
         string dataPath(reinterpret_cast<const char *>(it.GetData()));
         string::size_type pos = dataPath.find_first_of(SEPARATOR);
         if (pos == string::npos) {
-            PrintError(GetError(ERR_CODE_INVALID_FILE_PATH).FormatCause(dataPath.c_str()));
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_PATH).FormatCause(dataPath.c_str(), "missing separator"));
             return RESTOOL_ERROR;
         }
         dataPath = dataPath.substr(pos + 1);
