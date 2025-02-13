@@ -108,7 +108,8 @@ private:
     std::string idDefinedInputPath_;
     bool isIconCheck_ = false;
     TargetConfig targetConfig_;
-    bool isTtargetConfig_;
+    bool isTargetConfig_ = false;
+    std::string targetConfigValue_;
     std::vector<std::string> sysIdDefinedPaths_;
     std::string compressionPath_;
     size_t threadCount_{ 0 };

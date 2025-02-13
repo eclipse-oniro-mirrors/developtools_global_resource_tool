@@ -124,10 +124,12 @@ ResType ResourceUtil::GetResTypeByDir(const string &name)
 
 string ResourceUtil::GetAllResTypeDirs()
 {
-    string dirs;
+    string dirs = "[";
     for (auto iter = g_fileClusterMap.begin(); iter != g_fileClusterMap.end(); ++iter) {
-        dirs.append(iter->first + ", ");
+        dirs.append("\"").append(iter->first).append("\",");
     }
+    dirs.pop_back();
+    dirs.append("]");
     return dirs;
 }
 
@@ -394,10 +396,12 @@ bool ResourceUtil::CheckHexStr(const string &hex)
 
 string ResourceUtil::GetAllRestypeString()
 {
-    string result;
+    string result = "[";
     for (auto iter = g_contentClusterMap.begin(); iter != g_contentClusterMap.end(); ++iter) {
-        result = result + "," + iter->first;
+        result.append("\"").append(iter->first).append("\"").append(",");
     }
+    result.pop_back();
+    result.append("]");
     return result;
 }
 

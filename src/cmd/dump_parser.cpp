@@ -26,13 +26,13 @@ namespace Restool {
 using namespace std;
 uint32_t DumpParserBase::ParseOption(int argc, char *argv[], int currentIndex)
 {
-    if (currentIndex >= argc) {
+    if (currentIndex >= argc || currentIndex < 0) {
         PrintError(ERR_CODE_DUMP_MISSING_INPUT);
         return RESTOOL_ERROR;
     }
     inputPath_ = ResourceUtil::RealPath(argv[currentIndex]);
     if (inputPath_.empty()) {
-        PrintError(ERR_CODE_DUMP_INVALID_INPUT);
+        PrintError(GetError(ERR_CODE_DUMP_INVALID_INPUT).FormatCause(argv[currentIndex]));
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;

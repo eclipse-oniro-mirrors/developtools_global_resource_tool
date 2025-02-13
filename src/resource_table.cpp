@@ -112,7 +112,7 @@ uint32_t ResourceTable::LoadResTable(const string path, map<int64_t, vector<Reso
     int64_t length = in.tellg();
     if (length <= 0) {
         in.close();
-        PrintError(GetError(ERR_CODE_FILE_EMPTY).FormatCause(path.c_str()));
+        PrintError(GetError(ERR_CODE_READ_FILE_ERROR).FormatCause(path.c_str(), "file is empty"));
         return RESTOOL_ERROR;
     }
     in.seekg(0, ios::beg);
@@ -124,7 +124,8 @@ uint32_t ResourceTable::LoadResTable(const string path, map<int64_t, vector<Reso
 uint32_t ResourceTable::LoadResTable(basic_istream<char> &in, map<int64_t, vector<ResourceItem>> &resInfos)
 {
     if (!in) {
-        PrintError(GetError(ERR_CODE_FILE_STREAM_ERROR).FormatCause(in.rdstate()));
+        std::string msg = "file stream bad, state code: " + std::to_string(in.rdstate());
+        PrintError(GetError(ERR_CODE_READ_FILE_ERROR).FormatCause(in.rdstate(), msg.c_str()));
         return RESTOOL_ERROR;
     }
     in.seekg(0, ios::end);
@@ -161,23 +162,23 @@ uint32_t ResourceTable::CreateIdDefined(const map<int64_t, vector<ResourceItem>>
     cJSON *root = cJSON_CreateObject();
     cJSON *recordArray = cJSON_CreateArray();
     if (recordArray == nullptr) {
-        PrintError(GetError(ERR_CODE_CREATE_ID_DEFINED_ERROR)
-                       .FormatCause(idDefinedPath_.c_str(), "failed to create cJSON object for record array"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("failed to create cJSON object for record array")
+            .SetPosition(idDefinedPath_));
         cJSON_Delete(root);
         return RESTOOL_ERROR;
     }
     cJSON_AddItemToObject(root, "record", recordArray);
     for (const auto &pairPtr : allResource) {
         if (pairPtr.second.empty()) {
-            PrintError(GetError(ERR_CODE_CREATE_ID_DEFINED_ERROR)
-                       .FormatCause(idDefinedPath_.c_str(), "resource item vector is empty"));
+            PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("resource item vector is empty")
+                .SetPosition(idDefinedPath_));
             cJSON_Delete(root);
             return RESTOOL_ERROR;
         }
         cJSON *jsonItem = cJSON_CreateObject();
         if (jsonItem == nullptr) {
-            PrintError(GetError(ERR_CODE_CREATE_ID_DEFINED_ERROR)
-                           .FormatCause(idDefinedPath_.c_str(), "failed to create cJSON object for resource item"));
+            PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("failed to create cJSON object for resource item")
+                .SetPosition(idDefinedPath_));
             cJSON_Delete(root);
             return RESTOOL_ERROR;
         }
@@ -189,8 +190,8 @@ uint32_t ResourceTable::CreateIdDefined(const map<int64_t, vector<ResourceItem>>
         if (type.empty()) {
             string errMsg = "name = ";
             errMsg.append(name);
-            errMsg.append("invalid restype, type must in [").append(ResourceUtil::GetAllRestypeString()).append("]");
-            PrintError(GetError(ERR_CODE_CREATE_ID_DEFINED_ERROR).FormatCause(idDefinedPath_.c_str(), errMsg.c_str()));
+            errMsg.append("invalid restype, type must in ").append(ResourceUtil::GetAllRestypeString());
+            PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause(errMsg.c_str()).SetPosition(idDefinedPath_));
             cJSON_Delete(jsonItem);
             cJSON_Delete(root);
             return RESTOOL_ERROR;
@@ -248,7 +249,7 @@ uint32_t ResourceTable::SaveToResouorceIndex(const map<string, vector<TableData>
 bool ResourceTable::InitIndexHeader(IndexHeader &indexHeader, uint32_t count) const
 {
     if (memcpy_s(indexHeader.version, VERSION_MAX_LEN, RESTOOL_VERSION, VERSION_MAX_LEN) != EOK) {
-        PrintError(GetError(ERR_CODE_MEMCPY_ERROR).FormatCause("InitIndexHeader"));
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("memcpy error when init index header"));
         return false;
     }
     indexHeader.limitKeyConfigSize = count;
@@ -298,15 +299,15 @@ bool ResourceTable::SaveRecordItem(const map<string, vector<TableData>> &configs
     for (const auto &config : configs) {
         auto idSet = idSets.find(config.first);
         if (idSet == idSets.end()) {
-            string errMsg = "id set of limit key '" + config.first + "' not found";
-            PrintError(GetError(ERR_CODE_SAVE_INDEX_ERROR).FormatCause(errMsg.c_str()));
+            PrintError(GetError(ERR_CODE_INVALID_LIMIT_KEY).FormatCause(config.first.c_str()));
             return false;
         }
 
         for (const auto &tableData : config.second) {
             if (idSet->second.data.find(tableData.id) == idSet->second.data.end()) {
-                string errMsg = "the resource table id " + to_string(tableData.id) + " not found";
-                PrintError(GetError(ERR_CODE_SAVE_INDEX_ERROR).FormatCause(errMsg.c_str()));
+                string resType = ResourceUtil::ResTypeToString(tableData.resourceItem.GetResType());
+                string name = tableData.resourceItem.GetName();
+                PrintError(GetError(ERR_CODE_RESOURCE_ID_NOT_DEFINED).FormatCause(name.c_str(), resType.c_str()));
                 return false;
             }
             idSet->second.data[tableData.id] = pos;
@@ -368,7 +369,7 @@ bool ResourceTable::ReadFileHeader(basic_istream<char> &in, IndexHeader &indexHe
 {
     pos += sizeof(indexHeader);
     if (pos > length) {
-        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("file header"));
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("header length error"));
         return false;
     }
     in.read(reinterpret_cast<char *>(indexHeader.version), VERSION_MAX_LEN);
@@ -383,14 +384,15 @@ bool ResourceTable::ReadLimitKeys(basic_istream<char> &in, map<int64_t, vector<K
     for (uint32_t i = 0; i< count; i++) {
         pos = pos + TAG_LEN + INT_TO_BYTES + INT_TO_BYTES;
         if (pos > length) {
-            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("KEYS"));
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("KEYS length error"));
             return false;
         }
         LimitKeyConfig limitKey;
         in.read(reinterpret_cast<char *>(limitKey.keyTag), TAG_LEN);
         string keyTag(reinterpret_cast<const char *>(limitKey.keyTag), TAG_LEN);
         if (keyTag != "KEYS") {
-            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause(string("key tag = " + keyTag).c_str()));
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX)
+                .FormatCause(string("invalid key tag = " + keyTag).c_str()));
             return false;
         }
         in.read(reinterpret_cast<char *>(&limitKey.offset), INT_TO_BYTES);
@@ -400,7 +402,7 @@ bool ResourceTable::ReadLimitKeys(basic_istream<char> &in, map<int64_t, vector<K
         for (uint32_t j = 0; j < limitKey.keyCount; j++) {
             pos = pos + INT_TO_BYTES + INT_TO_BYTES;
             if (pos > length) {
-                PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("keyParams"));
+                PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("keyParams length error"));
                 return false;
             }
             KeyParam keyParam;
@@ -419,7 +421,7 @@ bool ResourceTable::ReadIdTables(basic_istream<char> &in, std::map<int64_t, std:
     for (uint32_t i = 0; i< count; i++) {
         pos = pos + TAG_LEN + INT_TO_BYTES;
         if (pos > length) {
-            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("IDSS"));
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("IDSS length error"));
             return false;
         }
         IdSet idss;
@@ -427,7 +429,8 @@ bool ResourceTable::ReadIdTables(basic_istream<char> &in, std::map<int64_t, std:
         in.read(reinterpret_cast<char *>(idss.idTag), TAG_LEN);
         string idTag(reinterpret_cast<const char *>(idss.idTag), TAG_LEN);
         if (idTag != "IDSS") {
-            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause(string("id tag = " + idTag).c_str()));
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX)
+                .FormatCause(string("invalid id tag = " + idTag).c_str()));
             return false;
         }
         in.read(reinterpret_cast<char *>(&idss.idCount), INT_TO_BYTES);
@@ -435,7 +438,7 @@ bool ResourceTable::ReadIdTables(basic_istream<char> &in, std::map<int64_t, std:
         for (uint32_t j = 0; j < idss.idCount; j++) {
             pos = pos + INT_TO_BYTES + INT_TO_BYTES;
             if (pos > length) {
-                PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("id data"));
+                PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("id data length error"));
                 return false;
             }
             IdData data;
@@ -451,13 +454,13 @@ bool ResourceTable::ReadDataRecordPrepare(basic_istream<char> &in, RecordItem &r
 {
     pos = pos + INT_TO_BYTES;
     if (pos > length) {
-        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("data record"));
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("data record length error"));
         return false;
     }
     in.read(reinterpret_cast<char *>(&record.size), INT_TO_BYTES);
     pos = pos + record.size;
     if (pos > length) {
-        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("record.size"));
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("record.size length error"));
         return false;
     }
     in.read(reinterpret_cast<char *>(&record.resType), INT_TO_BYTES);
@@ -475,7 +478,7 @@ bool ResourceTable::ReadDataRecordStart(basic_istream<char> &in, RecordItem &rec
     uint16_t value_size = 0;
     in.read(reinterpret_cast<char *>(&value_size), sizeof(uint16_t));
     if (value_size + sizeof(uint16_t) > record.size) {
-        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("value size"));
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("value size error"));
         return false;
     }
     int8_t values[value_size];
@@ -484,7 +487,7 @@ bool ResourceTable::ReadDataRecordStart(basic_istream<char> &in, RecordItem &rec
     uint16_t name_size = 0;
     in.read(reinterpret_cast<char *>(&name_size), sizeof(uint16_t));
     if (value_size + sizeof(uint16_t) + name_size + sizeof(uint16_t) > record.size) {
-        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("name size"));
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("name size error"));
         return false;
     }
     int8_t name[name_size];
@@ -493,17 +496,17 @@ bool ResourceTable::ReadDataRecordStart(basic_istream<char> &in, RecordItem &rec
 
     auto idTableOffset = datas.find(offset);
     if (idTableOffset == datas.end()) {
-        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("id offset"));
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("invalid id offset"));
         return false;
     }
 
     if (idTableOffset->second.first != record.id) {
-        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("id"));
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("invalid id"));
         return false;
     }
 
     if (limitKeys.find(idTableOffset->second.second) == limitKeys.end()) {
-        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("limit key offset"));
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("invalid limit key offset"));
         return false;
     }
 

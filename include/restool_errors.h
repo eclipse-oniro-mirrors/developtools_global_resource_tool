@@ -30,6 +30,7 @@ constexpr uint32_t RESTOOL_SUCCESS = 0;
 constexpr uint32_t RESTOOL_ERROR = -1;
 constexpr uint16_t BUFFER_SIZE = 4096;
 // 11200xxx unknown error
+constexpr uint32_t ERR_CODE_UNDEFINED_ERROR = 11200000;
 
 // 11201xxx dependency error
 const std::string ERR_TYPE_DEPENDENCY = "Dependency Error";
@@ -49,20 +50,10 @@ constexpr uint32_t ERR_CODE_JSON_INVALID_NODE_NAME = 11203007;
 // 11204xxx file resource error
 const std::string ERR_TYPE_FILE_RESOURCE = "File Resource Error";
 constexpr uint32_t ERR_CODE_CREATE_FILE_ERROR = 11204001;
-constexpr uint32_t ERR_CODE_FILE_NOT_EXIST = 11204002;
 constexpr uint32_t ERR_CODE_REMOVE_FILE_ERROR = 11204003;
 constexpr uint32_t ERR_CODE_COPY_FILE_ERROR = 11204004;
 constexpr uint32_t ERR_CODE_OPEN_FILE_ERROR = 11204005;
-constexpr uint32_t ERR_CODE_FILE_EMPTY = 11204006;
-constexpr uint32_t ERR_CODE_FILE_STREAM_ERROR = 11204007;
-constexpr uint32_t ERR_CODE_FILE_MAP_ERROR = 11204008;
-
-// 11205xxx syntax error
-const std::string ERR_TYPE_SYNTAX = "Syntax Error";
-constexpr uint32_t ERR_CODE_SET_DATA_ERROR = 11205001;
-constexpr uint32_t ERR_CODE_ITEM_DATA_NULL = 11205002;
-constexpr uint32_t ERR_CODE_MEMCPY_ERROR = 11205003;
-constexpr uint32_t ERR_CODE_CREATE_JSON_ERROR = 11205004;
+constexpr uint32_t ERR_CODE_READ_FILE_ERROR = 11204006;
 
 // 11210xxx parse command error
 const std::string ERR_TYPE_COMMAND_PARSE = "Command Parse Error";
@@ -100,22 +91,15 @@ constexpr uint32_t ERR_CODE_OUTPUT_EXIST = 11211001;
 constexpr uint32_t ERR_CODE_CONFIG_JSON_MISSING = 11211002;
 constexpr uint32_t ERR_CODE_INVALID_MODULE_TYPE = 11211003;
 constexpr uint32_t ERR_CODE_EXCLUSIVE_START_ID = 11211004;
-constexpr uint32_t ERR_CODE_ID_DEFINED_NODE_MISSING = 11211005;
-constexpr uint32_t ERR_CODE_ID_DEFINED_NODE_MISMATCH = 11211006;
 constexpr uint32_t ERR_CODE_ID_DEFINED_INVALID_TYPE = 11211007;
 constexpr uint32_t ERR_CODE_ID_DEFINED_INVALID_ID = 11211008;
-constexpr uint32_t ERR_CODE_ID_DEFINED_ID_OUT_RANGE = 11211009;
 constexpr uint32_t ERR_CODE_ID_DEFINED_ORDER_MISMATCH = 11211010;
-constexpr uint32_t ERR_CODE_ID_DEFINED_INVALID_START_ID = 11211011;
 constexpr uint32_t ERR_CODE_ID_DEFINED_SAME_ID = 11211012;
-constexpr uint32_t ERR_CODE_ID_DEFINED_SAME_RESOURCE = 11211013;
 constexpr uint32_t ERR_CODE_MODULE_NAME_NOT_FOUND = 11211014;
 
-constexpr uint32_t ERR_CODE_RESOURCE_PATH_NOT_DIR = 11211101;
-constexpr uint32_t ERR_CODE_INVALID_FILE_PATH = 11211102;
+constexpr uint32_t ERR_CODE_INVALID_RESOURCE_PATH = 11211101;
 constexpr uint32_t ERR_CODE_INVALID_LIMIT_KEY = 11211103;
 constexpr uint32_t ERR_CODE_INVALID_RESOURCE_DIR = 11211104;
-constexpr uint32_t ERR_CODE_RESOURCE_PATH_NOT_FILE = 11211105;
 constexpr uint32_t ERR_CODE_INVALID_TRANSLATE_PRIORITY = 11211106;
 constexpr uint32_t ERR_CODE_INVALID_ELEMENT_TYPE = 11211107;
 constexpr uint32_t ERR_CODE_INVALID_COLOR_VALUE = 11211108;
@@ -131,15 +115,7 @@ constexpr uint32_t ERR_CODE_RESOURCE_DUPLICATE = 11211117;
 constexpr uint32_t ERR_CODE_RESOURCE_ID_EXCEED = 11211118;
 constexpr uint32_t ERR_CODE_RESOURCE_ID_NOT_DEFINED = 11211119;
 constexpr uint32_t ERR_CODE_REF_NOT_DEFINED = 11211120;
-constexpr uint32_t ERR_CODE_ARRAY_DECOMPOSE_ERROR = 11211121;
-constexpr uint32_t ERR_CODE_ARRAY_COMPOSE_ERROR = 11211122;
-constexpr uint32_t ERR_CODE_FA_ENTRY_NO_ICON_LABEL = 11211123;
 constexpr uint32_t ERR_CODE_INVALID_RESOURCE_INDEX = 11211124;
-constexpr uint32_t ERR_CODE_RESOURCE_INDEX_ID_NOT_FOUND = 11211125;
-constexpr uint32_t ERR_CODE_RESOURCE_INDEX_ITEM_EMPTY = 11211126;
-constexpr uint32_t ERR_CODE_RESOURCE_INDEX_INVALID_RESTYPE = 11211127;
-constexpr uint32_t ERR_CODE_SAVE_INDEX_ERROR = 11211128;
-constexpr uint32_t ERR_CODE_CREATE_ID_DEFINED_ERROR = 11211129;
 
 // 11212xxx resource dump error
 const std::string ERR_TYPE_RESOURCE_DUMP = "Resource Dump Error";
@@ -186,7 +162,7 @@ private:
         if (fmt.empty()) {
             return fmt;
         }
-        int paramCount = sizeof...(args);
+        size_t paramCount = sizeof...(args);
         if (paramCount == 0) {
             return fmt;
         }

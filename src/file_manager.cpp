@@ -165,8 +165,8 @@ bool FileManager::ScaleIcon(const string &output, ResourceItem &item)
     std::string newData = moduleName_ + SEPARATOR + RESOURCES_DIR + SEPARATOR + item.GetLimitKey() + SEPARATOR + media
         + SEPARATOR + newFileName;
     if (!item.SetData(reinterpret_cast<const int8_t *>(newData.c_str()), newData.length())) {
-        PrintError(GetError(ERR_CODE_SET_DATA_ERROR).FormatCause(item.GetName().c_str())
-            .SetPosition(item.GetFilePath()));
+        std::string msg = "item data is null, resource name: " + item.GetName();
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause(msg.c_str()).SetPosition(item.GetFilePath()));
         return false;
     }
     return true;

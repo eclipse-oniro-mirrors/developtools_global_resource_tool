@@ -34,12 +34,13 @@ private:
     void InitFileListCommand(HandleBack callback);
     using HandleFileListValue = std::function<uint32_t(const cJSON *)>;
     std::map<std::string, HandleFileListValue> fileListHandles_;
-    uint32_t GetString(const cJSON *node, int c, HandleBack callback);
-    uint32_t GetArray(const cJSON *node, int c, HandleBack callback);
+    uint32_t GetString(const std::string &nodeName, const cJSON *node, int c, HandleBack callback);
+    uint32_t GetArray(const std::string &nodeName, const cJSON *node, int c, HandleBack callback);
     uint32_t GetModuleNames(const cJSON *node, int c, HandleBack callback);
-    uint32_t GetBool(const cJSON *node, int c, HandleBack callback);
-    uint32_t GetNumber(const cJSON *node, int c, HandleBack callback);
+    uint32_t GetBool(const std::string &nodeName, const cJSON *node, int c, HandleBack callback);
+    uint32_t GetNumber(const std::string &nodeName, const cJSON *node, int c, HandleBack callback);
     cJSON *root_;
+    std::string filePath_;
 };
 }
 }

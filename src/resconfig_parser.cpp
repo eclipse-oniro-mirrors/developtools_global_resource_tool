@@ -30,6 +30,7 @@ ResConfigParser::~ResConfigParser()
 }
 uint32_t ResConfigParser::Init(const string &filePath, HandleBack callback)
 {
+    filePath_ = filePath;
     if (!ResourceUtil::OpenJsonFile(filePath, &root_)) {
         return RESTOOL_ERROR;
     }
@@ -62,44 +63,47 @@ uint32_t ResConfigParser::Init(const string &filePath, HandleBack callback)
 void ResConfigParser::InitFileListCommand(HandleBack callback)
 {
     using namespace placeholders;
-    fileListHandles_.emplace("configPath", bind(&ResConfigParser::GetString, this, _1,
+    fileListHandles_.emplace("configPath", bind(&ResConfigParser::GetString, this, "configPath", _1,
         Option::JSON, callback));
-    fileListHandles_.emplace("packageName", bind(&ResConfigParser::GetString, this, _1,
+    fileListHandles_.emplace("packageName", bind(&ResConfigParser::GetString, this, "packageName", _1,
         Option::PACKAGENAME, callback));
-    fileListHandles_.emplace("output", bind(&ResConfigParser::GetString, this, _1,
+    fileListHandles_.emplace("output", bind(&ResConfigParser::GetString, this, "output", _1,
         Option::OUTPUTPATH, callback));
-    fileListHandles_.emplace("startId", bind(&ResConfigParser::GetString, this, _1,
+    fileListHandles_.emplace("startId", bind(&ResConfigParser::GetString, this, "startId", _1,
         Option::STARTID, callback));
-    fileListHandles_.emplace("entryCompiledResource", bind(&ResConfigParser::GetString, this, _1,
-        Option::DEPENDENTRY, callback));
-    fileListHandles_.emplace("ids", bind(&ResConfigParser::GetString, this, _1,
-        Option::IDS, callback));
-    fileListHandles_.emplace("definedIds", bind(&ResConfigParser::GetString, this, _1,
+    fileListHandles_.emplace("entryCompiledResource", bind(&ResConfigParser::GetString, this, "entryCompiledResource",
+        _1, Option::DEPENDENTRY, callback));
+    fileListHandles_.emplace("ids", bind(&ResConfigParser::GetString, this, "ids", _1, Option::IDS, callback));
+    fileListHandles_.emplace("definedIds", bind(&ResConfigParser::GetString, this, "definedIds", _1,
         Option::DEFINED_IDS, callback));
-    fileListHandles_.emplace("applicationResource", bind(&ResConfigParser::GetString, this, _1,
+    fileListHandles_.emplace("applicationResource", bind(&ResConfigParser::GetString, this, "applicationResource", _1,
         Option::INPUTPATH, callback));
-    fileListHandles_.emplace("ResourceTable", bind(&ResConfigParser::GetArray, this, _1,
+    fileListHandles_.emplace("ResourceTable", bind(&ResConfigParser::GetArray, this, "ResourceTable", _1,
         Option::RESHEADER, callback));
-    fileListHandles_.emplace("moduleResources", bind(&ResConfigParser::GetArray, this, _1,
+    fileListHandles_.emplace("moduleResources", bind(&ResConfigParser::GetArray, this, "moduleResources", _1,
         Option::INPUTPATH, callback));
-    fileListHandles_.emplace("dependencies", bind(&ResConfigParser::GetArray, this, _1,
+    fileListHandles_.emplace("dependencies", bind(&ResConfigParser::GetArray, this, "dependencies", _1,
         Option::INPUTPATH, callback));
     fileListHandles_.emplace("moduleNames", bind(&ResConfigParser::GetModuleNames, this, _1,
         Option::MODULES, callback));
-    fileListHandles_.emplace("iconCheck", bind(&ResConfigParser::GetBool, this, _1,
+    fileListHandles_.emplace("iconCheck", bind(&ResConfigParser::GetBool, this, "iconCheck", _1,
         Option::ICON_CHECK, callback));
-    fileListHandles_.emplace("definedSysIds", bind(&ResConfigParser::GetString, this, _1,
+    fileListHandles_.emplace("definedSysIds", bind(&ResConfigParser::GetString, this, "definedSysIds", _1,
         Option::DEFINED_SYSIDS, callback));
-    fileListHandles_.emplace("compression", bind(&ResConfigParser::GetString, this, _1,
+    fileListHandles_.emplace("compression", bind(&ResConfigParser::GetString, this, "compression", _1,
         Option::COMPRESSED_CONFIG, callback));
-    fileListHandles_.emplace("thread", bind(&ResConfigParser::GetNumber, this, _1,
+    fileListHandles_.emplace("thread", bind(&ResConfigParser::GetNumber, this, "thread", _1,
         Option::THREAD, callback));
 }
 
-uint32_t ResConfigParser::GetString(const cJSON *node, int c, HandleBack callback)
+uint32_t ResConfigParser::GetString(const std::string &nodeName, const cJSON *node, int c, HandleBack callback)
 {
-    if (!node || !cJSON_IsString(node)) {
-        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(node->string, "string"));
+    if (!node) {
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause(nodeName.c_str()).SetPosition(filePath_));
+        return RESTOOL_ERROR;
+    }
+    if (!cJSON_IsString(node)) {
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(node->string, "string").SetPosition(filePath_));
         return RESTOOL_ERROR;
     }
 
@@ -109,16 +113,21 @@ uint32_t ResConfigParser::GetString(const cJSON *node, int c, HandleBack callbac
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ResConfigParser::GetArray(const cJSON *node, int c, HandleBack callback)
+uint32_t ResConfigParser::GetArray(const std::string &nodeName, const cJSON *node, int c, HandleBack callback)
 {
-    if (!node || !cJSON_IsArray(node)) {
-        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(node->string, "array"));
+    if (!node) {
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause(nodeName.c_str()).SetPosition(filePath_));
+        return RESTOOL_ERROR;
+    }
+    if (!cJSON_IsArray(node)) {
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(node->string, "array").SetPosition(filePath_));
         return RESTOOL_ERROR;
     }
 
     for (cJSON *item = node->child; item; item = item->next) {
         if (!cJSON_IsString(item)) {
-            PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(item->string, "string"));
+            PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(item->string, "string")
+                .SetPosition(filePath_));
             return RESTOOL_ERROR;
         }
         if (callback(c, item->valuestring) != RESTOOL_SUCCESS) {
@@ -131,14 +140,14 @@ uint32_t ResConfigParser::GetArray(const cJSON *node, int c, HandleBack callback
 uint32_t ResConfigParser::GetModuleNames(const cJSON *node, int c, HandleBack callback)
 {
     if (!node) {
-        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause(node->string));
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause("moduleNames").SetPosition(filePath_));
         return RESTOOL_ERROR;
     }
     if (cJSON_IsString(node)) {
-        return GetString(node, c, callback);
+        return GetString("moduleNames", node, c, callback);
     }
     string moduleNames;
-    if (GetArray(node, c, [&moduleNames](int c, const string &argValue) {
+    if (GetArray("moduleNames", node, c, [&moduleNames](int c, const string &argValue) {
         if (!moduleNames.empty()) {
             moduleNames.append(",");
         }
@@ -154,10 +163,14 @@ uint32_t ResConfigParser::GetModuleNames(const cJSON *node, int c, HandleBack ca
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ResConfigParser::GetBool(const cJSON *node, int c, HandleBack callback)
+uint32_t ResConfigParser::GetBool(const std::string &nodeName, const cJSON *node, int c, HandleBack callback)
 {
-    if (!node || !cJSON_IsBool(node)) {
-        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(node->string, "bool"));
+    if (!node) {
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause(nodeName.c_str()).SetPosition(filePath_));
+        return RESTOOL_ERROR;
+    }
+    if (!cJSON_IsBool(node)) {
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(node->string, "bool").SetPosition(filePath_));
         return RESTOOL_ERROR;
     }
 
@@ -167,10 +180,14 @@ uint32_t ResConfigParser::GetBool(const cJSON *node, int c, HandleBack callback)
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ResConfigParser::GetNumber(const cJSON *node, int c, HandleBack callback)
+uint32_t ResConfigParser::GetNumber(const std::string &nodeName, const cJSON *node, int c, HandleBack callback)
 {
-    if (!node || !cJSON_IsNumber(node)) {
-        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(node->string, "number"));
+    if (!node) {
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause(nodeName.c_str()).SetPosition(filePath_));
+        return RESTOOL_ERROR;
+    }
+    if (!cJSON_IsNumber(node)) {
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(node->string, "number").SetPosition(filePath_));
         return RESTOOL_ERROR;
     }
 

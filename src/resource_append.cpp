@@ -86,7 +86,8 @@ bool ResourceAppend::Combine(const string &folderPath)
     itemsForModule_.clear();
     for (const auto &child : entry.GetChilds()) {
         if (!child->IsFile()) {
-            PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_FILE).FormatCause(child->GetFilePath().GetPath().c_str()));
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_PATH)
+                .FormatCause(child->GetFilePath().GetPath().c_str(), "not a file"));
             return false;
         }
         if (child->GetFilePath().GetFilename() == ID_DEFINED_FILE) {
@@ -176,7 +177,8 @@ bool ResourceAppend::ScanSubLimitkeyResources(const FileEntry entry, const strin
         }
 
         if (child->IsFile()) {
-            PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_DIR).FormatCause(child->GetFilePath().GetPath().c_str()));
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_PATH)
+                .FormatCause(child->GetFilePath().GetPath().c_str(), "not a directory"));
             return false;
         }
 
@@ -217,7 +219,8 @@ bool ResourceAppend::ScanLimitKey(const unique_ptr<FileEntry> &entry,
         }
 
         if (child->IsFile()) {
-            PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_DIR).FormatCause(child->GetFilePath().GetPath().c_str()));
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_PATH)
+                .FormatCause(child->GetFilePath().GetPath().c_str(), "not a directory"));
             return false;
         }
 
@@ -248,7 +251,8 @@ bool ResourceAppend::ScanFiles(const unique_ptr<FileEntry> &entry,
         }
 
         if (!child->IsFile()) {
-            PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_FILE).FormatCause(child->GetFilePath().GetPath().c_str()));
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_PATH)
+                .FormatCause(child->GetFilePath().GetPath().c_str(), "not a file"));
             return false;
         }
 
@@ -406,7 +410,7 @@ bool ResourceAppend::LoadResourceItem(const string &filePath)
     int32_t length = in.tellg();
     in.seekg(0, in.beg);
     if (length <= 0) {
-        PrintError(GetError(ERR_CODE_FILE_EMPTY).FormatCause(filePath.c_str()));
+        PrintError(GetError(ERR_CODE_READ_FILE_ERROR).FormatCause(filePath.c_str(), "file is empty"));
         return false;
     }
     char buffer[length];
@@ -446,7 +450,7 @@ bool ResourceAppend::WriteRawFilesOrResFiles(const string &filePath, const strin
 {
     string::size_type pos = filePath.find(limit);
     if (pos == string::npos) {
-        PrintError(GetError(ERR_CODE_INVALID_FILE_PATH).FormatCause(filePath.c_str()));
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_PATH).FormatCause(filePath.c_str(), "missing separator"));
         return false;
     }
 
@@ -478,8 +482,8 @@ bool ResourceAppend::Push(const shared_ptr<ResourceItem> &resourceItem)
     int64_t id = IdWorker::GetInstance().GenerateId(resourceItem->GetResType(), idName);
     if (id < 0) {
         PrintError(GetError(ERR_CODE_RESOURCE_ID_NOT_DEFINED)
-                       .FormatCause(ResourceUtil::ResTypeToString(resourceItem->GetResType()).c_str(),
-                                    resourceItem->GetName().c_str()));
+                       .FormatCause(resourceItem->GetName().c_str(),
+                                    ResourceUtil::ResTypeToString(resourceItem->GetResType()).c_str()));
         return false;
     }
 
@@ -663,7 +667,7 @@ bool ResourceAppend::LoadResourceItemWin(const string &filePath)
     HANDLE hFileMap = CreateFileMapping(hReadFile, nullptr, PAGE_READONLY, 0, fileSize, nullptr);
     if (hFileMap == INVALID_HANDLE_VALUE) {
         string errMsg = "create mapping error: " + to_string(GetLastError());
-        PrintError(GetError(ERR_CODE_FILE_MAP_ERROR).FormatCause(errMsg.c_str()).SetPosition(filePath));
+        PrintError(GetError(ERR_CODE_READ_FILE_ERROR).FormatCause(filePath.c_str(), errMsg.c_str()));
         CloseHandle(hReadFile);
         return result;
     }
@@ -671,7 +675,7 @@ bool ResourceAppend::LoadResourceItemWin(const string &filePath)
     void* pBuffer = MapViewOfFile(hFileMap, FILE_MAP_READ, 0, 0, 0);
     if (pBuffer == nullptr) {
         string errMsg = "map view of file error: " + to_string(GetLastError());
-        PrintError(GetError(ERR_CODE_FILE_MAP_ERROR).FormatCause(errMsg.c_str()).SetPosition(filePath));
+        PrintError(GetError(ERR_CODE_READ_FILE_ERROR).FormatCause(filePath.c_str(), errMsg.c_str()));
         CloseHandle(hReadFile);
         return result;
     }

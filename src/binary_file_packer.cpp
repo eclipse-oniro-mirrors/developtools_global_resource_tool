@@ -75,7 +75,7 @@ uint32_t BinaryFilePacker::CopyBinaryFile(const string &filePath, const string &
     }
 
     if (!FileEntry::IsDirectory(filePath)) {
-        PrintError(GetError(ERR_CODE_RESOURCE_PATH_NOT_DIR).FormatCause(filePath.c_str()));
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_PATH).FormatCause(filePath.c_str(), "not a directory"));
         return RESTOOL_ERROR;
     }
 

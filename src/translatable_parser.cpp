@@ -119,10 +119,12 @@ bool TranslatableParse::CheckBaseStringPriority(const cJSON *attrNode, const std
     }
     string priorityValue = priorityNode->valuestring;
     if (find(PRIORITY_ATTRS.begin(), PRIORITY_ATTRS.end(), priorityValue) == PRIORITY_ATTRS.end()) {
-        string message("");
+        string message("[");
         for (const auto &value : PRIORITY_ATTRS) {
-            message.append("'" + value + "' ");
+            message.append("\"" + value + "\",");
         }
+        message.pop_back();
+        message.append("]");
         PrintError(GetError(ERR_CODE_INVALID_TRANSLATE_PRIORITY)
                        .FormatCause(priorityValue.c_str(), message.c_str())
                        .SetPosition(filePath));

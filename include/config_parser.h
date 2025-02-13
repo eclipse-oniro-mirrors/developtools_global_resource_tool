@@ -63,6 +63,10 @@ public:
     {
         return moduleType_ == ModuleType::HAR;
     }
+    std::string GetConfigFilePath()
+    {
+        return filePath_;
+    }
     static void SetUseModule()
     {
         useModule_ = true;
