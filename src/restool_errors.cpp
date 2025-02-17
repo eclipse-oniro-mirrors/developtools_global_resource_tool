@@ -31,7 +31,9 @@ const std::map<uint32_t, ErrorInfo> ERRORS_MAP = {
         ERR_TYPE_DEPENDENCY,
         "Failed to load the library '%s', %s",
         "",
-        { "Make sure the library path is correct and has access permissions." },
+        { "Make sure the library path is correct and has access permissions.",
+          "Install the missing third-party dependency libraries displayed in the error information.",
+          "Adding the path 'openharmony\\previewer\\common\\bin' in your SDK path to environment variables." },
         {} } },
 
     // 11203xxx
