@@ -84,6 +84,7 @@ constexpr uint32_t ERR_CODE_RES_HEADER_PATH_EMPTY = 11210023;
 constexpr uint32_t ERR_CODE_DUMP_MISSING_INPUT = 11210024;
 constexpr uint32_t ERR_CODE_DUMP_INVALID_INPUT = 11210025;
 constexpr uint32_t ERR_CODE_INVALID_THREAD_COUNT = 11210026;
+constexpr uint32_t ERR_CODE_INVALID_IGNORE_FILE = 11210027;
 
 // 11211xxx resource pack error
 const std::string ERR_TYPE_RESOURCE_PACK = "Resource Pack Error";

@@ -29,7 +29,7 @@ namespace OHOS {
 namespace Global {
 namespace Restool {
 using namespace std;
-const map<string, ResourceUtil::IgnoreType> ResourceUtil::IGNORE_FILE_REGEX = {
+const map<string, IgnoreType> ResourceUtil::DEFAULT_IGNORE_FILE_REGEX = {
     { "\\.git", IgnoreType::IGNORE_ALL },
     { "\\.svn", IgnoreType::IGNORE_ALL },
     { ".+\\.scc", IgnoreType::IGNORE_ALL },
@@ -41,6 +41,7 @@ const map<string, ResourceUtil::IgnoreType> ResourceUtil::IGNORE_FILE_REGEX = {
     { "thumbs\\.db", IgnoreType::IGNORE_ALL },
     { ".+~", IgnoreType::IGNORE_ALL }
 };
+static std::map<std::string, IgnoreType> userIgnoreFileRegex;
 
 static std::mutex fileMutex_;
 
@@ -247,14 +248,25 @@ bool ResourceUtil::CreateDirs(const string &filePath)
 
 bool ResourceUtil::IsIgnoreFile(const string &filename, bool isFile)
 {
+    map<string, IgnoreType> regexs;
+    std::string regexSources;
+    if (userIgnoreFileRegex.size() > 0) {
+        regexs = userIgnoreFileRegex;
+        regexSources = "user";
+    } else {
+        regexs = DEFAULT_IGNORE_FILE_REGEX;
+        regexSources = "default";
+    }
     string key = filename;
     transform(key.begin(), key.end(), key.begin(), ::tolower);
-    for (const auto &iter : IGNORE_FILE_REGEX) {
+    for (const auto &iter : regexs) {
         if ((iter.second == IgnoreType::IGNORE_FILE && !isFile) ||
             (iter.second == IgnoreType::IGNORE_DIR && isFile)) {
             continue;
         }
         if (regex_match(key, regex(iter.first))) {
+            cout << "Info: file '" << filename << "' is ignored by " << regexSources << " regular pattern '"
+                 << iter.first << "'." << endl;
             return true;
         }
     }
@@ -505,6 +517,11 @@ string ResourceUtil::KeyTypeToStr(KeyType type)
         ret += to_string(static_cast<uint32_t>(type));
     }
     return ret;
+}
+
+void ResourceUtil::AddIgnoreFileRegex(const std::string &regex, IgnoreType ignoreType)
+{
+    userIgnoreFileRegex[regex] = ignoreType;
 }
 }
 }

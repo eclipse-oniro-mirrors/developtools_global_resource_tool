@@ -90,28 +90,30 @@ void CmdParser::ShowUseage()
         "For details about the usage of dump, see '-h'.\n";
     std::cout << "\n";
     std::cout << "[options]:\n";
-    std::cout << "    -i/--inputPath      input resource path, can add more.\n";
-    std::cout << "    -p/--packageName    package name.\n";
-    std::cout << "    -o/--outputPath     output path.\n";
-    std::cout << "    -r/--resHeader      resource header file path(like ./ResourceTable.js, ./ResrouceTable.h).\n";
-    std::cout << "    -f/--forceWrite     if output path exists,force delete it.\n";
-    std::cout << "    -v/--version        print tool version.\n";
-    std::cout << "    -m/--modules        module name, can add more, split by ','(like entry1,entry2,...).\n";
-    std::cout << "    -j/--json           config.json path.\n";
-    std::cout << "    -e/--startId        start id mask, e.g 0x01000000,";
-    std::cout << " in [0x01000000, 0x06FFFFFF),[0x08000000, 0xFFFFFFFF)\n";
-    std::cout << "    -x/--append         resources folder path\n";
-    std::cout << "    -z/--combine        flag for incremental compilation\n";
-    std::cout << "    -h/--help           Displays this help menu\n";
-    std::cout << "    -l/--fileList       input json file of the option set, e.g resConfig.json.";
+    std::cout << "    -i/--inputPath      Input resource path, can add multiple.\n";
+    std::cout << "    -p/--packageName    Package name.\n";
+    std::cout << "    -o/--outputPath     Output path.\n";
+    std::cout << "    -r/--resHeader      Resource header file path(like ./ResourceTable.js, ./ResrouceTable.h).\n";
+    std::cout << "    -f/--forceWrite     If output path exists,force delete it.\n";
+    std::cout << "    -v/--version        Print tool version.\n";
+    std::cout << "    -m/--modules        Module names, can add multiple, split by ','(like entry1,entry2,...).\n";
+    std::cout << "    -j/--json           Path of module.json(in Stage model) or onfig.json(in FA model).\n";
+    std::cout << "    -e/--startId        Start id mask, e.g 0x01000000,";
+    std::cout << " in the scope [0x01000000, 0x06FFFFFF),[0x08000000, 0xFFFFFFFF).\n";
+    std::cout << "    -x/--append         Resources folder path.\n";
+    std::cout << "    -z/--combine        Flag for incremental compilation.\n";
+    std::cout << "    -h/--help           Displays this help menu.\n";
+    std::cout << "    -l/--fileList       Input json file of the option set, e.g resConfig.json.";
     std::cout << " For details, see the developer documentation.\n";
-    std::cout << "    --ids               save id_defined.json direcory\n";
-    std::cout << "    --defined-ids       input id_defined.json path\n";
+    std::cout << "    --ids               Save id_defined.json direcory.\n";
+    std::cout << "    --defined-ids       Input id_defined.json path.\n";
     std::cout << "    --dependEntry       Build result directory of the specified entry module when the feature";
     std::cout << " module resources are independently built in the FA model.\n";
     std::cout << "    --icon-check        Enable the PNG image verification function for icons and startwindows.\n";
     std::cout << "    --target-config     When used with '-i', selective compilation is supported.\n";
-    std::cout << "    --compressed-config opt-compression.json path.\n";
+    std::cout << "    --compressed-config Path of opt-compression.json.\n";
+    std::cout << "    --thread            Subthreads count.\n";
+    std::cout << "    --ignored-file      Regular patterns of ignored files, split by ':'(like \\.git:\\.svn).\n";
 }
 }
 }

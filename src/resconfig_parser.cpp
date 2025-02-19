@@ -94,6 +94,8 @@ void ResConfigParser::InitFileListCommand(HandleBack callback)
         Option::COMPRESSED_CONFIG, callback));
     fileListHandles_.emplace("thread", bind(&ResConfigParser::GetNumber, this, "thread", _1,
         Option::THREAD, callback));
+    fileListHandles_.emplace("ignoreResourcePattern", bind(&ResConfigParser::GetArray, this, "ignoreResourcePattern",
+        _1, Option::IGNORED_FILE, callback));
 }
 
 uint32_t ResConfigParser::GetString(const std::string &nodeName, const cJSON *node, int c, HandleBack callback)
