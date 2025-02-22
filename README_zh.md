@@ -47,6 +47,8 @@ restool（资源编译工具）是一种资源构建工具。通过编译资源�
 | --dependEntry | 可缺省 | 带参数 | FA模型下单独编译feature时，指定entry模块的编译结果目录。 |
 | --icon-check | 可缺省 | 不带参数 | 开启icon和startWindowIcon的PNG图片校验功能。 |
 | --target-config | 可缺省 | 带参数 | 与“-i”命令同时使用，支持选择编译。<br>具体可参考如下**target-config参数说明**。|
+| --thread | 可缺省 | 带参数 | 指定资源编译时开启的子线程数量。|
+| --ignored-file | 可缺省 | 带参数 | 指定资源编译时文件和文件夹的忽略规则，格式为正则表达式，多个规则之间以“:”分隔。例如：“\\.git:\\.svn”表示忽略名称为“.git”、“.svn”的文件和文件夹。|
 
 **target-config参数说明**
 

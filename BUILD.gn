@@ -73,7 +73,7 @@ ohos_executable("restool") {
   } else {
     external_deps = [ "zlib:libz" ]
   }
-
+  use_exceptions = true
   cflags = [ "-std=c++17" ]
   if (is_mingw) {
     ldflags = [

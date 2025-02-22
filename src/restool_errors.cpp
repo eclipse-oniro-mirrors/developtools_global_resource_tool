@@ -307,6 +307,13 @@ const std::map<uint32_t, ErrorInfo> ERRORS_MAP = {
         "",
         {},
         {} } },
+    { ERR_CODE_INVALID_IGNORE_FILE,
+      { ERR_CODE_INVALID_IGNORE_FILE,
+        ERR_TYPE_COMMAND_PARSE,
+        "Invalid ignore file pattern '%s', %s",
+        "",
+        { "Make sure the argument of the option --ignored-file is not empty and contains valid regular expressions." },
+        {} } },
 
     // 11211xxx
     { ERR_CODE_OUTPUT_EXIST,
