@@ -271,8 +271,9 @@ public:
      * @brief add ignore file regex pattern
      * @param regex: the regex pattern
      * @param ignoreType: the ignore file type
+     * @return if add succeed, return true
     */
-    static void AddIgnoreFileRegex(const std::string &regex, IgnoreType ignoreType);
+    static bool AddIgnoreFileRegex(const std::string &regex, IgnoreType ignoreType);
 
 private:
     static const std::map<std::string, IgnoreType> DEFAULT_IGNORE_FILE_REGEX;

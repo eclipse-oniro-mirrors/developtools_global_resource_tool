@@ -519,9 +519,20 @@ string ResourceUtil::KeyTypeToStr(KeyType type)
     return ret;
 }
 
-void ResourceUtil::AddIgnoreFileRegex(const std::string &regex, IgnoreType ignoreType)
+bool ResourceUtil::AddIgnoreFileRegex(const std::string &regex, IgnoreType ignoreType)
 {
+    if (regex.empty()) {
+        PrintError(GetError(ERR_CODE_INVALID_IGNORE_FILE).FormatCause(regex.c_str(), "empty value."));
+        return false;
+    }
+    try {
+        std::regex rg(regex);
+    } catch (std::regex_error err) {
+        PrintError(GetError(ERR_CODE_INVALID_IGNORE_FILE).FormatCause(regex.c_str(), err.what()));
+        return false;
+    }
     userIgnoreFileRegex[regex] = ignoreType;
+    return true;
 }
 }
 }
