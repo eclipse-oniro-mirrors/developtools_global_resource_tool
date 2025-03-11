@@ -486,13 +486,10 @@ uint32_t PackageParser::ParseIgnoreFileRegex(const std::string &argValue)
     std::stringstream in(argValue);
     std::string regex;
     while (getline(in, regex, ':')) {
-        try {
-            std::regex rg(regex);
-        } catch (std::regex_error err) {
-            PrintError(GetError(ERR_CODE_INVALID_IGNORE_FILE).FormatCause(regex.c_str(), err.what()));
+        bool isSucceed = ResourceUtil::AddIgnoreFileRegex(regex, IgnoreType::IGNORE_ALL);
+        if (!isSucceed) {
             return RESTOOL_ERROR;
         }
-        ResourceUtil::AddIgnoreFileRegex(regex, IgnoreType::IGNORE_ALL);
     }
     return RESTOOL_SUCCESS;
 }
