@@ -69,6 +69,8 @@ uint32_t ResourceDumper::LoadHap()
     }
     if (ReadFileFromZip(zipFile, "resources.index", buffer, len) != RESTOOL_SUCCESS) {
         unzClose(zipFile);
+        PrintError(GetError(ERR_CODE_PARSE_HAP_ERROR)
+            .FormatCause("read resources.index failed").SetPosition(inputPath_));
         return RESTOOL_ERROR;
     }
     unzClose(zipFile);
@@ -108,40 +110,26 @@ uint32_t ResourceDumper::ReadFileFromZip(
 {
     unz_file_info fileInfo;
     if (unzLocateFile2(zipFile, fileName, 1) != UNZ_OK) {
-        std::string msg;
-        msg.append("file not found: ").append(fileName);
-        PrintError(GetError(ERR_CODE_PARSE_HAP_ERROR).FormatCause(msg.c_str()).SetPosition(inputPath_));
         return RESTOOL_ERROR;
     }
     char filenameInZip[256];
     int err = unzGetCurrentFileInfo(zipFile, &fileInfo, filenameInZip, sizeof(filenameInZip), nullptr, 0, nullptr, 0);
     if (err != UNZ_OK) {
-        std::string msg;
-        msg.append("get file info error: ").append(std::to_string(err));
-        msg.append(", filename: ").append(fileName);
-        PrintError(GetError(ERR_CODE_PARSE_HAP_ERROR).FormatCause(msg.c_str()).SetPosition(inputPath_));
         return RESTOOL_ERROR;
     }
 
-    len = fileInfo.compressed_size;
+    len = fileInfo.uncompressed_size;
     buffer = std::make_unique<char[]>(len);
     if (!buffer) {
-        PrintError(GetError(ERR_CODE_PARSE_HAP_ERROR).FormatCause("allocating memory failed"));
         return RESTOOL_ERROR;
     }
 
     err = unzOpenCurrentFilePassword(zipFile, nullptr);
     if (err != UNZ_OK) {
-        std::string msg;
-        msg.append("unzOpenCurrentFilePassword error: ").append(std::to_string(err));
-        PrintError(GetError(ERR_CODE_PARSE_HAP_ERROR).FormatCause(msg.c_str()));
         return RESTOOL_ERROR;
     }
     err = unzReadCurrentFile(zipFile, buffer.get(), len);
     if (err < 0) {
-        std::string msg;
-        msg.append("unzReadCurrentFile error: ").append(std::to_string(err));
-        PrintError(GetError(ERR_CODE_PARSE_HAP_ERROR).FormatCause(msg.c_str()));
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
