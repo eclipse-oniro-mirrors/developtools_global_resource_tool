@@ -548,7 +548,7 @@ void PrintError(const ErrorInfo &error)
     errMsg.append("Error: ").append(error.description_).append("\n");
     errMsg.append("Error Message: ").append(error.cause_);
     if (!error.position_.empty()) {
-        errMsg.append(" At ").append(error.position_);
+        errMsg.append(" At file: ").append(error.position_);
     }
     errMsg.append("\n");
     if (!error.solutions_.empty()) {
