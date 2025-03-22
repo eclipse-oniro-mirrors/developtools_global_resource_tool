@@ -26,7 +26,7 @@ namespace Restool {
 class BinaryFilePacker {
 public:
     explicit BinaryFilePacker(const PackageParser &packageParser, const std::string &moduleName);
-    ~BinaryFilePacker();
+    virtual ~BinaryFilePacker();
     std::future<uint32_t> CopyBinaryFileAsync(const std::vector<std::string> &inputs);
     void StopCopy();
 
