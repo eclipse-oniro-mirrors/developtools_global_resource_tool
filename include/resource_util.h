@@ -275,6 +275,12 @@ public:
     */
     static bool AddIgnoreFileRegex(const std::string &regex, IgnoreType ignoreType);
 
+    /**
+     * @brief set whether use custom ignore regex pattern
+     * @param isUseCustomRegex: true is use custom ignore file regex
+    */
+    static void SetUseCustomIgnoreRegex(const bool &isUseCustomRegex);
+
 private:
     static const std::map<std::string, IgnoreType> DEFAULT_IGNORE_FILE_REGEX;
     static std::string GetLocaleLimitkey(const KeyParam &KeyParam);

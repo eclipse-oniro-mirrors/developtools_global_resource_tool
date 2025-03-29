@@ -205,6 +205,7 @@ uint32_t ResConfigParser::GetIgnorePatterns(const std::string &nodeName, const c
         PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause(nodeName.c_str()).SetPosition(filePath_));
         return RESTOOL_ERROR;
     }
+    ResourceUtil::SetUseCustomIgnoreRegex(true);
     HandleBack callback = [](int c, const string &argValue) {
         bool isSucceed = ResourceUtil::AddIgnoreFileRegex(argValue, IgnoreType::IGNORE_ALL);
         if (!isSucceed) {

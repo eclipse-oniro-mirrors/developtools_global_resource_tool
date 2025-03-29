@@ -41,7 +41,8 @@ const map<string, IgnoreType> ResourceUtil::DEFAULT_IGNORE_FILE_REGEX = {
     { "thumbs\\.db", IgnoreType::IGNORE_ALL },
     { ".+~", IgnoreType::IGNORE_ALL }
 };
-static std::map<std::string, IgnoreType> userIgnoreFileRegex;
+static std::map<std::string, IgnoreType> g_userIgnoreFileRegex;
+static bool g_isUseCustomRegex = false;
 
 static std::mutex fileMutex_;
 
@@ -250,8 +251,8 @@ bool ResourceUtil::IsIgnoreFile(const string &filename, bool isFile)
 {
     map<string, IgnoreType> regexs;
     std::string regexSources;
-    if (userIgnoreFileRegex.size() > 0) {
-        regexs = userIgnoreFileRegex;
+    if (g_isUseCustomRegex) {
+        regexs = g_userIgnoreFileRegex;
         regexSources = "user";
     } else {
         regexs = DEFAULT_IGNORE_FILE_REGEX;
@@ -521,18 +522,19 @@ string ResourceUtil::KeyTypeToStr(KeyType type)
 
 bool ResourceUtil::AddIgnoreFileRegex(const std::string &regex, IgnoreType ignoreType)
 {
-    if (regex.empty()) {
-        PrintError(GetError(ERR_CODE_INVALID_IGNORE_FILE).FormatCause(regex.c_str(), "empty value."));
-        return false;
-    }
     try {
         std::regex rg(regex);
     } catch (std::regex_error err) {
         PrintError(GetError(ERR_CODE_INVALID_IGNORE_FILE).FormatCause(regex.c_str(), err.what()));
         return false;
     }
-    userIgnoreFileRegex[regex] = ignoreType;
+    g_userIgnoreFileRegex[regex] = ignoreType;
     return true;
+}
+
+void ResourceUtil::SetUseCustomIgnoreRegex(const bool &isUseCustomRegex)
+{
+    g_isUseCustomRegex = isUseCustomRegex;
 }
 }
 }
