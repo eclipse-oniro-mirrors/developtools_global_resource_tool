@@ -479,12 +479,9 @@ uint32_t PackageParser::ParseThread(const std::string &argValue)
 
 uint32_t PackageParser::ParseIgnoreFileRegex(const std::string &argValue)
 {
-    if (argValue.empty()) {
-        PrintError(GetError(ERR_CODE_INVALID_IGNORE_FILE).FormatCause(argValue.c_str(), "empty value."));
-        return RESTOOL_ERROR;
-    }
     std::stringstream in(argValue);
     std::string regex;
+    ResourceUtil::SetUseCustomIgnoreRegex(true);
     while (getline(in, regex, ':')) {
         bool isSucceed = ResourceUtil::AddIgnoreFileRegex(regex, IgnoreType::IGNORE_ALL);
         if (!isSucceed) {
