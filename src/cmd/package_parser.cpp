@@ -14,17 +14,13 @@
  */
 
 #include "cmd/package_parser.h"
-
 #include <algorithm>
 #include <climits>
-#include <regex>
-#include <sstream>
-
-#include "file_entry.h"
 #include "resconfig_parser.h"
-#include "resource_pack.h"
 #include "resource_util.h"
 #include "select_compile_parse.h"
+#include "file_entry.h"
+#include "resource_pack.h"
 
 namespace OHOS {
 namespace Global {
@@ -52,7 +48,6 @@ const struct option PackageParser::CMD_OPTS[] = {
     { "defined-sysids", required_argument, nullptr, Option::DEFINED_SYSIDS},
     { "compressed-config", required_argument, nullptr, Option::COMPRESSED_CONFIG},
     { "thread", required_argument, nullptr, Option::THREAD},
-    { "ignored-file", required_argument, nullptr, Option::IGNORED_FILE},
     { 0, 0, 0, 0},
 };
 
@@ -248,7 +243,7 @@ uint32_t PackageParser::ForceWrite()
 
 uint32_t PackageParser::PrintVersion()
 {
-    cout << "Info: Restool version = " << RESTOOL_VERSION << endl;
+    cout << "Info: Restool version= " << RESTOOL_VERSION << endl;
     exit(RESTOOL_SUCCESS);
     return RESTOOL_SUCCESS;
 }
@@ -477,20 +472,6 @@ uint32_t PackageParser::ParseThread(const std::string &argValue)
     return RESTOOL_SUCCESS;
 }
 
-uint32_t PackageParser::ParseIgnoreFileRegex(const std::string &argValue)
-{
-    std::stringstream in(argValue);
-    std::string regex;
-    ResourceUtil::SetUseCustomIgnoreRegex(true);
-    while (getline(in, regex, ':')) {
-        bool isSucceed = ResourceUtil::AddIgnoreFileRegex(regex, IgnoreType::IGNORE_ALL);
-        if (!isSucceed) {
-            return RESTOOL_ERROR;
-        }
-    }
-    return RESTOOL_SUCCESS;
-}
-
 size_t PackageParser::GetThreadCount() const
 {
     return threadCount_;
@@ -566,7 +547,6 @@ void PackageParser::InitCommand()
     handles_.emplace(Option::DEFINED_SYSIDS, bind(&PackageParser::AddSysIdDefined, this, _1));
     handles_.emplace(Option::COMPRESSED_CONFIG, bind(&PackageParser::AddCompressionPath, this, _1));
     handles_.emplace(Option::THREAD, bind(&PackageParser::ParseThread, this, _1));
-    handles_.emplace(Option::IGNORED_FILE, bind(&PackageParser::ParseIgnoreFileRegex, this, _1));
 }
 
 uint32_t PackageParser::HandleProcess(int c, const string &argValue)

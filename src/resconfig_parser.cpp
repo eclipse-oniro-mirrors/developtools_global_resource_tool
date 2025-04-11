@@ -94,8 +94,6 @@ void ResConfigParser::InitFileListCommand(HandleBack callback)
         Option::COMPRESSED_CONFIG, callback));
     fileListHandles_.emplace("thread", bind(&ResConfigParser::GetNumber, this, "thread", _1,
         Option::THREAD, callback));
-    fileListHandles_.emplace("ignoreResourcePattern", bind(&ResConfigParser::GetIgnorePatterns, this,
-        "ignoreResourcePattern", _1, Option::IGNORED_FILE));
 }
 
 uint32_t ResConfigParser::GetString(const std::string &nodeName, const cJSON *node, int c, HandleBack callback)
@@ -194,26 +192,6 @@ uint32_t ResConfigParser::GetNumber(const std::string &nodeName, const cJSON *no
     }
 
     if (callback(c, std::to_string(node->valueint)) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
-    }
-    return RESTOOL_SUCCESS;
-}
-
-uint32_t ResConfigParser::GetIgnorePatterns(const std::string &nodeName, const cJSON *node, int c)
-{
-    if (!node) {
-        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause(nodeName.c_str()).SetPosition(filePath_));
-        return RESTOOL_ERROR;
-    }
-    ResourceUtil::SetUseCustomIgnoreRegex(true);
-    HandleBack callback = [](int c, const string &argValue) {
-        bool isSucceed = ResourceUtil::AddIgnoreFileRegex(argValue, IgnoreType::IGNORE_ALL);
-        if (!isSucceed) {
-            return RESTOOL_ERROR;
-        }
-        return RESTOOL_SUCCESS;
-    };
-    if (GetArray(nodeName, node, c, callback) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
