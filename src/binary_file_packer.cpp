@@ -79,6 +79,10 @@ uint32_t BinaryFilePacker::CopyBinaryFile(const string &filePath, const string &
         return RESTOOL_ERROR;
     }
 
+    if (ResourceUtil::IsIgnoreFile(fileType, false)) {
+        return RESTOOL_SUCCESS;
+    }
+
     string dst = FileEntry::FilePath(packageParser_.GetOutput()).Append(RESOURCES_DIR).Append(fileType).GetPath();
     if (CopyBinaryFileImpl(filePath, dst) != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;

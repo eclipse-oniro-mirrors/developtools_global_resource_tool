@@ -251,15 +251,15 @@ bool ResourceUtil::IsIgnoreFile(const string &filename, bool isFile)
 {
     map<string, IgnoreType> regexs;
     std::string regexSources;
+    string key = filename;
     if (g_isUseCustomRegex) {
         regexs = g_userIgnoreFileRegex;
         regexSources = "user";
     } else {
         regexs = DEFAULT_IGNORE_FILE_REGEX;
         regexSources = "default";
+        transform(key.begin(), key.end(), key.begin(), ::tolower);
     }
-    string key = filename;
-    transform(key.begin(), key.end(), key.begin(), ::tolower);
     for (const auto &iter : regexs) {
         if ((iter.second == IgnoreType::IGNORE_FILE && !isFile) ||
             (iter.second == IgnoreType::IGNORE_DIR && isFile)) {
