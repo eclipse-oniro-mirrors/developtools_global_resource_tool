@@ -266,23 +266,13 @@ public:
      * @return limit type string
     */
     static std::string KeyTypeToStr(KeyType type);
-
-    /**
-     * @brief add ignore file regex pattern
-     * @param regex: the regex pattern
-     * @param ignoreType: the ignore file type
-     * @return if add succeed, return true
-    */
-    static bool AddIgnoreFileRegex(const std::string &regex, IgnoreType ignoreType);
-
-    /**
-     * @brief set whether use custom ignore regex pattern
-     * @param isUseCustomRegex: true is use custom ignore file regex
-    */
-    static void SetUseCustomIgnoreRegex(const bool &isUseCustomRegex);
-
 private:
-    static const std::map<std::string, IgnoreType> DEFAULT_IGNORE_FILE_REGEX;
+    enum class IgnoreType {
+        IGNORE_FILE,
+        IGNORE_DIR,
+        IGNORE_ALL
+    };
+    static const std::map<std::string, IgnoreType> IGNORE_FILE_REGEX;
     static std::string GetLocaleLimitkey(const KeyParam &KeyParam);
     static std::string GetDeviceTypeLimitkey(const KeyParam &KeyParam);
     static std::string GetResolutionLimitkey(const KeyParam &KeyParam);
