@@ -65,7 +65,7 @@ uint32_t ResourceAppend::Combine()
     }
 
     if (!ParseRef()) {
-        return false;
+        return RESTOOL_ERROR;
     }
 
     ResourceTable resourceTable;
