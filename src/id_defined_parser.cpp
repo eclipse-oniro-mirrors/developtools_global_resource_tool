@@ -104,8 +104,8 @@ uint32_t IdDefinedParser::Init(const string &filePath, bool isSystem)
         return RESTOOL_ERROR;
     }
     if (cJSON_GetArraySize(recordNode) == 0) {
-        cout << "Warning: 'record' node is empty, please check the JSON file.";
-        cout << NEW_LINE_PATH << filePath << endl;
+        cerr << "Warning: 'record' node is empty, please check the JSON file.";
+        cerr << NEW_LINE_PATH << filePath << endl;
         return RESTOOL_SUCCESS;
     }
     int64_t startSysId = 0;

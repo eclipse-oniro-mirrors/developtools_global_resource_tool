@@ -125,8 +125,8 @@ uint32_t CompressionParser::Init()
 bool CompressionParser::ParseCompression(const cJSON *compressionNode)
 {
     if (!compressionNode) {
-        cout << "Warning: get 'compression' node is empty, the compiled images are not transcoded.";
-        cout << NEW_LINE_PATH << filePath_ << endl;
+        cerr << "Warning: get 'compression' node is empty, the compiled images are not transcoded.";
+        cerr << NEW_LINE_PATH << filePath_ << endl;
         return true;
     }
     if (!cJSON_IsObject(compressionNode)) {
@@ -135,8 +135,8 @@ bool CompressionParser::ParseCompression(const cJSON *compressionNode)
     }
     cJSON *mediaNode = cJSON_GetObjectItem(compressionNode, "media");
     if (!mediaNode) {
-        cout << "Warning: get 'media' node is empty, the compiled images are not transcoded.";
-        cout << NEW_LINE_PATH << filePath_ << endl;
+        cerr << "Warning: get 'media' node is empty, the compiled images are not transcoded.";
+        cerr << NEW_LINE_PATH << filePath_ << endl;
         return true;
     }
     if (!cJSON_IsObject(mediaNode)) {
@@ -145,8 +145,8 @@ bool CompressionParser::ParseCompression(const cJSON *compressionNode)
     }
     cJSON *enableNode = cJSON_GetObjectItem(mediaNode, "enable");
     if (!enableNode) {
-        cout << "Warning: get 'enable' node is empty, the compiled images are not transcoded.";
-        cout << NEW_LINE_PATH << filePath_ << endl;
+        cerr << "Warning: get 'enable' node is empty, the compiled images are not transcoded.";
+        cerr << NEW_LINE_PATH << filePath_ << endl;
         return true;
     }
     if (!cJSON_IsBool(enableNode)) {
@@ -160,25 +160,25 @@ bool CompressionParser::ParseCompression(const cJSON *compressionNode)
 bool CompressionParser::ParseContext(const cJSON *contextNode)
 {
     if (!contextNode) {
-        cout << "Warning: if image transcoding is supported, the 'context' node cannot be empty.";
+        cerr << "Warning: if image transcoding is supported, the 'context' node cannot be empty.";
         return false;
     }
     if (!cJSON_IsObject(contextNode)) {
-        cout << "Warning: 'context' must be object.";
+        cerr << "Warning: 'context' must be object.";
         return false;
     }
     cJSON *extensionPathNode = cJSON_GetObjectItem(contextNode, "extensionPath");
     if (!extensionPathNode) {
-        cout << "Warning: if image transcoding is supported, the 'extensionPath' node cannot be empty.";
+        cerr << "Warning: if image transcoding is supported, the 'extensionPath' node cannot be empty.";
         return false;
     }
     if (!cJSON_IsString(extensionPathNode)) {
-        cout << "Warning: 'extensionPath' must be string.";
+        cerr << "Warning: 'extensionPath' must be string.";
         return false;
     }
     extensionPath_ = extensionPathNode->valuestring;
     if (extensionPath_.empty()) {
-        cout << "Warning: 'extensionPath' value cannot be empty.";
+        cerr << "Warning: 'extensionPath' value cannot be empty.";
         return false;
     }
     return true;
@@ -249,7 +249,7 @@ string CompressionParser::ParseRules(const cJSON *rulesNode)
 {
     string res = "";
     if (!rulesNode || !cJSON_IsObject(rulesNode)) {
-        cout << "Warning: rules is not exist or node type is wrong" << endl;
+        cerr << "Warning: rules is not exist or node type is wrong" << endl;
         return res;
     }
     for (cJSON *item = rulesNode->child; item; item = item->next) {
@@ -273,7 +273,7 @@ vector<string> CompressionParser::ParsePath(const cJSON *pathNode)
         return res;
     }
     if (!cJSON_IsArray(pathNode)) {
-        cout << "Warning: pathnode is not array." << endl;
+        cerr << "Warning: pathnode is not array." << endl;
         return res;
     }
     for (cJSON *item = pathNode->child; item; item = item->next) {
@@ -337,7 +337,7 @@ bool CompressionParser::LoadImageTranscoder()
 bool CompressionParser::SetTranscodeOptions(const string &optionJson, const string &optionJsonExclude)
 {
     if (!handle_) {
-        cout << "Warning: SetTranscodeOptions handle_ is nullptr." << endl;
+        cerr << "Warning: SetTranscodeOptions handle_ is nullptr." << endl;
         return false;
     }
 #ifdef __WIN32
@@ -346,12 +346,12 @@ bool CompressionParser::SetTranscodeOptions(const string &optionJson, const stri
     ISetTranscodeOptions iSetTranscodeOptions = (ISetTranscodeOptions)dlsym(handle_, "SetTranscodeOptions");
 #endif
     if (!iSetTranscodeOptions) {
-        cout << "Warning: Failed to get the 'SetTranscodeOptions'." << endl;
+        cerr << "Warning: Failed to get the 'SetTranscodeOptions'." << endl;
         return false;
     }
     bool ret = (*iSetTranscodeOptions)(optionJson, optionJsonExclude);
     if (!ret) {
-        cout << "Warning: SetTranscodeOptions failed." << endl;
+        cerr << "Warning: SetTranscodeOptions failed." << endl;
         return false;
     }
     return true;
@@ -361,7 +361,7 @@ TranscodeError CompressionParser::TranscodeImages(const string &imagePath, const
     string &outputPath, TranscodeResult &result)
 {
     if (!handle_) {
-        cout << "Warning: TranscodeImages handle_ is nullptr." << endl;
+        cerr << "Warning: TranscodeImages handle_ is nullptr." << endl;
         return TranscodeError::LOAD_COMPRESS_FAILED;
     }
 #ifdef __WIN32
@@ -370,17 +370,17 @@ TranscodeError CompressionParser::TranscodeImages(const string &imagePath, const
     ITranscodeImages iTranscodeImages = (ITranscodeImages)dlsym(handle_, "Transcode");
 #endif
     if (!iTranscodeImages) {
-        cout << "Warning: Failed to get the 'Transcode'." << endl;
+        cerr << "Warning: Failed to get the 'Transcode'." << endl;
         return TranscodeError::LOAD_COMPRESS_FAILED;
     }
     TranscodeError ret = (*iTranscodeImages)(imagePath, extAppend, outputPath, result);
     if (ret != TranscodeError::SUCCESS) {
         auto iter = ERRORCODEMAP.find(ret);
         if (iter != ERRORCODEMAP.end()) {
-            cout << "Warning: TranscodeImages failed, error message: " << iter->second << ", file path = " <<
+            cerr << "Warning: TranscodeImages failed, error message: " << iter->second << ", file path = " <<
                 imagePath << endl;
         } else {
-            cout << "Warning: TranscodeImages failed" << ", file path = " << imagePath << endl;
+            cerr << "Warning: TranscodeImages failed" << ", file path = " << imagePath << endl;
         }
         return ret;
     }
@@ -390,7 +390,7 @@ TranscodeError CompressionParser::TranscodeImages(const string &imagePath, const
 TranscodeError CompressionParser::ScaleImage(const std::string &imagePath, std::string &outputPath)
 {
     if (!handle_) {
-        cout << "Warning: ScaleImage handle_ is nullptr." << endl;
+        cerr << "Warning: ScaleImage handle_ is nullptr." << endl;
         return TranscodeError::LOAD_COMPRESS_FAILED;
     }
 #ifdef __WIN32
@@ -399,17 +399,17 @@ TranscodeError CompressionParser::ScaleImage(const std::string &imagePath, std::
     IScaleImage iScaleImage = (IScaleImage)dlsym(handle_, "TranscodeSLR");
 #endif
     if (!iScaleImage) {
-        cout << "Warning: Failed to get the 'TranscodeSLR'." << endl;
+        cerr << "Warning: Failed to get the 'TranscodeSLR'." << endl;
         return TranscodeError::LOAD_COMPRESS_FAILED;
     }
     TranscodeError ret = (*iScaleImage)(imagePath, outputPath, { 512, 512 });
     if (ret != TranscodeError::SUCCESS) {
         auto iter = ERRORCODEMAP.find(ret);
         if (iter != ERRORCODEMAP.end()) {
-            cout << "Warning: ScaleImage failed, error message: " << iter->second << ", file path = " << imagePath
+            cerr << "Warning: ScaleImage failed, error message: " << iter->second << ", file path = " << imagePath
                  << endl;
         } else {
-            cout << "Warning: ScaleImage failed" << ", file path = " << imagePath << endl;
+            cerr << "Warning: ScaleImage failed" << ", file path = " << imagePath << endl;
         }
         return ret;
     }

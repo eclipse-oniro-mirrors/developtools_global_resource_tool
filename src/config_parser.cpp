@@ -135,7 +135,7 @@ bool ConfigParser::SetAppIcon(string &icon, int64_t id)
 {
     cJSON *appNode = cJSON_GetObjectItem(root_, "app");
     if (!appNode || !cJSON_IsObject(appNode)) {
-        cout << "Warning: 'app' not object" << endl;
+        cerr << "Warning: 'app' not object" << endl;
         return false;
     }
     cJSON_AddStringToObject(appNode, "icon", icon.c_str());
@@ -147,7 +147,7 @@ bool ConfigParser::SetAppLabel(string &label, int64_t id)
 {
     cJSON *appNode = cJSON_GetObjectItem(root_, "app");
     if (!appNode || !cJSON_IsObject(appNode)) {
-        cout << "Warning: 'app' not object" << endl;
+        cerr << "Warning: 'app' not object" << endl;
         return false;
     }
     cJSON_AddStringToObject(appNode, "label", label.c_str());
