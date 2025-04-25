@@ -36,7 +36,7 @@ ThreadPool &ThreadPool::GetInstance()
 uint32_t ThreadPool::Start(const size_t &threadCount)
 {
     if (!workerThreads_.empty()) {
-        cout << "Warning: ThreadPool is already started." << endl;
+        cerr << "Warning: ThreadPool is already started." << endl;
         return RESTOOL_SUCCESS;
     }
     size_t hardwareCount = std::thread::hardware_concurrency();

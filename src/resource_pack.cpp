@@ -177,7 +177,7 @@ uint32_t ResourcePack::GenerateHeader() const
         string extension = FileEntry::FilePath(headerPath).GetExtension();
         auto it = headerCreaters_.find(extension);
         if (it == headerCreaters_.end()) {
-            cout << "Warning: don't support header file format '" << headerPath << "'" << endl;
+            cerr << "Warning: don't support header file format '" << headerPath << "'" << endl;
             continue;
         }
         if (it->second(headerPath) != RESTOOL_SUCCESS) {

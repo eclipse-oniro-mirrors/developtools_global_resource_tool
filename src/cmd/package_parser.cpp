@@ -364,7 +364,7 @@ uint32_t PackageParser::AddAppend(const string& argValue)
 {
     string appendPath = ResourceUtil::RealPath(argValue);
     if (appendPath.empty()) {
-        cout << "Warning: invalid compress '" << argValue << "'" << endl;
+        cerr << "Warning: invalid compress '" << argValue << "'" << endl;
         appendPath = argValue;
     }
     auto ret = find_if(append_.begin(), append_.end(), [appendPath](auto iter) {return appendPath == iter;});
@@ -573,7 +573,7 @@ uint32_t PackageParser::HandleProcess(int c, const string &argValue)
 {
     auto handler = handles_.find(c);
     if (handler == handles_.end()) {
-        cout << "Warning: unsupport " << c << endl;
+        cerr << "Warning: unsupport " << c << endl;
         return RESTOOL_ERROR;
     }
     return handler->second(argValue);
