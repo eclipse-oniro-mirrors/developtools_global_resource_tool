@@ -267,7 +267,7 @@ bool ResourceAppend::ScanFiles(const unique_ptr<FileEntry> &entry,
 bool ResourceAppend::ScanFile(const FileInfo &fileInfo, const string &outputPath)
 {
     if (ResourceAppend::IsBaseIdDefined(fileInfo)) {
-        cerr << "Warning: id_defined.json does not compile to generate intermediate files" << endl;
+        cout << "Warning: id_defined.json does not compile to generate intermediate files" << endl;
         FileEntry::FilePath outPath(outputPath);
         return ResourceUtil::CopyFileInner(fileInfo.filePath, outPath.Append(ID_DEFINED_FILE).GetPath());
     }

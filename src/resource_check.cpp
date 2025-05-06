@@ -72,7 +72,7 @@ void ResourceCheck::CheckNodeInResourceItem(const string &key, const ResourceIte
         return;
     }
     if (width != height) {
-        cout << "Warning: the png width and height not equal" << NEW_LINE_PATH << filePath << endl;
+        cerr << "Warning: the png width and height not equal" << NEW_LINE_PATH << filePath << endl;
         return;
     }
     auto result = g_keyNodeIndexs.find(key);
