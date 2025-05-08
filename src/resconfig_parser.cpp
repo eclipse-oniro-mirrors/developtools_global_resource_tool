@@ -47,7 +47,7 @@ uint32_t ResConfigParser::Init(const string &filePath, HandleBack callback)
     for (cJSON *item = root_->child; item; item = item->next) {
         auto handler = fileListHandles_.find(item->string);
         if (handler == fileListHandles_.end()) {
-            cerr << "Warning: unsupport " << item->string << endl;
+            cout << "Warning: unsupport " << item->string << endl;
             continue;
         }
         if (handler->second(item) != RESTOOL_SUCCESS) {
