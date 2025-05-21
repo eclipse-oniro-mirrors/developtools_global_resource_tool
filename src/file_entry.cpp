@@ -50,7 +50,7 @@ bool FileEntry::Init()
 {
     string filePath = filePath_.GetPath();
     if (!Exist(filePath)) {
-        cout << "Warning: file not exist: " << filePath << endl;
+        cerr << "Warning: file not exist: " << filePath << endl;
         return false;
     }
 

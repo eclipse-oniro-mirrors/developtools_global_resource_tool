@@ -553,7 +553,7 @@ uint32_t PackageParser::HandleProcess(int c, const string &argValue)
 {
     auto handler = handles_.find(c);
     if (handler == handles_.end()) {
-        cout << "Warning: unsupport " << c << endl;
+        PrintError(GetError(ERR_CODE_UNKNOWN_OPTION).FormatCause(std::to_string(c).c_str()));
         return RESTOOL_ERROR;
     }
     return handler->second(argValue);

@@ -125,8 +125,8 @@ uint32_t CompressionParser::Init()
 bool CompressionParser::ParseCompression(const cJSON *compressionNode)
 {
     if (!compressionNode) {
-        cout << "Warning: get 'compression' node is empty, the compiled images are not transcoded.";
-        cout << NEW_LINE_PATH << filePath_ << endl;
+        cerr << "Warning: get 'compression' node is empty, the compiled images are not transcoded.";
+        cerr << NEW_LINE_PATH << filePath_ << endl;
         return true;
     }
     if (!cJSON_IsObject(compressionNode)) {
@@ -135,8 +135,8 @@ bool CompressionParser::ParseCompression(const cJSON *compressionNode)
     }
     cJSON *mediaNode = cJSON_GetObjectItem(compressionNode, "media");
     if (!mediaNode) {
-        cout << "Warning: get 'media' node is empty, the compiled images are not transcoded.";
-        cout << NEW_LINE_PATH << filePath_ << endl;
+        cerr << "Warning: get 'media' node is empty, the compiled images are not transcoded.";
+        cerr << NEW_LINE_PATH << filePath_ << endl;
         return true;
     }
     if (!cJSON_IsObject(mediaNode)) {
@@ -145,8 +145,8 @@ bool CompressionParser::ParseCompression(const cJSON *compressionNode)
     }
     cJSON *enableNode = cJSON_GetObjectItem(mediaNode, "enable");
     if (!enableNode) {
-        cout << "Warning: get 'enable' node is empty, the compiled images are not transcoded.";
-        cout << NEW_LINE_PATH << filePath_ << endl;
+        cerr << "Warning: get 'enable' node is empty, the compiled images are not transcoded.";
+        cerr << NEW_LINE_PATH << filePath_ << endl;
         return true;
     }
     if (!cJSON_IsBool(enableNode)) {
