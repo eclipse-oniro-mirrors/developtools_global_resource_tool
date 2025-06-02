@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,8 @@
  */
 
 #include "resource_table.h"
+
+#include <algorithm>
 #include <cJSON.h>
 #include <cstdint>
 #include "cmd/cmd_parser.h"
@@ -26,7 +28,7 @@ namespace OHOS {
 namespace Global {
 namespace Restool {
 using namespace std;
-ResourceTable::ResourceTable()
+ResourceTable::ResourceTable(bool isNewModule)
 {
     auto &parser = CmdParser::GetInstance();
     auto &packageParser = parser.GetPackageParser();
@@ -34,6 +36,7 @@ ResourceTable::ResourceTable()
         idDefinedPath_ = FileEntry::FilePath(packageParser.GetIdDefinedOutput()).Append(ID_DEFINED_FILE).GetPath();
     }
     indexFilePath_ = FileEntry::FilePath(packageParser.GetOutput()).Append(RESOURCE_INDEX_FILE).GetPath();
+    newResIndex_ = isNewModule;
 }
 
 ResourceTable::~ResourceTable()
@@ -57,8 +60,14 @@ uint32_t ResourceTable::CreateResourceTable()
         }
     }
 
-    if (SaveToResouorceIndex(configs) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
+    if (!newResIndex_) {
+        if (SaveToResouorceIndex(configs) != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
+        }
+    } else {
+        if (SaveToNewResouorceIndex(configs) != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
+        }
     }
 
     if (!idDefinedPath_.empty()) {
@@ -88,8 +97,14 @@ uint32_t ResourceTable::CreateResourceTable(const map<int64_t, vector<shared_ptr
         allResource.emplace(item.first, resourceItems);
     }
 
-    if (SaveToResouorceIndex(configs) != RESTOOL_SUCCESS) {
-        return RESTOOL_ERROR;
+    if (!newResIndex_) {
+        if (SaveToResouorceIndex(configs) != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
+        }
+    } else {
+        if (SaveToNewResouorceIndex(configs) != RESTOOL_SUCCESS) {
+            return RESTOOL_ERROR;
+        }
     }
 
     if (!idDefinedPath_.empty()) {
@@ -135,6 +150,10 @@ uint32_t ResourceTable::LoadResTable(basic_istream<char> &in, map<int64_t, vecto
     IndexHeader indexHeader;
     if (!ReadFileHeader(in, indexHeader, pos, static_cast<uint64_t>(length))) {
         return RESTOOL_ERROR;
+    }
+
+    if (IsNewModule(indexHeader)) {
+        return LoadNewResTable(in, resInfos);
     }
 
     map<int64_t, vector<KeyParam>> limitKeys;
@@ -243,6 +262,227 @@ uint32_t ResourceTable::SaveToResouorceIndex(const map<string, vector<TableData>
     SaveIdSets(idSets, outStreamHeader);
     out << outStreamHeader.str();
     out << outStreamData.str();
+    return RESTOOL_SUCCESS;
+}
+
+bool ResourceTable::InitHeader(IndexHeaderV2 &indexHeader, IdSetHeader &idSetHeader,
+    DataHeader &dataHeader, uint32_t count)
+{
+    const int8_t newModuleTag[3] = "V2";
+    const size_t tagLen = 2;
+    int8_t newResToolVersion[VERSION_MAX_LEN] = {0};
+    size_t nameIndex = find(RESTOOL_VERSION, RESTOOL_VERSION + VERSION_MAX_LEN, ' ') - RESTOOL_VERSION;
+    // copy "Restool"
+    if (memcpy_s(newResToolVersion, VERSION_MAX_LEN, RESTOOL_VERSION, nameIndex) != EOK) {
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("memcpy error when init index header"));
+        return false;
+    }
+    // copy "V2"
+    if (memcpy_s(newResToolVersion + nameIndex, VERSION_MAX_LEN - nameIndex, newModuleTag, tagLen) != EOK) {
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("memcpy error when init index header"));
+        return false;
+    }
+    // copy version id
+    if (memcpy_s(newResToolVersion + nameIndex + tagLen, VERSION_MAX_LEN - nameIndex - tagLen,
+        RESTOOL_VERSION + nameIndex, VERSION_MAX_LEN - nameIndex - tagLen) != EOK) {
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("memcpy error when init index header"));
+        return false;
+    }
+    
+    if (memcpy_s(indexHeader.version, VERSION_MAX_LEN, newResToolVersion, VERSION_MAX_LEN) != EOK) {
+        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("memcpy error when init index header"));
+        return false;
+    }
+
+    indexHeader.keyCount = count;
+    indexHeader.length = IndexHeaderV2::INDEX_HEADER_LEN;
+    indexHeader.keyConfigs.reserve(indexHeader.keyCount);
+    idSetHeader.length = IdSetHeader::ID_SET_HEADER_LEN;
+    dataHeader.length = DataHeader::DATA_HEADER_LEN;
+    return true;
+}
+
+void ResourceTable::PrepareKeyConfig(IndexHeaderV2 &indexHeader, const uint32_t configId,
+    const string &config, const vector<TableData> &data)
+{
+    const vector<KeyParam> &keyParams = data[0].resourceItem.GetKeyParam();
+    KeyConfig keyConfig;
+    keyConfig.configId = configId;
+    keyConfig.keyCount = keyParams.size();
+    keyConfig.configs.reserve(keyConfig.keyCount);
+    indexHeader.length += KeyConfig::KEY_CONFIG_HEADER_LEN;
+    for (const auto &param : keyParams) {
+        keyConfig.configs.push_back(param);
+        indexHeader.length += KeyParam::KEY_PARAM_LEN;
+    }
+    indexHeader.keyConfigs[config] = keyConfig;
+}
+
+void ResourceTable::PrepareResIndex(IdSetHeader &idSetHeader, const TableData &tableData)
+{
+    ResType resType = tableData.resourceItem.GetResType();
+    if (idSetHeader.resTypes.find(resType) == idSetHeader.resTypes.end()) {
+        ResTypeHeader resTypeHeader;
+        resTypeHeader.resType = resType;
+        resTypeHeader.length = ResTypeHeader::RES_TYPE_HEADER_LEN;
+        idSetHeader.resTypes[resTypeHeader.resType] = resTypeHeader;
+        idSetHeader.typeCount++;
+        idSetHeader.length += ResTypeHeader::RES_TYPE_HEADER_LEN;
+    }
+    if (idSetHeader.resTypes[resType].resIndexs.find(tableData.id) != idSetHeader.resTypes[resType].resIndexs.end()) {
+        return;
+    }
+
+    ResIndex resIndex;
+    resIndex.resId = tableData.id;
+    resIndex.name = tableData.resourceItem.GetName();
+    resIndex.length = resIndex.name.length();
+    idSetHeader.resTypes[resType].resIndexs[tableData.id] = resIndex;
+    idSetHeader.resTypes[resType].length += ResIndex::RES_INDEX_LEN + resIndex.length;
+    idSetHeader.resTypes[resType].count++;
+    idSetHeader.length += ResIndex::RES_INDEX_LEN + resIndex.length;
+}
+
+void ResourceTable::PrepareResInfo(DataHeader &dataHeader, const uint32_t resId,
+    const uint32_t configId, const uint32_t dataPoolLen)
+{
+    if (dataHeader.resInfos.find(resId) == dataHeader.resInfos.end()) {
+        ResInfo resInfo;
+        resInfo.resId = resId;
+        resInfo.length = ResInfo::RES_INFO_LEN;
+        dataHeader.resInfos[resInfo.resId] = resInfo;
+        dataHeader.length += ResInfo::RES_INFO_LEN;
+        dataHeader.idCount++;
+    }
+    dataHeader.resInfos[resId].dataOffset[configId] = dataPoolLen;
+    dataHeader.resInfos[resId].length += ResInfo::DATA_OFFSET_LEN;
+    dataHeader.resInfos[resId].valueCount++;
+    dataHeader.length += ResInfo::DATA_OFFSET_LEN;
+}
+
+void ResourceTable::WriteDataPool(ostringstream &dataPool, const ResourceItem &resourceItem, uint32_t &dataPoolLen)
+{
+    uint32_t length = resourceItem.GetDataLength();
+    const int8_t *data = resourceItem.GetData();
+    dataPool.write(reinterpret_cast<const char *>(&length), sizeof(uint16_t));
+    dataPool.write(reinterpret_cast<const char *>(data), length);
+    dataPoolLen += sizeof(uint16_t) + length;
+}
+
+void ResourceTable::WriteResInfo(ostringstream &dataBlock, const DataHeader &idSetHeader,
+    const uint32_t dataBlockOffset, unordered_map<uint32_t, uint32_t> &idOffsetMap)
+{
+    uint32_t offset = dataBlockOffset;
+    dataBlock.write(reinterpret_cast<const char *>(idSetHeader.idTag), TAG_LEN);
+    dataBlock.write(reinterpret_cast<const char *>(&idSetHeader.length), sizeof(uint32_t));
+    dataBlock.write(reinterpret_cast<const char *>(&idSetHeader.idCount), sizeof(uint32_t));
+    offset += DataHeader::DATA_HEADER_LEN;
+    for (const auto &resInfo : idSetHeader.resInfos) {
+        idOffsetMap[resInfo.second.resId] = offset;
+        dataBlock.write(reinterpret_cast<const char *>(&resInfo.second.resId), sizeof(uint32_t));
+        dataBlock.write(reinterpret_cast<const char *>(&resInfo.second.length), sizeof(uint32_t));
+        dataBlock.write(reinterpret_cast<const char *>(&resInfo.second.valueCount), sizeof(uint32_t));
+        offset += ResInfo::RES_INFO_LEN;
+        for (const auto &dataOffset : resInfo.second.dataOffset) {
+            uint32_t configId = dataOffset.first;
+            uint32_t realOffset = dataOffset.second + idSetHeader.length + dataBlockOffset;
+            dataBlock.write(reinterpret_cast<const char *>(&configId), sizeof(uint32_t));
+            dataBlock.write(reinterpret_cast<const char *>(&realOffset), sizeof(uint32_t));
+            offset += ResInfo::DATA_OFFSET_LEN;
+        }
+    }
+}
+
+void ResourceTable::WriteIdSet(ostringstream &idSetBlock, const IdSetHeader &idSetHeader,
+    const unordered_map<uint32_t, uint32_t> &idOffsetMap)
+{
+    idSetBlock.write(reinterpret_cast<const char *>(idSetHeader.idTag), TAG_LEN);
+    idSetBlock.write(reinterpret_cast<const char *>(&idSetHeader.length), sizeof(uint32_t));
+    idSetBlock.write(reinterpret_cast<const char *>(&idSetHeader.typeCount), sizeof(uint32_t));
+    idSetBlock.write(reinterpret_cast<const char *>(&idSetHeader.idCount), sizeof(uint32_t));
+    for (const auto &resType : idSetHeader.resTypes) {
+        idSetBlock.write(reinterpret_cast<const char *>(&resType.second.resType), sizeof(uint32_t));
+        idSetBlock.write(reinterpret_cast<const char *>(&resType.second.length), sizeof(uint32_t));
+        idSetBlock.write(reinterpret_cast<const char *>(&resType.second.count), sizeof(uint32_t));
+        for (const auto &resIndex : resType.second.resIndexs) {
+            uint32_t realOffset = idOffsetMap.find(resIndex.second.resId)->second;
+            idSetBlock.write(reinterpret_cast<const char *>(&resIndex.second.resId), sizeof(uint32_t));
+            idSetBlock.write(reinterpret_cast<const char *>(&realOffset), sizeof(uint32_t));
+            idSetBlock.write(reinterpret_cast<const char *>(&resIndex.second.length), sizeof(uint32_t));
+            idSetBlock.write(reinterpret_cast<const char *>(
+                resIndex.second.name.c_str()), resIndex.second.length);
+        }
+    }
+}
+
+void ResourceTable::WriteResHeader(ostringstream &resHeaderBlock, const IndexHeaderV2 &indexHeader)
+{
+    resHeaderBlock.write(reinterpret_cast<const char *>(indexHeader.version), VERSION_MAX_LEN);
+    resHeaderBlock.write(reinterpret_cast<const char *>(&indexHeader.length), sizeof(uint32_t));
+    resHeaderBlock.write(reinterpret_cast<const char *>(&indexHeader.keyCount), sizeof(uint32_t));
+    resHeaderBlock.write(reinterpret_cast<const char *>(&indexHeader.dataBlockOffset), sizeof(uint32_t));
+    for (const auto &keyConfig : indexHeader.keyConfigs) {
+        resHeaderBlock.write(reinterpret_cast<const char *>(keyConfig.second.keyTag), TAG_LEN);
+        resHeaderBlock.write(reinterpret_cast<const char *>(&keyConfig.second.configId), sizeof(uint32_t));
+        resHeaderBlock.write(reinterpret_cast<const char *>(&keyConfig.second.keyCount), sizeof(uint32_t));
+        for (const auto &config : keyConfig.second.configs) {
+            resHeaderBlock.write(reinterpret_cast<const char *>(&config.keyType), sizeof(int32_t));
+            resHeaderBlock.write(reinterpret_cast<const char *>(&config.value), sizeof(int32_t));
+        }
+    }
+}
+
+void ResourceTable::WriteToIndex(const IndexHeaderV2 &indexHeader, const IdSetHeader &idSetHeader,
+    const DataHeader &dataHeader, const ostringstream &dataPool, ofstream &out)
+{
+    ostringstream dataBlock;
+    unordered_map<uint32_t, uint32_t> idOffsetMap;
+    WriteResInfo(dataBlock, dataHeader, indexHeader.dataBlockOffset, idOffsetMap);
+
+    ostringstream idSetBlock;
+    WriteIdSet(idSetBlock, idSetHeader, idOffsetMap);
+
+    ostringstream resHeaderBlock;
+    WriteResHeader(resHeaderBlock, indexHeader);
+
+    out << resHeaderBlock.str();
+    out << idSetBlock.str();
+    out << dataBlock.str();
+    out << dataPool.str();
+}
+
+uint32_t ResourceTable::SaveToNewResouorceIndex(const map<string, vector<TableData>> &configs) const
+{
+    IndexHeaderV2 indexHeader;
+    IdSetHeader idSetHeader;
+    DataHeader dataHeader;
+
+    if (!InitHeader(indexHeader, idSetHeader, dataHeader, configs.size())) {
+        return false;
+    }
+
+    ostringstream dataPool;
+    uint32_t dataPoolLen = 0;
+    uint32_t configId = 0;
+    for (const auto &config : configs) {
+        PrepareKeyConfig(indexHeader, configId, config.first, config.second);
+        for (const auto &tableData : config.second) {
+            PrepareResIndex(idSetHeader, tableData);
+            PrepareResInfo(dataHeader, tableData.id, configId, dataPoolLen);
+            WriteDataPool(dataPool, tableData.resourceItem, dataPoolLen);
+        }
+        configId++;
+    }
+    idSetHeader.idCount = dataHeader.idCount;
+    indexHeader.dataBlockOffset = indexHeader.length + idSetHeader.length;
+    indexHeader.length += idSetHeader.length + dataHeader.length + dataPoolLen;
+
+    ofstream out(indexFilePath_, ofstream::out | ofstream::binary);
+    if (!out.is_open()) {
+        PrintError(GetError(ERR_CODE_OPEN_FILE_ERROR).FormatCause(indexFilePath_.c_str(), strerror(errno)));
+        return RESTOOL_ERROR;
+    }
+    WriteToIndex(indexHeader, idSetHeader, dataHeader, dataPool, out);
     return RESTOOL_SUCCESS;
 }
 
@@ -519,6 +759,206 @@ bool ResourceTable::ReadDataRecordStart(basic_istream<char> &in, RecordItem &rec
     return true;
 }
 
+bool ResourceTable::IsNewModule(const IndexHeader &indexHeader)
+{
+    string version = string(reinterpret_cast<const char *>(indexHeader.version), VERSION_MAX_LEN);
+    if (version.substr(0, version.find(" ")) == "Restool") {
+        return false;
+    }
+    return true;
+}
+
+uint32_t ResourceTable::LoadNewResTable(basic_istream<char> &in, map<int64_t, vector<ResourceItem>> &resInfos)
+{
+    if (!in) {
+        std::string msg = "file stream bad, state code: " + std::to_string(in.rdstate());
+        PrintError(GetError(ERR_CODE_READ_FILE_ERROR).FormatCause(in.rdstate(), msg.c_str()));
+        return RESTOOL_ERROR;
+    }
+    in.seekg(0, ios::end);
+    int64_t length = in.tellg();
+    in.seekg(0, ios::beg);
+    uint64_t pos = 0;
+    IndexHeaderV2 indexHeader;
+    if (!ReadNewFileHeader(in, indexHeader, pos, static_cast<uint64_t>(length))) {
+        return RESTOOL_ERROR;
+    }
+    IdSetHeader idSetHeader;
+    if (!ReadIdSetHeader(in, idSetHeader, pos, static_cast<uint64_t>(length))) {
+        return RESTOOL_ERROR;
+    }
+    for (const auto &resType : idSetHeader.resTypes) {
+        for (const auto &resId : resType.second.resIndexs) {
+            ReadResources(in, resId.second, resType.second, indexHeader, static_cast<uint64_t>(length), resInfos);
+        }
+    }
+    return RESTOOL_SUCCESS;
+}
+
+bool ResourceTable::ReadNewFileHeader(basic_istream<char> &in, IndexHeaderV2 &indexHeader,
+    uint64_t &pos, uint64_t length)
+{
+    pos += IndexHeaderV2::INDEX_HEADER_LEN;
+    if (pos > length) {
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("header length error"));
+        return false;
+    }
+    in.read(reinterpret_cast<char *>(indexHeader.version), VERSION_MAX_LEN);
+    in.read(reinterpret_cast<char *>(&indexHeader.length), INT_TO_BYTES);
+    in.read(reinterpret_cast<char *>(&indexHeader.keyCount), INT_TO_BYTES);
+    in.read(reinterpret_cast<char *>(&indexHeader.dataBlockOffset), INT_TO_BYTES);
+
+    for (uint32_t key = 0; key < indexHeader.keyCount; key++) {
+        pos += KeyConfig::KEY_CONFIG_HEADER_LEN;
+        if (pos > length) {
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("KeyConfig header length error"));
+            return false;
+        }
+        KeyConfig keyConfig;
+        in.read(reinterpret_cast<char *>(keyConfig.keyTag), TAG_LEN);
+        in.read(reinterpret_cast<char *>(&keyConfig.configId), INT_TO_BYTES);
+        in.read(reinterpret_cast<char *>(&keyConfig.keyCount), INT_TO_BYTES);
+
+        for (uint32_t keyType = 0; keyType < keyConfig.keyCount; keyType++) {
+            pos += KeyParam::KEY_PARAM_LEN;
+            if (pos > length) {
+                PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("KeyParam length error"));
+                return false;
+            }
+            KeyParam keyParam;
+            in.read(reinterpret_cast<char *>(&keyParam.keyType), INT_TO_BYTES);
+            in.read(reinterpret_cast<char *>(&keyParam.value), INT_TO_BYTES);
+            keyConfig.configs.push_back(keyParam);
+        }
+        indexHeader.idKeyConfigs[keyConfig.configId] = keyConfig;
+    }
+    return true;
+}
+
+bool ResourceTable::ReadIdSetHeader(basic_istream<char> &in, IdSetHeader &idSetHeader, uint64_t &pos, uint64_t length)
+{
+    pos += IdSetHeader::ID_SET_HEADER_LEN;
+    if (pos > length) {
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("IdSet header length error"));
+        return false;
+    }
+    in.read(reinterpret_cast<char *>(idSetHeader.idTag), TAG_LEN);
+    in.read(reinterpret_cast<char *>(&idSetHeader.length), INT_TO_BYTES);
+    in.read(reinterpret_cast<char *>(&idSetHeader.typeCount), INT_TO_BYTES);
+    in.read(reinterpret_cast<char *>(&idSetHeader.idCount), INT_TO_BYTES);
+
+    for (uint32_t resType = 0; resType < idSetHeader.typeCount; resType++) {
+        pos += ResTypeHeader::RES_TYPE_HEADER_LEN;
+        if (pos > length) {
+            PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("ResType header length error"));
+            return false;
+        }
+        ResTypeHeader resTypeHeader;
+        in.read(reinterpret_cast<char *>(&resTypeHeader.resType), INT_TO_BYTES);
+        in.read(reinterpret_cast<char *>(&resTypeHeader.length), INT_TO_BYTES);
+        in.read(reinterpret_cast<char *>(&resTypeHeader.count), INT_TO_BYTES);
+
+        for (uint32_t resId = 0; resId < resTypeHeader.count; resId++) {
+            pos += ResIndex::RES_INDEX_LEN;
+            if (pos > length) {
+                PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("ResIndex length error"));
+                return false;
+            }
+            ResIndex resIndex;
+            in.read(reinterpret_cast<char *>(&resIndex.resId), INT_TO_BYTES);
+            in.read(reinterpret_cast<char *>(&resIndex.offset), INT_TO_BYTES);
+            in.read(reinterpret_cast<char *>(&resIndex.length), INT_TO_BYTES);
+            pos += resIndex.length;
+            if (pos > length) {
+                PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("resource name length error"));
+                return false;
+            }
+            char *name = new char[resIndex.length + 1]();
+            in.read(name, resIndex.length);
+            resIndex.name = string(name, resIndex.length);
+            delete[] name;
+
+            resTypeHeader.resIndexs[resIndex.resId] = resIndex;
+        }
+        idSetHeader.resTypes[resTypeHeader.resType] = resTypeHeader;
+    }
+    return true;
+}
+
+bool ResourceTable::ReadResources(std::basic_istream<char> &in, const ResIndex &resIndex,
+    const ResTypeHeader &resTypeHeader, IndexHeaderV2 &indexHeader, uint64_t length,
+    map<int64_t, vector<ResourceItem>> &resInfos)
+{
+    ResInfo resInfo;
+    if (!ReadResInfo(in, resInfo, resIndex.offset, length)) {
+        return RESTOOL_ERROR;
+    }
+    uint64_t pos = resIndex.offset + ResInfo::RES_INFO_LEN;
+    for (uint32_t resConfig = 0; resConfig < resInfo.valueCount; resConfig++) {
+        uint32_t resConfigId;
+        uint32_t dataOffset;
+        if (!ReadResConfig(in, resConfigId, dataOffset, pos, length)) {
+            return RESTOOL_ERROR;
+        }
+        ResourceItem resourceItem(resIndex.name, indexHeader.idKeyConfigs[resConfigId].configs,
+            resTypeHeader.resType);
+        resourceItem.SetLimitKey(ResourceUtil::PaserKeyParam(indexHeader.idKeyConfigs[resConfigId].configs));
+        if (!ReadResourceItem(in, resourceItem, dataOffset, pos, length)) {
+            return RESTOOL_ERROR;
+        }
+        resInfos[resIndex.resId].push_back(resourceItem);
+    }
+    return true;
+}
+
+bool ResourceTable::ReadResInfo(std::basic_istream<char> &in, ResInfo &resInfo, uint32_t offset, uint64_t length)
+{
+    in.seekg(offset, ios::beg);
+    if (offset + ResInfo::RES_INFO_LEN > length) {
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("ResInfo length error"));
+        return false;
+    }
+    in.read(reinterpret_cast<char *>(&resInfo.resId), INT_TO_BYTES);
+    in.read(reinterpret_cast<char *>(&resInfo.length), INT_TO_BYTES);
+    in.read(reinterpret_cast<char *>(&resInfo.valueCount), INT_TO_BYTES);
+    return true;
+}
+
+bool ResourceTable::ReadResConfig(std::basic_istream<char> &in, uint32_t &resConfigId, uint32_t &dataOffset,
+    uint64_t &pos, uint64_t length)
+{
+    in.seekg(pos, ios::beg);
+    pos += INT_TO_BYTES + INT_TO_BYTES;
+    if (pos > length) {
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("Config id length error"));
+        return false;
+    }
+    in.read(reinterpret_cast<char *>(&resConfigId), INT_TO_BYTES);
+    in.read(reinterpret_cast<char *>(&dataOffset), INT_TO_BYTES);
+    return true;
+}
+
+bool ResourceTable::ReadResourceItem(std::basic_istream<char> &in, ResourceItem &resourceItem,
+    uint32_t dataOffset, uint64_t &pos, uint64_t length)
+{
+    if (dataOffset + sizeof(uint16_t) > length) {
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("resource length error"));
+        return false;
+    }
+    in.seekg(dataOffset, ios::beg);
+    uint16_t dataLen;
+    in.read(reinterpret_cast<char *>(&dataLen), sizeof(uint16_t));
+    if (dataOffset + sizeof(uint16_t) + dataLen > length) {
+        PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("resource length error"));
+        return false;
+    }
+    int8_t data[dataLen + 1];
+    in.read(reinterpret_cast<char *>(data), dataLen);
+
+    resourceItem.SetData(data, dataLen + 1);
+    resourceItem.MarkCoverable();
+    return true;
+}
 }
 }
 }
