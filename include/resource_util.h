@@ -67,9 +67,10 @@ public:
      * @brief open json file.
      * @param path: json file path.
      * @param root: json root node
+     * @param printError: if true, print error message.
      * @return true if open success, other false.
      */
-    static bool OpenJsonFile(const std::string &path, cJSON **root);
+    static bool OpenJsonFile(const std::string &path, cJSON **root, const bool &printError = true);
 
     /**
      * @brief save json file.

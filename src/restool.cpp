@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
         PrintError(GetError(ERR_CODE_UNKNOWN_COMMAND_ERROR).FormatCause("argv null"));
         return RESTOOL_ERROR;
     }
+    InitFaq(std::string(argv[0]));
     auto &parser = CmdParser::GetInstance();
     return parser.Parse(argc, argv, 1);
 }

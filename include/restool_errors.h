@@ -29,6 +29,7 @@ namespace Restool {
 constexpr uint32_t RESTOOL_SUCCESS = 0;
 constexpr uint32_t RESTOOL_ERROR = -1;
 constexpr uint16_t BUFFER_SIZE = 4096;
+const std::string ERROR_MORE_INFO_FILE = "restool_faq.json";
 // 11200xxx unknown error
 constexpr uint32_t ERR_CODE_UNDEFINED_ERROR = 11200000;
 
@@ -122,6 +123,11 @@ constexpr uint32_t ERR_CODE_INVALID_RESOURCE_INDEX = 11211124;
 const std::string ERR_TYPE_RESOURCE_DUMP = "Resource Dump Error";
 constexpr uint32_t ERR_CODE_PARSE_HAP_ERROR = 11212001;
 
+enum class Language {
+    CN,
+    EN
+};
+
 struct MoreInfo {
     std::string cn;
     std::string en;
@@ -176,6 +182,7 @@ private:
     }
 };
 
+void InitFaq(const std::string &restoolPath);
 ErrorInfo GetError(const uint32_t &errCode);
 void PrintError(const uint32_t &errCode);
 void PrintError(const ErrorInfo &error);

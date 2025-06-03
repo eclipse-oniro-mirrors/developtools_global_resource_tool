@@ -81,18 +81,22 @@ bool ResourceUtil::RmoveFile(const string &path)
     return FileEntry::RemoveFile(path);
 }
 
-bool ResourceUtil::OpenJsonFile(const string &path, cJSON **root)
+bool ResourceUtil::OpenJsonFile(const string &path, cJSON **root, const bool &printError)
 {
     ifstream ifs(FileEntry::AdaptLongPath(path), ios::binary);
     if (!ifs.is_open()) {
-        PrintError(GetError(ERR_CODE_OPEN_JSON_FAIL).FormatCause(path.c_str(), strerror(errno)));
+        if (printError) {
+            PrintError(GetError(ERR_CODE_OPEN_JSON_FAIL).FormatCause(path.c_str(), strerror(errno)));
+        }
         return false;
     }
 
     string jsonString((istreambuf_iterator<char>(ifs)), istreambuf_iterator<char>());
     *root = cJSON_Parse(jsonString.c_str());
     if (!*root) {
-        PrintError(GetError(ERR_CODE_JSON_FORMAT_ERROR).SetPosition(path));
+        if (printError) {
+            PrintError(GetError(ERR_CODE_JSON_FORMAT_ERROR).SetPosition(path));
+        }
         ifs.close();
         return false;
     }

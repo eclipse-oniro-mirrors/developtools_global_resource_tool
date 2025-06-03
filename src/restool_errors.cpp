@@ -14,7 +14,9 @@
  */
 
 #include <iostream>
+#include <sstream>
 
+#include "resource_util.h"
 #include "restool_errors.h"
 
 namespace OHOS {
@@ -520,15 +522,176 @@ const std::map<uint32_t, ErrorInfo> ERRORS_MAP = {
       { ERR_CODE_PARSE_HAP_ERROR, ERR_TYPE_RESOURCE_DUMP, "Failed to parse the HAP, %s.", "", {}, {} } },
 };
 
+#ifdef __WIN32
+constexpr int WIN_LOCALE_CN = 2052;
+#endif
+const std::string LOCALE_CN = "zh_CN";
+
+std::map<uint32_t, MoreInfo> faqInfos;
+MoreInfo defaultMoreInfo = {};
+Language osLanguage = Language::EN;
+
+std::string ExecuteCommand(const std::string &cmd)
+{
+    std::string result;
+    FILE *pipe = popen(cmd.c_str(), "r");
+    if (!pipe) {
+        return result;
+    }
+    char buffer[BUFFER_SIZE];
+    while (!feof(pipe)) {
+        if (fgets(buffer, BUFFER_SIZE, pipe) != NULL) {
+            result += buffer;
+        }
+    }
+    pclose(pipe);
+    return result;
+}
+
+#ifdef __WIN32
+Language GetWinLanguage()
+{
+    std::string result = ExecuteCommand("wmic os get locale");
+    size_t pos = 0;
+    std::string locale = "Locale";
+    if ((pos = result.find(locale)) != std::string::npos) {
+        result.replace(pos, locale.length(), "");
+    }
+    if (result.empty()) {
+        return Language::CN;
+    }
+    char *end;
+    errno = 0;
+    int localeCode = static_cast<int>(strtol(result.c_str(), &end, 16));
+    if (end == result.c_str() || errno == ERANGE || localeCode == INT_MIN || localeCode == INT_MAX) {
+        return Language::CN;
+    }
+    if (localeCode == WIN_LOCALE_CN) {
+        return Language::CN;
+    }
+    return Language::EN;
+}
+#endif
+
+#ifdef __LINUX__
+std::vector<std::string> split(const std::string &s, const char &delimiter)
+{
+    std::vector<std::string> tokens;
+    std::string token;
+    std::stringstream tokenStream(s);
+    while (std::getline(tokenStream, token, delimiter)) { tokens.push_back(token); }
+    return tokens;
+}
+
+Language GetLinuxLanguage()
+{
+    std::string result = ExecuteCommand("locale");
+    if (result.empty()) {
+        return Language::CN;
+    }
+    std::vector<std::string> localeLines = split(result, '\n');
+    for (const std::string &line : localeLines) {
+        std::vector<std::string> keyValue = split(line, '=');
+        if (keyValue.size() <= 1) {
+            continue;
+        }
+        std::string key = keyValue[0];
+        std::string value = keyValue[1];
+        if ((key == "LC_ALL" || key == "LC_MESSAGES" || key == "LANG" || key == "LANGUAGE")
+            && value.find(LOCALE_CN) != std::string::npos) {
+            return Language::CN;
+        }
+    }
+    return Language::EN;
+}
+#endif
+
+#ifdef __MAC__
+Language GetMacLanguage()
+{
+    std::string result = ExecuteCommand("defaults read -globalDomain AppleLocale");
+    if (result.empty()) {
+        return Language::CN;
+    }
+    if (result.find(LOCALE_CN) != std::string::npos) {
+        return Language::CN;
+    }
+    return Language::EN;
+}
+#endif
+
+Language GetOsLanguage()
+{
+#ifdef __WIN32
+    return GetWinLanguage();
+#endif
+
+#ifdef __LINUX__
+    return GetLinuxLanguage();
+#endif
+
+#ifdef __MAC__
+    return GetMacLanguage();
+#endif
+    return Language::CN;
+}
+
+void GetMoreInfo(cJSON *node, MoreInfo &info)
+{
+    if (node && cJSON_IsObject(node)) {
+        cJSON *cn = cJSON_GetObjectItem(node, "cn");
+        if (cn && cJSON_IsString(cn)) {
+            info.cn = cn->valuestring;
+        }
+        cJSON *en = cJSON_GetObjectItem(node, "en");
+        if (en && cJSON_IsString(en)) {
+            info.en = en->valuestring;
+        }
+    }
+}
+
+void InitFaq(const std::string &restoolPath)
+{
+    osLanguage = GetOsLanguage();
+    cJSON *root;
+    std::string moreInfoPath = FileEntry::FilePath(restoolPath).GetParent().Append(ERROR_MORE_INFO_FILE).GetPath();
+    if (!ResourceUtil::OpenJsonFile(moreInfoPath, &root, false)) {
+        return;
+    }
+    if (!root || !cJSON_IsObject(root)) {
+        cJSON_Delete(root);
+        return;
+    }
+    cJSON *defaultNode = cJSON_GetObjectItem(root, "default");
+    GetMoreInfo(defaultNode, defaultMoreInfo);
+    cJSON *faqsNode = cJSON_GetObjectItem(root, "faqs");
+    if (!faqsNode || !cJSON_IsArray(faqsNode) || cJSON_GetArraySize(faqsNode) == 0) {
+        cJSON_Delete(root);
+        return;
+    }
+    for (cJSON *infoNode = faqsNode->child; infoNode; infoNode = faqsNode->next) {
+        cJSON *codeNode = cJSON_GetObjectItem(infoNode, "code");
+        if (!codeNode || !cJSON_IsNumber(codeNode)) {
+            continue;
+        }
+        uint32_t code = static_cast<uint32_t>(codeNode->valueint);
+        MoreInfo info = {};
+        GetMoreInfo(infoNode, info);
+        faqInfos[code] = info;
+    }
+    cJSON_Delete(root);
+}
+
 ErrorInfo GetError(const uint32_t &errCode)
 {
     ErrorInfo error;
-    if (ERRORS_MAP.count(errCode) == 0) {
-        return error;
-    }
     auto it = ERRORS_MAP.find(errCode);
     if (it != ERRORS_MAP.end()) {
-        return it->second;
+        error = it->second;
+    }
+    auto faq = faqInfos.find(errCode);
+    if (faq != faqInfos.end()) {
+        error.moreInfo_ = faq->second;
     }
     return error;
 }
@@ -551,8 +714,22 @@ void PrintError(const ErrorInfo &error)
     if (!error.solutions_.empty()) {
         errMsg.append("* Try the following:").append("\n");
         for (const auto &solution : error.solutions_) { errMsg.append("  > ").append(solution).append("\n"); }
-        if (!error.moreInfo_.cn.empty()) {
-            errMsg.append("> More info: ").append(error.moreInfo_.cn).append("\n");
+        std::string moreInfo;
+        if (osLanguage == Language::CN) {
+            if (!error.moreInfo_.cn.empty()) {
+                moreInfo = error.moreInfo_.cn;
+            } else {
+                moreInfo = defaultMoreInfo.cn;
+            }
+        } else {
+            if (!error.moreInfo_.en.empty()) {
+                moreInfo = error.moreInfo_.en;
+            } else {
+                moreInfo = defaultMoreInfo.en;
+            }
+        }
+        if (!moreInfo.empty()) {
+            errMsg.append("> More info: ").append(moreInfo).append("\n");
         }
     }
     std::cerr << errMsg;
