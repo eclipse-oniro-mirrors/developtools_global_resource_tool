@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -81,6 +81,14 @@ uint32_t ConfigParser::Init()
     if (!root_ || !cJSON_IsObject(root_)) {
         PrintError(GetError(ERR_CODE_JSON_FORMAT_ERROR).SetPosition(filePath_));
         return RESTOOL_ERROR;
+    }
+
+    cJSON *appNode = cJSON_GetObjectItem(root_, "app");
+    if (appNode && cJSON_IsObject(appNode)) {
+        cJSON *minAPIVersionNode = cJSON_GetObjectItem(appNode, "minAPIVersion");
+        if (minAPIVersionNode && minAPIVersionNode->valueint > MIN_SUPPORT_NEW_MODULE_API_VERSION) {
+            newModule_ = true;
+        }
     }
 
     cJSON *moduleNode = cJSON_GetObjectItem(root_, "module");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -352,7 +352,7 @@ uint32_t ResourcePack::PackResources(const ResourceMerge &resourceMerge)
         CheckConfigJson();
     }
 
-    ResourceTable resourceTable;
+    ResourceTable resourceTable(configJson_.isSupportNewModule());
     if (!packageParser_.GetDependEntry().empty()) {
         if (HandleFeature() != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;

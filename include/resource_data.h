@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -55,6 +55,7 @@ constexpr static int DEFAULT_POOL_SIZE = 8;
 static std::set<std::string> g_resourceSet;
 static std::set<std::string> g_hapResourceSet;
 const static int8_t INVALID_ID = -1;
+const static int MIN_SUPPORT_NEW_MODULE_API_VERSION = 60000020;
 
 enum class IgnoreType {
     IGNORE_FILE,
@@ -205,6 +206,7 @@ const std::map<std::string, InputDevice> g_inputDeviceMap = {
 };
 
 struct KeyParam {
+    static const uint32_t KEY_PARAM_LEN = 8;
     KeyType keyType;
     uint32_t value;
     bool operator == (const KeyParam &other)
