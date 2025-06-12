@@ -248,7 +248,8 @@ uint32_t PackageParser::ForceWrite()
 
 uint32_t PackageParser::PrintVersion()
 {
-    cout << "Info: Restool version = " << RESTOOL_VERSION << endl;
+    std::string restoolVersion = RESTOOL_NAME + RESTOOL_VERSION;
+    cout << "Info: Restool version = " << restoolVersion << endl;
     exit(RESTOOL_SUCCESS);
     return RESTOOL_SUCCESS;
 }
