@@ -12,3 +12,4 @@
 # limitations under the License.
 
 id_defined_path = "//base/global/system_resources/systemres/main/resources/base/element/id_defined.json"
+restool_faq_path = "//developtools/global_resource_tool/restool_faq.json"

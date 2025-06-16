@@ -82,6 +82,12 @@ ohos_executable("restool") {
       "-lshlwapi",
     ]
   }
+  if (is_linux) {
+    defines = [ "__LINUX__" ]
+  }
+  if (is_mac) {
+    defines = [ "__MAC__" ]
+  }
   subsystem_name = "developtools"
   part_name = "global_resource_tool"
 }
@@ -103,4 +109,11 @@ ohos_prebuilt_etc("restool_systemres") {
   source = "${id_defined_path}"
   subsystem_name = "developtools"
   part_name = "global_resource_tool"
+}
+
+ohos_prebuilt_etc("restool_faq") {
+  source = "${restool_faq_path}"
+  subsystem_name = "developtools"
+  part_name = "global_resource_tool"
+  install_enable = false
 }
