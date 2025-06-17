@@ -268,28 +268,8 @@ uint32_t ResourceTable::SaveToResouorceIndex(const map<string, vector<TableData>
 bool ResourceTable::InitHeader(IndexHeaderV2 &indexHeader, IdSetHeader &idSetHeader,
     DataHeader &dataHeader, uint32_t count)
 {
-    const int8_t newModuleTag[3] = "V2";
-    const size_t tagLen = 2;
-    int8_t newResToolVersion[VERSION_MAX_LEN] = {0};
-    size_t nameIndex = find(RESTOOL_VERSION, RESTOOL_VERSION + VERSION_MAX_LEN, ' ') - RESTOOL_VERSION;
-    // copy "Restool"
-    if (memcpy_s(newResToolVersion, VERSION_MAX_LEN, RESTOOL_VERSION, nameIndex) != EOK) {
-        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("memcpy error when init index header"));
-        return false;
-    }
-    // copy "V2"
-    if (memcpy_s(newResToolVersion + nameIndex, VERSION_MAX_LEN - nameIndex, newModuleTag, tagLen) != EOK) {
-        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("memcpy error when init index header"));
-        return false;
-    }
-    // copy version id
-    if (memcpy_s(newResToolVersion + nameIndex + tagLen, VERSION_MAX_LEN - nameIndex - tagLen,
-        RESTOOL_VERSION + nameIndex, VERSION_MAX_LEN - nameIndex - tagLen) != EOK) {
-        PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("memcpy error when init index header"));
-        return false;
-    }
-    
-    if (memcpy_s(indexHeader.version, VERSION_MAX_LEN, newResToolVersion, VERSION_MAX_LEN) != EOK) {
+    std::string restoolVersion = RESTOOLV2_NAME + RESTOOL_VERSION;
+    if (memcpy_s(indexHeader.version, VERSION_MAX_LEN, restoolVersion.data(), restoolVersion.length()) != EOK) {
         PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("memcpy error when init index header"));
         return false;
     }
@@ -488,7 +468,8 @@ uint32_t ResourceTable::SaveToNewResouorceIndex(const map<string, vector<TableDa
 
 bool ResourceTable::InitIndexHeader(IndexHeader &indexHeader, uint32_t count) const
 {
-    if (memcpy_s(indexHeader.version, VERSION_MAX_LEN, RESTOOL_VERSION, VERSION_MAX_LEN) != EOK) {
+    std::string restoolVersion = RESTOOL_NAME + RESTOOL_VERSION;
+    if (memcpy_s(indexHeader.version, VERSION_MAX_LEN, restoolVersion.data(), restoolVersion.length()) != EOK) {
         PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("memcpy error when init index header"));
         return false;
     }
@@ -613,8 +594,8 @@ bool ResourceTable::ReadFileHeader(basic_istream<char> &in, IndexHeader &indexHe
         return false;
     }
     in.read(reinterpret_cast<char *>(indexHeader.version), VERSION_MAX_LEN);
-    in.read(reinterpret_cast<char *>(&indexHeader.fileSize), INT_TO_BYTES);
-    in.read(reinterpret_cast<char *>(&indexHeader.limitKeyConfigSize), INT_TO_BYTES);
+    in.read(reinterpret_cast<char *>(&indexHeader.fileSize), sizeof(uint32_t));
+    in.read(reinterpret_cast<char *>(&indexHeader.limitKeyConfigSize), sizeof(uint32_t));
     return true;
 }
 
@@ -622,7 +603,7 @@ bool ResourceTable::ReadLimitKeys(basic_istream<char> &in, map<int64_t, vector<K
                                   uint32_t count, uint64_t &pos, uint64_t length)
 {
     for (uint32_t i = 0; i< count; i++) {
-        pos = pos + TAG_LEN + INT_TO_BYTES + INT_TO_BYTES;
+        pos = pos + TAG_LEN + sizeof(uint32_t) + sizeof(uint32_t);
         if (pos > length) {
             PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("KEYS length error"));
             return false;
@@ -635,19 +616,19 @@ bool ResourceTable::ReadLimitKeys(basic_istream<char> &in, map<int64_t, vector<K
                 .FormatCause(string("invalid key tag = " + keyTag).c_str()));
             return false;
         }
-        in.read(reinterpret_cast<char *>(&limitKey.offset), INT_TO_BYTES);
-        in.read(reinterpret_cast<char *>(&limitKey.keyCount), INT_TO_BYTES);
+        in.read(reinterpret_cast<char *>(&limitKey.offset), sizeof(uint32_t));
+        in.read(reinterpret_cast<char *>(&limitKey.keyCount), sizeof(uint32_t));
 
         vector<KeyParam> keyParams;
         for (uint32_t j = 0; j < limitKey.keyCount; j++) {
-            pos = pos + INT_TO_BYTES + INT_TO_BYTES;
+            pos = pos + sizeof(uint32_t) + sizeof(uint32_t);
             if (pos > length) {
                 PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("keyParams length error"));
                 return false;
             }
             KeyParam keyParam;
-            in.read(reinterpret_cast<char *>(&keyParam.keyType), INT_TO_BYTES);
-            in.read(reinterpret_cast<char *>(&keyParam.value), INT_TO_BYTES);
+            in.read(reinterpret_cast<char *>(&keyParam.keyType), sizeof(uint32_t));
+            in.read(reinterpret_cast<char *>(&keyParam.value), sizeof(uint32_t));
             keyParams.push_back(keyParam);
         }
         limitKeys[limitKey.offset] = keyParams;
@@ -659,7 +640,7 @@ bool ResourceTable::ReadIdTables(basic_istream<char> &in, std::map<int64_t, std:
                                  uint32_t count, uint64_t &pos, uint64_t length)
 {
     for (uint32_t i = 0; i< count; i++) {
-        pos = pos + TAG_LEN + INT_TO_BYTES;
+        pos = pos + TAG_LEN + sizeof(uint32_t);
         if (pos > length) {
             PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("IDSS length error"));
             return false;
@@ -673,17 +654,17 @@ bool ResourceTable::ReadIdTables(basic_istream<char> &in, std::map<int64_t, std:
                 .FormatCause(string("invalid id tag = " + idTag).c_str()));
             return false;
         }
-        in.read(reinterpret_cast<char *>(&idss.idCount), INT_TO_BYTES);
+        in.read(reinterpret_cast<char *>(&idss.idCount), sizeof(uint32_t));
 
         for (uint32_t j = 0; j < idss.idCount; j++) {
-            pos = pos + INT_TO_BYTES + INT_TO_BYTES;
+            pos = pos + sizeof(uint32_t) + sizeof(uint32_t);
             if (pos > length) {
                 PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("id data length error"));
                 return false;
             }
             IdData data;
-            in.read(reinterpret_cast<char *>(&data.id), INT_TO_BYTES);
-            in.read(reinterpret_cast<char *>(&data.dataOffset), INT_TO_BYTES);
+            in.read(reinterpret_cast<char *>(&data.id), sizeof(uint32_t));
+            in.read(reinterpret_cast<char *>(&data.dataOffset), sizeof(uint32_t));
             datas[data.dataOffset] = make_pair(data.id, offset);
         }
     }
@@ -692,19 +673,19 @@ bool ResourceTable::ReadIdTables(basic_istream<char> &in, std::map<int64_t, std:
 
 bool ResourceTable::ReadDataRecordPrepare(basic_istream<char> &in, RecordItem &record, uint64_t &pos, uint64_t length)
 {
-    pos = pos + INT_TO_BYTES;
+    pos = pos + sizeof(uint32_t);
     if (pos > length) {
         PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("data record length error"));
         return false;
     }
-    in.read(reinterpret_cast<char *>(&record.size), INT_TO_BYTES);
+    in.read(reinterpret_cast<char *>(&record.size), sizeof(uint32_t));
     pos = pos + record.size;
     if (pos > length) {
         PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("record.size length error"));
         return false;
     }
-    in.read(reinterpret_cast<char *>(&record.resType), INT_TO_BYTES);
-    in.read(reinterpret_cast<char *>(&record.id), INT_TO_BYTES);
+    in.read(reinterpret_cast<char *>(&record.resType), sizeof(uint32_t));
+    in.read(reinterpret_cast<char *>(&record.id), sizeof(uint32_t));
     return true;
 }
 
@@ -714,7 +695,7 @@ bool ResourceTable::ReadDataRecordStart(basic_istream<char> &in, RecordItem &rec
                                         map<int64_t, vector<ResourceItem>> &resInfos)
 {
     int64_t offset = in.tellg();
-    offset = offset - INT_TO_BYTES - INT_TO_BYTES - INT_TO_BYTES;
+    offset = offset - sizeof(uint32_t) - sizeof(uint32_t) - sizeof(uint32_t);
     uint16_t value_size = 0;
     in.read(reinterpret_cast<char *>(&value_size), sizeof(uint16_t));
     if (value_size + sizeof(uint16_t) > record.size) {
@@ -804,9 +785,9 @@ bool ResourceTable::ReadNewFileHeader(basic_istream<char> &in, IndexHeaderV2 &in
         return false;
     }
     in.read(reinterpret_cast<char *>(indexHeader.version), VERSION_MAX_LEN);
-    in.read(reinterpret_cast<char *>(&indexHeader.length), INT_TO_BYTES);
-    in.read(reinterpret_cast<char *>(&indexHeader.keyCount), INT_TO_BYTES);
-    in.read(reinterpret_cast<char *>(&indexHeader.dataBlockOffset), INT_TO_BYTES);
+    in.read(reinterpret_cast<char *>(&indexHeader.length), sizeof(uint32_t));
+    in.read(reinterpret_cast<char *>(&indexHeader.keyCount), sizeof(uint32_t));
+    in.read(reinterpret_cast<char *>(&indexHeader.dataBlockOffset), sizeof(uint32_t));
 
     for (uint32_t key = 0; key < indexHeader.keyCount; key++) {
         pos += KeyConfig::KEY_CONFIG_HEADER_LEN;
@@ -816,8 +797,8 @@ bool ResourceTable::ReadNewFileHeader(basic_istream<char> &in, IndexHeaderV2 &in
         }
         KeyConfig keyConfig;
         in.read(reinterpret_cast<char *>(keyConfig.keyTag), TAG_LEN);
-        in.read(reinterpret_cast<char *>(&keyConfig.configId), INT_TO_BYTES);
-        in.read(reinterpret_cast<char *>(&keyConfig.keyCount), INT_TO_BYTES);
+        in.read(reinterpret_cast<char *>(&keyConfig.configId), sizeof(uint32_t));
+        in.read(reinterpret_cast<char *>(&keyConfig.keyCount), sizeof(uint32_t));
 
         for (uint32_t keyType = 0; keyType < keyConfig.keyCount; keyType++) {
             pos += KeyParam::KEY_PARAM_LEN;
@@ -826,8 +807,8 @@ bool ResourceTable::ReadNewFileHeader(basic_istream<char> &in, IndexHeaderV2 &in
                 return false;
             }
             KeyParam keyParam;
-            in.read(reinterpret_cast<char *>(&keyParam.keyType), INT_TO_BYTES);
-            in.read(reinterpret_cast<char *>(&keyParam.value), INT_TO_BYTES);
+            in.read(reinterpret_cast<char *>(&keyParam.keyType), sizeof(uint32_t));
+            in.read(reinterpret_cast<char *>(&keyParam.value), sizeof(uint32_t));
             keyConfig.configs.push_back(keyParam);
         }
         indexHeader.idKeyConfigs[keyConfig.configId] = keyConfig;
@@ -843,9 +824,9 @@ bool ResourceTable::ReadIdSetHeader(basic_istream<char> &in, IdSetHeader &idSetH
         return false;
     }
     in.read(reinterpret_cast<char *>(idSetHeader.idTag), TAG_LEN);
-    in.read(reinterpret_cast<char *>(&idSetHeader.length), INT_TO_BYTES);
-    in.read(reinterpret_cast<char *>(&idSetHeader.typeCount), INT_TO_BYTES);
-    in.read(reinterpret_cast<char *>(&idSetHeader.idCount), INT_TO_BYTES);
+    in.read(reinterpret_cast<char *>(&idSetHeader.length), sizeof(uint32_t));
+    in.read(reinterpret_cast<char *>(&idSetHeader.typeCount), sizeof(uint32_t));
+    in.read(reinterpret_cast<char *>(&idSetHeader.idCount), sizeof(uint32_t));
 
     for (uint32_t resType = 0; resType < idSetHeader.typeCount; resType++) {
         pos += ResTypeHeader::RES_TYPE_HEADER_LEN;
@@ -854,9 +835,9 @@ bool ResourceTable::ReadIdSetHeader(basic_istream<char> &in, IdSetHeader &idSetH
             return false;
         }
         ResTypeHeader resTypeHeader;
-        in.read(reinterpret_cast<char *>(&resTypeHeader.resType), INT_TO_BYTES);
-        in.read(reinterpret_cast<char *>(&resTypeHeader.length), INT_TO_BYTES);
-        in.read(reinterpret_cast<char *>(&resTypeHeader.count), INT_TO_BYTES);
+        in.read(reinterpret_cast<char *>(&resTypeHeader.resType), sizeof(uint32_t));
+        in.read(reinterpret_cast<char *>(&resTypeHeader.length), sizeof(uint32_t));
+        in.read(reinterpret_cast<char *>(&resTypeHeader.count), sizeof(uint32_t));
 
         for (uint32_t resId = 0; resId < resTypeHeader.count; resId++) {
             pos += ResIndex::RES_INDEX_LEN;
@@ -865,9 +846,9 @@ bool ResourceTable::ReadIdSetHeader(basic_istream<char> &in, IdSetHeader &idSetH
                 return false;
             }
             ResIndex resIndex;
-            in.read(reinterpret_cast<char *>(&resIndex.resId), INT_TO_BYTES);
-            in.read(reinterpret_cast<char *>(&resIndex.offset), INT_TO_BYTES);
-            in.read(reinterpret_cast<char *>(&resIndex.length), INT_TO_BYTES);
+            in.read(reinterpret_cast<char *>(&resIndex.resId), sizeof(uint32_t));
+            in.read(reinterpret_cast<char *>(&resIndex.offset), sizeof(uint32_t));
+            in.read(reinterpret_cast<char *>(&resIndex.length), sizeof(uint32_t));
             pos += resIndex.length;
             if (pos > length) {
                 PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("resource name length error"));
@@ -918,9 +899,9 @@ bool ResourceTable::ReadResInfo(std::basic_istream<char> &in, ResInfo &resInfo, 
         PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("ResInfo length error"));
         return false;
     }
-    in.read(reinterpret_cast<char *>(&resInfo.resId), INT_TO_BYTES);
-    in.read(reinterpret_cast<char *>(&resInfo.length), INT_TO_BYTES);
-    in.read(reinterpret_cast<char *>(&resInfo.valueCount), INT_TO_BYTES);
+    in.read(reinterpret_cast<char *>(&resInfo.resId), sizeof(uint32_t));
+    in.read(reinterpret_cast<char *>(&resInfo.length), sizeof(uint32_t));
+    in.read(reinterpret_cast<char *>(&resInfo.valueCount), sizeof(uint32_t));
     return true;
 }
 
@@ -928,13 +909,13 @@ bool ResourceTable::ReadResConfig(std::basic_istream<char> &in, uint32_t &resCon
     uint64_t &pos, uint64_t length)
 {
     in.seekg(pos, ios::beg);
-    pos += INT_TO_BYTES + INT_TO_BYTES;
+    pos += sizeof(uint32_t) + sizeof(uint32_t);
     if (pos > length) {
         PrintError(GetError(ERR_CODE_INVALID_RESOURCE_INDEX).FormatCause("Config id length error"));
         return false;
     }
-    in.read(reinterpret_cast<char *>(&resConfigId), INT_TO_BYTES);
-    in.read(reinterpret_cast<char *>(&dataOffset), INT_TO_BYTES);
+    in.read(reinterpret_cast<char *>(&resConfigId), sizeof(uint32_t));
+    in.read(reinterpret_cast<char *>(&dataOffset), sizeof(uint32_t));
     return true;
 }
 
