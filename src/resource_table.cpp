@@ -315,7 +315,7 @@ void ResourceTable::PrepareResIndex(IdSetHeader &idSetHeader, const TableData &t
 
     ResIndex resIndex;
     resIndex.resId = tableData.id;
-    resIndex.name = tableData.resourceItem.GetName();
+    resIndex.name = ResourceUtil::GetIdName(tableData.resourceItem.GetName(), resType);
     resIndex.length = resIndex.name.length();
     idSetHeader.resTypes[resType].resIndexs[tableData.id] = resIndex;
     idSetHeader.resTypes[resType].length += ResIndex::RES_INDEX_LEN + resIndex.length;
