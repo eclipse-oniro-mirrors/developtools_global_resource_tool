@@ -17,6 +17,7 @@
 #define OHOS_RESTOOL_RESOURCE_TABLE_H
 
 #include <fstream>
+#include <map>
 #include <memory>
 #include <sstream>
 #include <unordered_map>
@@ -115,7 +116,7 @@ private:
         uint32_t resId = 0;
         uint32_t length = 0;
         uint32_t valueCount = 0;
-        std::unordered_map<uint32_t, uint32_t> dataOffset; // <resConfigId, offset>
+        std::map<uint32_t, uint32_t> dataOffset; // <resConfigId, offset>
     };
 
     struct DataHeader {
