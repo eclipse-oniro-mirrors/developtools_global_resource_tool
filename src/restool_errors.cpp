@@ -15,6 +15,13 @@
 
 #include <iostream>
 #include <sstream>
+#ifdef __WIN32
+#include <windows.h>
+#else
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#endif
 
 #include "resource_util.h"
 #include "restool_errors.h"
@@ -525,33 +532,132 @@ const std::map<uint32_t, ErrorInfo> ERRORS_MAP = {
 #ifdef __WIN32
 constexpr int WIN_LOCALE_CN = 2052;
 #endif
+const std::string LOCALE_CMD_WIN = "wmic os get locale";
+const std::string LOCALE_CMD_LINUX = "locale";
+const std::string LOCALE_CMD_MAC = "defaults read -globalDomain AppleLocale";
 const std::string LOCALE_CN = "zh_CN";
 
 std::map<uint32_t, MoreInfo> faqInfos;
 MoreInfo defaultMoreInfo = {};
 Language osLanguage = Language::EN;
 
+bool IsValidCmd(const std::string &cmd)
+{
+    if (cmd == LOCALE_CMD_WIN || cmd == LOCALE_CMD_LINUX || cmd == LOCALE_CMD_MAC) {
+        return true;
+    }
+    return false;
+}
+
+#ifdef __WIN32
+std::string ExecuteCommand(const std::string &cmd)
+{
+    if (!IsValidCmd(cmd)) {
+        return "";
+    }
+    SECURITY_ATTRIBUTES saAttr;
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    saAttr.bInheritHandle = TRUE;
+    saAttr.lpSecurityDescriptor = NULL;
+    HANDLE hReadPipe;
+    HANDLE hWritePipe;
+    if (!CreatePipe(&hReadPipe, &hWritePipe, &saAttr, 0)) {
+        return "CreatePipe failed";
+    }
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    si.hStdError = hWritePipe;
+    si.hStdOutput = hWritePipe;
+    si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+    si.dwFlags |= STARTF_USESTDHANDLES;
+    ZeroMemory(&pi, sizeof(pi));
+
+    if (!CreateProcess(NULL, const_cast<LPSTR>(cmd.c_str()), NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi)) {
+        CloseHandle(hReadPipe);
+        CloseHandle(hWritePipe);
+        return "CreateProcess failed";
+    }
+    // close the write end of the pipe in the parent process
+    CloseHandle(hWritePipe);
+    std::string result;
+    DWORD bytesRead;
+    CHAR buffer[BUFFER_SIZE_SMALL];
+    while (ReadFile(hReadPipe, buffer, sizeof(buffer) - 1, &bytesRead, NULL) && bytesRead != 0) {
+        buffer[bytesRead] = '\0';
+        result += buffer;
+    }
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    CloseHandle(hReadPipe);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+    return result;
+}
+#else
+std::vector<std::string> split(const std::string &s, const char &delimiter)
+{
+    std::vector<std::string> tokens;
+    std::string token;
+    std::stringstream tokenStream(s);
+    while (std::getline(tokenStream, token, delimiter)) { tokens.push_back(token); }
+    return tokens;
+}
+
 std::string ExecuteCommand(const std::string &cmd)
 {
     std::string result;
-    FILE *pipe = popen(cmd.c_str(), "r");
-    if (!pipe) {
+    if (!IsValidCmd(cmd)) {
         return result;
     }
-    char buffer[BUFFER_SIZE];
-    while (!feof(pipe)) {
-        if (fgets(buffer, BUFFER_SIZE, pipe) != NULL) {
+    int pipefd[2];
+    pid_t pid;
+    if (pipe(pipefd) == -1) {
+        perror("open pipe failed");
+        return result;
+    }
+    pid = fork();
+    if (pid == -1) {
+        perror("fork failed");
+        return result;
+    }
+    if (pid == 0) {
+        // child process
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[1]);
+        std::vector<std::string> cmds = split(cmd, ' ');
+        char *argv[cmds.size() + 1];
+        size_t i = 0;
+        for (i = 0; i < cmds.size(); ++i) {
+            argv[i] = cmds[i].data();
+        }
+        argv[i] = nullptr;
+        execvp(argv[0], argv);
+        // if execvp returns, there was an error.
+        perror("execle failed");
+        exit(EXIT_FAILURE);
+    } else {
+        // parent process
+        // close unused write end
+        close(pipefd[1]);
+        char buffer[BUFFER_SIZE_SMALL];
+        ssize_t readBytes;
+        while ((readBytes = read(pipefd[0], buffer, sizeof(buffer) - 1)) > 0) {
+            buffer[readBytes] = '\0';
             result += buffer;
         }
+        close(pipefd[0]);
+        wait(nullptr);
     }
-    pclose(pipe);
     return result;
 }
+#endif
 
 #ifdef __WIN32
 Language GetWinLanguage()
 {
-    std::string result = ExecuteCommand("wmic os get locale");
+    std::string result = ExecuteCommand(LOCALE_CMD_WIN);
     size_t pos = 0;
     std::string locale = "Locale";
     if ((pos = result.find(locale)) != std::string::npos) {
@@ -574,18 +680,9 @@ Language GetWinLanguage()
 #endif
 
 #ifdef __LINUX__
-std::vector<std::string> split(const std::string &s, const char &delimiter)
-{
-    std::vector<std::string> tokens;
-    std::string token;
-    std::stringstream tokenStream(s);
-    while (std::getline(tokenStream, token, delimiter)) { tokens.push_back(token); }
-    return tokens;
-}
-
 Language GetLinuxLanguage()
 {
-    std::string result = ExecuteCommand("locale");
+    std::string result = ExecuteCommand(LOCALE_CMD_LINUX);
     if (result.empty()) {
         return Language::CN;
     }
@@ -609,7 +706,7 @@ Language GetLinuxLanguage()
 #ifdef __MAC__
 Language GetMacLanguage()
 {
-    std::string result = ExecuteCommand("defaults read -globalDomain AppleLocale");
+    std::string result = ExecuteCommand(LOCALE_CMD_MAC);
     if (result.empty()) {
         return Language::CN;
     }
