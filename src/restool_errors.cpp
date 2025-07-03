@@ -635,8 +635,8 @@ std::string ExecuteCommand(const std::string &cmd)
         argv[i] = nullptr;
         execvp(argv[0], argv);
         // if execvp returns, there was an error.
-        perror("execle failed");
-        exit(EXIT_FAILURE);
+        perror("execvp failed");
+        throw std::runtime_error("execvp failed");
     } else {
         // parent process
         // close unused write end
