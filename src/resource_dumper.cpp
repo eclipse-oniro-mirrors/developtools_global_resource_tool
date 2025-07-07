@@ -194,7 +194,7 @@ uint32_t CommonDumper::AddKeyParamsToJson(const std::vector<KeyParam> &keyParams
     return RESTOOL_SUCCESS;
 }
 
-uint32_t CommonDumper::AddItemCommonPropToJson(int32_t resId, const ResourceItem &item, cJSON* json) const
+uint32_t CommonDumper::AddItemCommonPropToJson(int64_t resId, const ResourceItem &item, cJSON* json) const
 {
     if (!json) {
         PrintError(GetError(ERR_CODE_UNDEFINED_ERROR).FormatCause("add item common property to null json object"));
