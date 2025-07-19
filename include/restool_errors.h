@@ -29,6 +29,7 @@ namespace Restool {
 constexpr uint32_t RESTOOL_SUCCESS = 0;
 constexpr uint32_t RESTOOL_ERROR = -1;
 constexpr uint16_t BUFFER_SIZE = 4096;
+constexpr uint16_t BUFFER_SIZE_SMALL = 128;
 const std::string ERROR_MORE_INFO_FILE = "restool_faq.json";
 // 11200xxx unknown error
 constexpr uint32_t ERR_CODE_UNDEFINED_ERROR = 11200000;

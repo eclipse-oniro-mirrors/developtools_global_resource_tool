@@ -66,7 +66,7 @@ private:
     uint32_t AddPairVauleToJson(const ResourceItem &item, cJSON *json) const;
     uint32_t AddKeyParamsToJson(const std::vector<KeyParam> &keyParams, cJSON *json) const;
     uint32_t AddResourceToJson(int64_t id, const std::vector<ResourceItem> &items, cJSON *json) const;
-    uint32_t AddItemCommonPropToJson(int32_t resId, const ResourceItem &item, cJSON* json) const;
+    uint32_t AddItemCommonPropToJson(int64_t resId, const ResourceItem &item, cJSON* json) const;
 };
 
 } // namespace Restool
