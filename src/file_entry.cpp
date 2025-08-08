@@ -297,6 +297,9 @@ bool FileEntry::IsIgnore(const string &filename) const
 bool FileEntry::RemoveAllDirInner(const FileEntry &entry)
 {
     string path = entry.GetFilePath().GetPath();
+    if (!Exist(path)) {
+        return true;
+    }
     if (entry.IsFile()) {
 #ifdef _WIN32
         bool result = remove(AdaptLongPath(path).c_str()) == 0;
