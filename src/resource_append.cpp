@@ -90,7 +90,12 @@ bool ResourceAppend::Combine(const string &folderPath)
                 .FormatCause(child->GetFilePath().GetPath().c_str(), "not a file"));
             return false;
         }
-        if (child->GetFilePath().GetFilename() == ID_DEFINED_FILE) {
+        const std::string fileName = child->GetFilePath().GetFilename();
+        if (fileName == ID_DEFINED_FILE) {
+            continue;
+        }
+        if (fileName.find('.') == 0) {
+            // The file starts with '.' is invalid
             continue;
         }
         if (!LoadResourceItem(child->GetFilePath().GetPath())) {
