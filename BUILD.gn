@@ -117,3 +117,10 @@ ohos_prebuilt_etc("restool_faq") {
   part_name = "global_resource_tool"
   install_enable = false
 }
+
+ohos_prebuilt_etc("restool_ids_schema") {
+  source = "${ids_schema_path}"
+  subsystem_name = "developtools"
+  part_name = "global_resource_tool"
+  install_enable = false
+}
