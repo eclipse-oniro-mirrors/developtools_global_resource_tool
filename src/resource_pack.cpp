@@ -316,14 +316,14 @@ uint32_t ResourcePack::Pack()
     }
 
     BinaryFilePacker rawFilePacker(packageParser_, moduleName_);
-    std::future<uint32_t> copyFuture = rawFilePacker.CopyBinaryFileAsync(resourceMerge.GetInputs());
+    rawFilePacker.CopyBinaryFileAsync(resourceMerge.GetInputs());
 
     if (PackResources(resourceMerge) != RESTOOL_SUCCESS) {
-        rawFilePacker.StopCopy();
+        rawFilePacker.Terminate();
         return RESTOOL_ERROR;
     }
 
-    if (copyFuture.get() != RESTOOL_SUCCESS) {
+    if (rawFilePacker.GetResult() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
