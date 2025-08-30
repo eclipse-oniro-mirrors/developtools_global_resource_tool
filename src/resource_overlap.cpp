@@ -43,19 +43,19 @@ uint32_t ResourceOverlap::Pack()
     }
 
     OverlapBinaryFilePacker rawFilePacker(packageParser_, moduleName_);
-    future<uint32_t> copyFuture = rawFilePacker.CopyBinaryFileAsync(resourceMerge.GetInputs());
+    rawFilePacker.CopyBinaryFileAsync(resourceMerge.GetInputs());
 
     if (LoadHapResources() != RESTOOL_SUCCESS) {
-        rawFilePacker.StopCopy();
+        rawFilePacker.Terminate();
         return RESTOOL_ERROR;
     }
 
     if (PackResources(resourceMerge) != RESTOOL_SUCCESS) {
-        rawFilePacker.StopCopy();
+        rawFilePacker.Terminate();
         return RESTOOL_ERROR;
     }
 
-    if (copyFuture.get() != RESTOOL_SUCCESS) {
+    if (rawFilePacker.GetResult() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;

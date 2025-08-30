@@ -35,8 +35,8 @@ uint32_t OverlapBinaryFilePacker::CopyBinaryFile(const vector<string> &inputs)
 
     vector<string> resource(inputs.begin() + 1, inputs.end());
     BinaryFilePacker rawFilePacker(packageParser_, moduleName_);
-    std::future<uint32_t> copyFuture = rawFilePacker.CopyBinaryFileAsync(resource);
-    if (copyFuture.get() != RESTOOL_SUCCESS) {
+    rawFilePacker.CopyBinaryFileAsync(resource);
+    if (rawFilePacker.GetResult() != RESTOOL_SUCCESS) {
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;

@@ -32,16 +32,24 @@ BinaryFilePacker::~BinaryFilePacker()
 {
 }
 
-void BinaryFilePacker::StopCopy()
+void BinaryFilePacker::Terminate()
 {
-    stopCopy_.store(true);
+    terminate_.store(true);
+    GetResult();
 }
 
-std::future<uint32_t> BinaryFilePacker::CopyBinaryFileAsync(const std::vector<std::string> &inputs)
+uint32_t BinaryFilePacker::GetResult()
+{
+    if (copyFuture_.valid()) {
+        result_ = copyFuture_.get();
+    }
+    return result_;
+}
+
+void BinaryFilePacker::CopyBinaryFileAsync(const std::vector<std::string> &inputs)
 {
     auto func = [this](const vector<string> &inputs) { return this->CopyBinaryFile(inputs); };
-    std::future<uint32_t> res = ThreadPool::GetInstance().Enqueue(func, inputs);
-    return res;
+    copyFuture_ = ThreadPool::GetInstance().Enqueue(func, inputs);
 }
 
 uint32_t BinaryFilePacker::CopyBinaryFile(const vector<string> &inputs)
@@ -118,7 +126,7 @@ uint32_t BinaryFilePacker::CopyBinaryFileImpl(const string &src, const string &d
             continue;
         }
 
-        if (stopCopy_.load()) {
+        if (terminate_.load()) {
             cout << "Info: CopyBinaryFileImpl: stop copy binary file." << endl;
             return RESTOOL_ERROR;
         }
@@ -145,6 +153,10 @@ bool BinaryFilePacker::IsDuplicated(const unique_ptr<FileEntry> &entry, string s
 
 uint32_t BinaryFilePacker::CopySingleFile(const std::string &path, std::string &subPath)
 {
+    if (terminate_.load()) {
+        cout << "Info: CopySingleFile: stop copy binary file." << endl;
+        return RESTOOL_ERROR;
+    }
     if (moduleName_ == "har" || CompressionParser::GetCompressionParser()->GetDefaultCompress()) {
         if (!ResourceUtil::CopyFileInner(path, subPath)) {
             return RESTOOL_ERROR;
@@ -160,7 +172,7 @@ uint32_t BinaryFilePacker::CopySingleFile(const std::string &path, std::string &
 uint32_t BinaryFilePacker::CheckCopyResults()
 {
     for (auto &res : copyResults_) {
-        if (stopCopy_.load()) {
+        if (terminate_.load()) {
             cout << "Info: CopyBinaryFile: stop copy binary file." << endl;
             return RESTOOL_ERROR;
         }
