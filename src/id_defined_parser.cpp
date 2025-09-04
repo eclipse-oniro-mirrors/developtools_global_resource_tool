@@ -221,8 +221,6 @@ bool IdDefinedParser::ParseId(const std::string &filePath, const cJSON *origId, 
 bool IdDefinedParser::ParseType(const std::string &filePath, const cJSON *type, ResourceId &resourceId)
 {
     if (!type) {
-        std::string msg = "type";
-        msg.append(cJSON_GetErrorPtr());
         PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause("type").SetPosition(filePath));
         return false;
     }
