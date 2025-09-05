@@ -84,6 +84,9 @@ const vector<unique_ptr<FileEntry>> FileEntry::GetChilds() const
     FindClose(handle);
 #else
     DIR *handle = opendir(filePath.c_str());
+    if (handle == nullptr) {
+        return children;
+    }
     struct dirent *entry;
     while ((entry = readdir(handle)) != nullptr) {
         string filename(entry->d_name);
