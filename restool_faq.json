@@ -8,6 +8,15 @@
             "code": 11201001,
             "cn": "https://developer.huawei.com/consumer/cn/doc/harmonyos-faqs/faqs-compiling-and-building-181",
             "en": "https://developer.huawei.com/consumer/en/doc/harmonyos-faqs/faqs-compiling-and-building-181"
+        },
+        {
+            "code": 11211120,
+            "extSolutions": [
+                {
+                    "fileName": "module.json",
+                    "solution": "Check whether the hvigorfile.ts in the project root directory or the module.json5 file in the module directory references undefined resources."
+                }
+            ]
         }
     ]
 }
