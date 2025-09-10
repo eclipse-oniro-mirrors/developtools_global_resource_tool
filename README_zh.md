@@ -68,34 +68,6 @@ Locale匹配规则：Locale匹配需满足以下三条规则。
 
 参数举例说明：Locale[zh_CN,en_US];Device[phone]，该参数过滤其他语言，保留能匹配上zh_CN和en_US的语言；过滤其他设备，保留phone；其他参数（如MccMnc、Orientation等）配置不过滤均保留。
 
-
-#### restool支持的子命令
-
-| 命令  | 描述 |
-| ---  | ---- |
-| dump | 以json的格式输出hap包中resource的内容。 |
-
-**dump命令**
-
-```
-restool dump [-h] [config] filePath
-```
-dump命令参数列表
-
-| 参数 | 是否可缺省 | 是否存在入参 | 描述 |
-| --- | --------- | ---------- |------- |
-| -h  | 可缺省 | 不带参数 | 帮助信息。 |
-| config | 可缺省 | 不带参数 | 只打印hap包中资源的限定词信息。 |
-
-示例:
-
-```sh
-# 打印hap包中所有的资源信息
-restool dump entry.hap
-# 打印hap包中资源的限定词信息
-restool dump config entry.hap
-```
-
 ### 使用实例
 
 例如：entry目录结构如下
@@ -161,4 +133,4 @@ restool -i entry/src/main  -j entry/src/main/module.json -p com.ohos.demo -o out
 
 [third_party_libpng](https://gitee.com/openharmony/third_party_libpng/blob/master/README.md)
 
-[third_party_bounds_checking_function](https://gitee.com/openharmony/third_party_bounds_checking_function/blob/master/README.md )
+[third_party_bounds_checking_function](https://gitee.com/openharmony/third_party_bounds_checking_function/README.md)

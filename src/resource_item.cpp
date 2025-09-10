@@ -130,6 +130,20 @@ bool ResourceItem::IsCoverable() const
     return coverable_;
 }
 
+void ResourceItem::CheckData()
+{
+    if (GetDataLength() == 0) {
+        return;
+    }
+    int8_t data[GetDataLength()];
+    for (uint32_t i = 0; i < GetDataLength(); i++) {
+        data[i] = GetData()[i];
+    }
+    if (data[GetDataLength() - 1] == '\0') {
+        SetData(data, GetDataLength() - 1);
+    }
+}
+
 bool ResourceItem::IsArray() const
 {
     return type_ == ResType::STRARRAY || type_ == ResType::INTARRAY;
@@ -158,20 +172,6 @@ const std::vector<std::string> ResourceItem::SplitValue() const
         index = index + strLen + 1;
     }
     return ret;
-}
-
-void ResourceItem::CheckData()
-{
-    if (GetDataLength() == 0) {
-        return;
-    }
-    int8_t data[GetDataLength()];
-    for (uint32_t i = 0; i < GetDataLength(); i++) {
-        data[i] = GetData()[i];
-    }
-    if (data[GetDataLength() - 1] == '\0') {
-        SetData(data, GetDataLength() - 1);
-    }
 }
 
 ResourceItem &ResourceItem::operator=(const ResourceItem &other)
