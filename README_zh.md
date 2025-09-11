@@ -133,4 +133,4 @@ restool -i entry/src/main  -j entry/src/main/module.json -p com.ohos.demo -o out
 
 [third_party_libpng](https://gitee.com/openharmony/third_party_libpng/blob/master/README.md)
 
-[third_party_bounds_checking_function](https://gitee.com/openharmony/third_party_bounds_checking_function/README.md)
+[third_party_bounds_checking_function](https://gitee.com/openharmony/third_party_bounds_checking_function/README_zh.md)
