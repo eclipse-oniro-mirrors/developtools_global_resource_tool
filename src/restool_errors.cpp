@@ -537,8 +537,8 @@ const std::string LOCALE_CMD_LINUX = "locale";
 const std::string LOCALE_CMD_MAC = "defaults read -globalDomain AppleLocale";
 const std::string LOCALE_CN = "zh_CN";
 
-std::map<uint32_t, MoreInfo> faqInfos;
-MoreInfo defaultMoreInfo = {};
+std::map<uint32_t, FaqInfo> faqInfos;
+FaqInfo defaultMoreInfo = {};
 Language osLanguage = Language::EN;
 
 bool IsValidCmd(const std::string &cmd)
@@ -733,7 +733,26 @@ Language GetOsLanguage()
     return Language::CN;
 }
 
-void GetMoreInfo(cJSON *node, MoreInfo &info)
+void GetExtSolutions(cJSON *node, FaqInfo &info)
+{
+    if (!node || !cJSON_IsArray(node)) {
+        return;
+    }
+    for (cJSON *subNode = node->child; subNode; subNode = subNode->next) {
+        ExtSolution solution{};
+        cJSON *fileNameNode = cJSON_GetObjectItem(subNode, "fileName");
+        if (fileNameNode && cJSON_IsString(fileNameNode)) {
+            solution.fileName = fileNameNode->valuestring;
+        }
+        cJSON *solutionNode = cJSON_GetObjectItem(subNode, "solution");
+        if (solutionNode && cJSON_IsString(solutionNode)) {
+            solution.solution = solutionNode->valuestring;
+        }
+        info.extSolutions.push_back(solution);
+    }
+}
+
+void GetFaqInfo(cJSON *node, FaqInfo &info)
 {
     if (node && cJSON_IsObject(node)) {
         cJSON *cn = cJSON_GetObjectItem(node, "cn");
@@ -744,6 +763,7 @@ void GetMoreInfo(cJSON *node, MoreInfo &info)
         if (en && cJSON_IsString(en)) {
             info.en = en->valuestring;
         }
+        GetExtSolutions(cJSON_GetObjectItem(node, "extSolutions"), info);
     }
 }
 
@@ -760,20 +780,20 @@ void InitFaq(const std::string &restoolPath)
         return;
     }
     cJSON *defaultNode = cJSON_GetObjectItem(root, "default");
-    GetMoreInfo(defaultNode, defaultMoreInfo);
+    GetFaqInfo(defaultNode, defaultMoreInfo);
     cJSON *faqsNode = cJSON_GetObjectItem(root, "faqs");
     if (!faqsNode || !cJSON_IsArray(faqsNode) || cJSON_GetArraySize(faqsNode) == 0) {
         cJSON_Delete(root);
         return;
     }
-    for (cJSON *infoNode = faqsNode->child; infoNode; infoNode = faqsNode->next) {
+    for (cJSON *infoNode = faqsNode->child; infoNode; infoNode = infoNode->next) {
         cJSON *codeNode = cJSON_GetObjectItem(infoNode, "code");
         if (!codeNode || !cJSON_IsNumber(codeNode)) {
             continue;
         }
         uint32_t code = static_cast<uint32_t>(codeNode->valueint);
-        MoreInfo info = {};
-        GetMoreInfo(infoNode, info);
+        FaqInfo info = {};
+        GetFaqInfo(infoNode, info);
         faqInfos[code] = info;
     }
     cJSON_Delete(root);
@@ -788,7 +808,7 @@ ErrorInfo GetError(const uint32_t &errCode)
     }
     auto faq = faqInfos.find(errCode);
     if (faq != faqInfos.end()) {
-        error.moreInfo_ = faq->second;
+        error.moreInfo_ = { faq->second.cn, faq->second.en };
     }
     return error;
 }
@@ -808,26 +828,37 @@ void PrintError(const ErrorInfo &error)
         errMsg.append(" At file: ").append(error.position_);
     }
     errMsg.append("\n");
-    if (!error.solutions_.empty()) {
-        errMsg.append("* Try the following:").append("\n");
-        for (const auto &solution : error.solutions_) { errMsg.append("  > ").append(solution).append("\n"); }
-        std::string moreInfo;
-        if (osLanguage == Language::CN) {
-            if (!error.moreInfo_.cn.empty()) {
-                moreInfo = error.moreInfo_.cn;
-            } else {
-                moreInfo = defaultMoreInfo.cn;
+    if (error.solutions_.empty()) {
+        std::cerr << errMsg;
+        return;
+    }
+    errMsg.append("* Try the following:").append("\n");
+    for (const auto &solution : error.solutions_) { errMsg.append("  > ").append(solution).append("\n"); }
+    auto faq = faqInfos.find(error.code_);
+    if (faq != faqInfos.end()) {
+        std::vector<ExtSolution> extSolutions = faq->second.extSolutions;
+        for (const auto &solution : extSolutions) {
+            if (FileEntry(error.position_).GetFilePath().GetFilename() == solution.fileName) {
+                errMsg.append("  > ").append(solution.solution).append("\n");
             }
+        }
+    }
+    std::string moreInfo;
+    if (osLanguage == Language::CN) {
+        if (!error.moreInfo_.cn.empty()) {
+            moreInfo = error.moreInfo_.cn;
         } else {
-            if (!error.moreInfo_.en.empty()) {
-                moreInfo = error.moreInfo_.en;
-            } else {
-                moreInfo = defaultMoreInfo.en;
-            }
+            moreInfo = defaultMoreInfo.cn;
         }
-        if (!moreInfo.empty()) {
-            errMsg.append("> More info: ").append(moreInfo).append("\n");
+    } else {
+        if (!error.moreInfo_.en.empty()) {
+            moreInfo = error.moreInfo_.en;
+        } else {
+            moreInfo = defaultMoreInfo.en;
         }
+    }
+    if (!moreInfo.empty()) {
+        errMsg.append("  > More info: ").append(moreInfo).append("\n");
     }
     std::cerr << errMsg;
 }

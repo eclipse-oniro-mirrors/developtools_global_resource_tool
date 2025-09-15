@@ -134,6 +134,17 @@ struct MoreInfo {
     std::string en;
 };
 
+struct ExtSolution {
+    std::string fileName;
+    std::string solution;
+};
+
+struct FaqInfo {
+    std::string cn;
+    std::string en;
+    std::vector<ExtSolution> extSolutions;
+};
+
 class ErrorInfo {
 public:
     uint32_t code_;
