@@ -146,6 +146,7 @@ void ResourcePack::InitHeaderCreater()
     headerCreaters_.emplace(".txt", bind(&ResourcePack::GenerateTextHeader, this, _1));
     headerCreaters_.emplace(".js", bind(&ResourcePack::GenerateJsHeader, this, _1));
     headerCreaters_.emplace(".h", bind(&ResourcePack::GenerateCplusHeader, this, _1));
+    headerCreaters_.emplace(".ts", bind(&ResourcePack::GenerateTsHeader, this, _1));
 }
 
 uint32_t ResourcePack::InitOutput() const
@@ -272,6 +273,39 @@ uint32_t ResourcePack::GenerateJsHeader(const std::string &headerPath) const
     }, [](stringstream &buffer) {
         buffer << "\n" << "    " << "}\n";
         buffer << "}\n";
+    });
+    return result;
+}
+
+uint32_t ResourcePack::GenerateTsHeader(const std::string &headerPath) const
+{
+    Header tsHeader(headerPath);
+    string itemType;
+    std::string itemTypesDeclare;
+    std::string moduleName = configJson_.GetModuleName();
+    uint32_t result = tsHeader.Create([](stringstream &buffer) {
+        buffer << Header::LICENSE_HEADER << "\n";
+        buffer << "//@ts-noCheck" << "\n";
+    }, [&itemType, &itemTypesDeclare](stringstream &buffer, const ResourceId& resourceId) {
+        if (itemType != resourceId.type) {
+            if (!itemType.empty()) {
+                buffer << "}\n";
+            }
+            std::string className = "__res_" + resourceId.type + "__";
+            buffer << "class " << className << " {\n";
+            itemType = resourceId.type;
+            itemTypesDeclare.append("  readonly ").append(itemType).append(": ").append(className);
+            itemTypesDeclare.append(" = new ").append(className).append("();\n");
+        }
+        buffer << "  readonly " << resourceId.name << ": " << "number" << " = " << resourceId.id << ";\n";
+    }, [&itemTypesDeclare, &moduleName](stringstream &buffer) {
+        buffer << "}\n";
+        std::string tableClassName = "__res_table_" + moduleName + "__";
+        buffer << "export default class " << tableClassName << " {\n";
+        buffer << itemTypesDeclare << "}\n";
+        buffer << "if (!globalThis.__resourceTables__) {\n";
+        buffer << "  globalThis.__resourceTables__ = {};\n}\n";
+        buffer << "globalThis.__resourceTables__[\"" << moduleName << "\"] = new " << tableClassName << "();\n";
     });
     return result;
 }
