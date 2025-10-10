@@ -35,7 +35,7 @@ bool ResourceDirectory::ScanResources(const string &resourcesDir, function<bool(
 
     for (const auto &it : f.GetChilds()) {
         string limitKey = it->GetFilePath().GetFilename();
-        if (ResourceUtil::IsIgnoreFile(limitKey, it->IsFile())) {
+        if (ResourceUtil::IsIgnoreFile(*it)) {
             continue;
         }
 
@@ -75,7 +75,7 @@ bool ResourceDirectory::ScanResourceLimitKeyDir(const string &resourceTypeDir, c
     for (const auto &it : f.GetChilds()) {
         string dirPath = it->GetFilePath().GetPath();
         string fileCluster = it->GetFilePath().GetFilename();
-        if (ResourceUtil::IsIgnoreFile(fileCluster, it->IsFile())) {
+        if (ResourceUtil::IsIgnoreFile(*it)) {
             continue;
         }
 

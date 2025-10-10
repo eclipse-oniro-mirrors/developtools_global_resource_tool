@@ -170,7 +170,7 @@ bool ResourceAppend::ScanSubLimitkeyResources(const FileEntry entry, const strin
 {
     for (const auto &child : entry.GetChilds()) {
         string limitKey = child->GetFilePath().GetFilename();
-        if (ResourceUtil::IsIgnoreFile(limitKey, child->IsFile())) {
+        if (ResourceUtil::IsIgnoreFile(*child)) {
             continue;
         }
 
@@ -219,7 +219,7 @@ bool ResourceAppend::ScanLimitKey(const unique_ptr<FileEntry> &entry,
 
     for (const auto &child : entry->GetChilds()) {
         string fileCuster = child->GetFilePath().GetFilename();
-        if (ResourceUtil::IsIgnoreFile(fileCuster, child->IsFile())) {
+        if (ResourceUtil::IsIgnoreFile(*child)) {
             continue;
         }
 
@@ -251,7 +251,7 @@ bool ResourceAppend::ScanFiles(const unique_ptr<FileEntry> &entry,
 {
     for (const auto &child : entry->GetChilds()) {
         string filename =  child->GetFilePath().GetFilename();
-        if (ResourceUtil::IsIgnoreFile(filename, child->IsFile())) {
+        if (ResourceUtil::IsIgnoreFile(*child)) {
             continue;
         }
 
@@ -433,7 +433,7 @@ bool ResourceAppend::ScanRawFilesOrResFiles(const string &path, const string &ou
 
     for (const auto &child : entry.GetChilds()) {
         string filename =  child->GetFilePath().GetFilename();
-        if (ResourceUtil::IsIgnoreFile(filename, child->IsFile())) {
+        if (ResourceUtil::IsIgnoreFile(*child)) {
             continue;
         }
 

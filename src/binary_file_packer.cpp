@@ -86,8 +86,7 @@ uint32_t BinaryFilePacker::CopyBinaryFile(const string &filePath, const string &
         PrintError(GetError(ERR_CODE_INVALID_RESOURCE_PATH).FormatCause(filePath.c_str(), "not a directory"));
         return RESTOOL_ERROR;
     }
-
-    if (ResourceUtil::IsIgnoreFile(fileType, false)) {
+    if (ResourceUtil::IsIgnoreFile(FileEntry(filePath))) {
         return RESTOOL_SUCCESS;
     }
 
@@ -110,7 +109,7 @@ uint32_t BinaryFilePacker::CopyBinaryFileImpl(const string &src, const string &d
     }
     for (const auto &entry : f.GetChilds()) {
         string filename = entry->GetFilePath().GetFilename();
-        if (ResourceUtil::IsIgnoreFile(filename, entry->IsFile())) {
+        if (ResourceUtil::IsIgnoreFile(*entry)) {
             continue;
         }
 
