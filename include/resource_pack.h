@@ -51,6 +51,7 @@ private:
     uint32_t GenerateTextHeader(const std::string &headerPath) const;
     uint32_t GenerateCplusHeader(const std::string &headerPath) const;
     uint32_t GenerateJsHeader(const std::string &headerPath) const;
+    uint32_t GenerateTsHeader(const std::string &headerPath) const;
     uint32_t GenerateConfigJson();
     uint32_t PackPreview();
     uint32_t PackAppend();
