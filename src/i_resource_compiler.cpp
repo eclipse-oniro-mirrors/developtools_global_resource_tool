@@ -47,7 +47,7 @@ uint32_t IResourceCompiler::Compile(const vector<DirectoryInfo> &directoryInfos)
             return RESTOOL_ERROR;
         }
         for (const auto &it : f.GetChilds()) {
-            if (ResourceUtil::IsIgnoreFile(it->GetFilePath().GetFilename(), it->IsFile())) {
+            if (ResourceUtil::IsIgnoreFile(*it)) {
                 continue;
             }
 

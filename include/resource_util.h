@@ -147,11 +147,10 @@ public:
 
     /**
      * @brief ignore file or directory
-     * @param filename: file or directory name
-     * @param isFile: ture if is file, other false
+     * @param fileEntry: file or directory
      * @return true if ignore, other false
      */
-    static bool IsIgnoreFile(const std::string &filename, bool isFile);
+    static bool IsIgnoreFile(const FileEntry &fileEntry);
 
     /**
      * @brief generate hash string
@@ -281,6 +280,17 @@ public:
      * @param isUseCustomRegex: true is use custom ignore file regex
     */
     static void SetUseCustomIgnoreRegex(const bool &isUseCustomRegex);
+
+    /**
+     * @brief get whether use custom ignore regex pattern
+    */
+    static bool IsUseCustomIgnoreRegex();
+
+    /**
+     * @brief set whether to use ignore regex pattern matching for file paths
+     * @param isUseCustomRegex: true is use custom ignore file regex
+    */
+    static void SetIgnorePath(const bool &isIgnorePath);
 
 private:
     static const std::map<std::string, IgnoreType> DEFAULT_IGNORE_FILE_REGEX;

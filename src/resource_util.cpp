@@ -43,6 +43,7 @@ const map<string, IgnoreType> ResourceUtil::DEFAULT_IGNORE_FILE_REGEX = {
 };
 static std::map<std::string, IgnoreType> g_userIgnoreFileRegex;
 static bool g_isUseCustomRegex = false;
+static bool g_isIgnorePath = false;
 
 static std::mutex fileMutex_;
 
@@ -251,28 +252,38 @@ bool ResourceUtil::CreateDirs(const string &filePath)
     return true;
 }
 
-bool ResourceUtil::IsIgnoreFile(const string &filename, bool isFile)
+bool ResourceUtil::IsIgnoreFile(const FileEntry &fileEntry)
 {
     map<string, IgnoreType> regexs;
     std::string regexSources;
-    string key = filename;
+    string fileName = fileEntry.GetFilePath().GetFilename();
+    string filePath = fileEntry.GetFilePath().GetPath();
+    filePath = regex_replace(filePath, regex("\\\\+"), "/");
     if (g_isUseCustomRegex) {
         regexs = g_userIgnoreFileRegex;
         regexSources = "user";
     } else {
         regexs = DEFAULT_IGNORE_FILE_REGEX;
         regexSources = "default";
-        transform(key.begin(), key.end(), key.begin(), ::tolower);
+        transform(fileName.begin(), fileName.end(), fileName.begin(), ::tolower);
     }
+    bool isFile = fileEntry.IsFile();
     for (const auto &iter : regexs) {
-        if ((iter.second == IgnoreType::IGNORE_FILE && !isFile) ||
-            (iter.second == IgnoreType::IGNORE_DIR && isFile)) {
+        if ((iter.second == IgnoreType::IGNORE_FILE && !isFile) || (iter.second == IgnoreType::IGNORE_DIR && isFile)) {
             continue;
         }
-        if (regex_match(key, regex(iter.first))) {
-            cout << "Info: file '" << filename << "' is ignored by " << regexSources << " regular pattern '"
+        if (regex_match(fileName, regex(iter.first))) {
+            cout << "Info: file '" << fileName << "' is ignored by " << regexSources << " filename pattern '"
                  << iter.first << "'." << endl;
             return true;
+        }
+
+        if (g_isUseCustomRegex && g_isIgnorePath) {
+            if (regex_match(filePath, regex(iter.first))) {
+                cout << "Info: file '" << filePath << "' is ignored by " << regexSources << " filepath pattern '"
+                     << iter.first << "'." << endl;
+                return true;
+            }
         }
     }
     return false;
@@ -539,6 +550,16 @@ bool ResourceUtil::AddIgnoreFileRegex(const std::string &regex, IgnoreType ignor
 void ResourceUtil::SetUseCustomIgnoreRegex(const bool &isUseCustomRegex)
 {
     g_isUseCustomRegex = isUseCustomRegex;
+}
+
+void ResourceUtil::SetIgnorePath(const bool &isIgnorePath)
+{
+    g_isIgnorePath = isIgnorePath;
+}
+
+bool ResourceUtil::IsUseCustomIgnoreRegex()
+{
+    return g_isUseCustomRegex;
 }
 }
 }

@@ -114,6 +114,8 @@ void CmdParser::ShowUseage()
     std::cout << "    --compressed-config Path of opt-compression.json.\n";
     std::cout << "    --thread            Subthreads count.\n";
     std::cout << "    --ignored-file      Regular patterns of ignored files, split by ':'(like \\.git:\\.svn).\n";
+    std::cout << "    --ignored-path      Regular patterns of ignored file paths, split by ':'";
+    std::cout << "(like .+/rawfile/\\.git:.+/resfile/\\.svn).\n";
 }
 }
 }

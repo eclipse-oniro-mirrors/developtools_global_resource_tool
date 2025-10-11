@@ -53,6 +53,7 @@ const struct option PackageParser::CMD_OPTS[] = {
     { "compressed-config", required_argument, nullptr, Option::COMPRESSED_CONFIG},
     { "thread", required_argument, nullptr, Option::THREAD},
     { "ignored-file", required_argument, nullptr, Option::IGNORED_FILE},
+    { "ignored-path", required_argument, nullptr, Option::IGNORED_PATH},
     { 0, 0, 0, 0},
 };
 
@@ -478,11 +479,16 @@ uint32_t PackageParser::ParseThread(const std::string &argValue)
     return RESTOOL_SUCCESS;
 }
 
-uint32_t PackageParser::ParseIgnoreFileRegex(const std::string &argValue)
+uint32_t PackageParser::ParseIgnoreFileRegex(const std::string &argValue, const bool &isIgnorePath)
 {
+    if (ResourceUtil::IsUseCustomIgnoreRegex()) {
+        PrintError(GetError(ERR_CODE_EXCLUSIVE_OPTION).FormatCause("--ignored-file", "--ignored-path"));
+        return RESTOOL_ERROR;
+    }
     std::stringstream in(argValue);
     std::string regex;
     ResourceUtil::SetUseCustomIgnoreRegex(true);
+    ResourceUtil::SetIgnorePath(isIgnorePath);
     while (getline(in, regex, ':')) {
         bool isSucceed = ResourceUtil::AddIgnoreFileRegex(regex, IgnoreType::IGNORE_ALL);
         if (!isSucceed) {
@@ -567,7 +573,8 @@ void PackageParser::InitCommand()
     handles_.emplace(Option::DEFINED_SYSIDS, bind(&PackageParser::AddSysIdDefined, this, _1));
     handles_.emplace(Option::COMPRESSED_CONFIG, bind(&PackageParser::AddCompressionPath, this, _1));
     handles_.emplace(Option::THREAD, bind(&PackageParser::ParseThread, this, _1));
-    handles_.emplace(Option::IGNORED_FILE, bind(&PackageParser::ParseIgnoreFileRegex, this, _1));
+    handles_.emplace(Option::IGNORED_FILE, bind(&PackageParser::ParseIgnoreFileRegex, this, _1, false));
+    handles_.emplace(Option::IGNORED_PATH, bind(&PackageParser::ParseIgnoreFileRegex, this, _1, true));
 }
 
 uint32_t PackageParser::HandleProcess(int c, const string &argValue)

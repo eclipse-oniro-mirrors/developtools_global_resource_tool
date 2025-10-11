@@ -39,7 +39,7 @@ private:
     uint32_t GetModuleNames(const cJSON *node, int c, HandleBack callback);
     uint32_t GetBool(const std::string &nodeName, const cJSON *node, int c, HandleBack callback);
     uint32_t GetNumber(const std::string &nodeName, const cJSON *node, int c, HandleBack callback);
-    uint32_t GetIgnorePatterns(const std::string &nodeName, const cJSON *node, int c);
+    uint32_t GetIgnorePatterns(const std::string &nodeName, const cJSON *node, int c, const bool &isPath);
     cJSON *root_;
     std::string filePath_;
 };

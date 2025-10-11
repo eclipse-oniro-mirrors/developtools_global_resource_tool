@@ -50,7 +50,7 @@ const static std::string LONG_PATH_HEAD = "\\\\?\\";
 const static int32_t VERSION_MAX_LEN = 128;
 static const std::string RESTOOL_NAME = "Restool";
 static const std::string RESTOOLV2_NAME = "RestoolV2";
-static const std::string RESTOOL_VERSION = { " 6.0.0.002" };
+static const std::string RESTOOL_VERSION = { " 6.0.0.003" };
 const static int32_t TAG_LEN = 4;
 constexpr static int DEFAULT_POOL_SIZE = 8;
 static std::set<std::string> g_resourceSet;
@@ -157,6 +157,7 @@ enum Option {
     COMPRESSED_CONFIG = 7,
     THREAD = 8,
     IGNORED_FILE = 9,
+    IGNORED_PATH = 10,
     STARTID = 'e',
     FORCEWRITE = 'f',
     HELP = 'h',
