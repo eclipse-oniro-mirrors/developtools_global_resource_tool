@@ -26,7 +26,7 @@ namespace Global {
 namespace Restool {
 class JsonCompiler : public IResourceCompiler {
 public:
-    JsonCompiler(ResType type, const std::string &output, bool isOverlap = false);
+    JsonCompiler(ResType type, const std::string &output, bool isOverlap = false, bool isHarResource = false);
     virtual ~JsonCompiler();
 protected:
     uint32_t CompileSingleFile(const FileInfo &fileInfo) override;

@@ -14,19 +14,22 @@
  */
 
 #include "generic_compiler.h"
+
 #include <iostream>
+
+#include "compression_parser.h"
 #include "file_entry.h"
+#include "id_worker.h"
 #include "resource_util.h"
 #include "restool_errors.h"
-#include "compression_parser.h"
 #include "thread_pool.h"
 
 namespace OHOS {
 namespace Global {
 namespace Restool {
 using namespace std;
-GenericCompiler::GenericCompiler(ResType type, const string &output, bool isOverlap)
-    : IResourceCompiler(type, output, isOverlap)
+GenericCompiler::GenericCompiler(ResType type, const string &output, bool isOverlap, bool isHarResource)
+    : IResourceCompiler(type, output, isOverlap, isHarResource)
 {
 }
 
@@ -109,6 +112,11 @@ bool GenericCompiler::IsIgnore(const FileInfo &fileInfo)
     if (g_hapResourceSet.count(output)) {
         g_hapResourceSet.erase(output);
     } else if (!g_resourceSet.emplace(output).second) {
+        if (isHarResource_) {
+            string idName = ResourceUtil::GetIdName(fileInfo.filename, fileInfo.dirType);
+            int64_t id = IdWorker::GetInstance().GetId(fileInfo.dirType, idName);
+            ResourceUtil::AddHarResourceId(id);
+        }
         cout << "Warning: '" << fileInfo.filePath << "' is defined repeatedly." << endl;
         return true;
     }

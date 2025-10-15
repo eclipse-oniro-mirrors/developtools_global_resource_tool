@@ -21,8 +21,8 @@ namespace Global {
 namespace Restool {
 using namespace std;
 
-OverlapCompiler::OverlapCompiler(ResType type, const std::string &output, bool isOverlap)
-    : GenericCompiler(type, output, isOverlap)
+OverlapCompiler::OverlapCompiler(ResType type, const std::string &output, bool isOverlap, bool isHarResource)
+    : GenericCompiler(type, output, isOverlap, isHarResource)
 {
 }
 

@@ -292,6 +292,18 @@ public:
     */
     static void SetIgnorePath(const bool &isIgnorePath);
 
+    /**
+     * @brief Add resource id of har to global set
+     * @param harId: the resource id of har
+    */
+    static void AddHarResourceId(int64_t harId);
+
+    /**
+     * @brief Check whether the resource id is in har
+     * @param id: the resource id
+    */
+    static bool IsHarResource(int64_t id);
+
 private:
     static const std::map<std::string, IgnoreType> DEFAULT_IGNORE_FILE_REGEX;
     static std::string GetLocaleLimitkey(const KeyParam &KeyParam);

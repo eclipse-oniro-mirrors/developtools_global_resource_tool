@@ -23,7 +23,7 @@ namespace Global {
 namespace Restool {
 class OverlapCompiler : public GenericCompiler {
 public:
-    OverlapCompiler(ResType type, const std::string &output, bool isOverlap = false);
+    OverlapCompiler(ResType type, const std::string &output, bool isOverlap = false, bool isHarResource = false);
 
 protected:
     bool IsIgnore(const FileInfo &fileInfo);
