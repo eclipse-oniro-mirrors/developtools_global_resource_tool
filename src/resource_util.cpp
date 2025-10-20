@@ -44,8 +44,10 @@ const map<string, IgnoreType> ResourceUtil::DEFAULT_IGNORE_FILE_REGEX = {
 static std::map<std::string, IgnoreType> g_userIgnoreFileRegex;
 static bool g_isUseCustomRegex = false;
 static bool g_isIgnorePath = false;
+static std::set<int64_t> g_harResourceIds;
 
 static std::mutex fileMutex_;
+static std::mutex g_harResourceMutex;
 
 void ResourceUtil::Split(const string &str, vector<string> &out, const string &splitter)
 {
@@ -560,6 +562,18 @@ void ResourceUtil::SetIgnorePath(const bool &isIgnorePath)
 bool ResourceUtil::IsUseCustomIgnoreRegex()
 {
     return g_isUseCustomRegex;
+}
+
+void ResourceUtil::AddHarResourceId(int64_t harId)
+{
+    std::lock_guard<std::mutex> lock(g_harResourceMutex);
+    g_harResourceIds.emplace(harId);
+}
+
+bool ResourceUtil::IsHarResource(int64_t id)
+{
+    std::lock_guard<std::mutex> lock(g_harResourceMutex);
+    return g_harResourceIds.count(id);
 }
 }
 }

@@ -31,8 +31,8 @@ const string TAG_QUANTITY = "quantity";
 const vector<string> QUANTITY_ATTRS = { "zero", "one", "two", "few", "many", "other" };
 const vector<string> TRANSLATION_TYPE = { "string", "strarray", "plural" };
 
-JsonCompiler::JsonCompiler(ResType type, const string &output, bool isOverlap)
-    : IResourceCompiler(type, output, isOverlap), isBaseString_(false), root_(nullptr)
+JsonCompiler::JsonCompiler(ResType type, const string &output, bool isOverlap, bool isHarResource)
+    : IResourceCompiler(type, output, isOverlap, isHarResource), isBaseString_(false), root_(nullptr)
 {
     InitParser();
 }

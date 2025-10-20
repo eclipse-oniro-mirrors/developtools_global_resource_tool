@@ -24,14 +24,14 @@ namespace Global {
 namespace Restool {
 using namespace std;
 unique_ptr<IResourceCompiler> ResourceCompilerFactory::CreateCompiler(ResType type,
-    const string &output, bool isOverlap)
+    const string &output, bool isOverlap, bool isHarResource)
 {
     if (type == ResType::ELEMENT) {
-        return make_unique<JsonCompiler>(type, output, isOverlap);
+        return make_unique<JsonCompiler>(type, output, isOverlap, isHarResource);
     } else if (isOverlap) {
-        return make_unique<OverlapCompiler>(type, output, isOverlap);
+        return make_unique<OverlapCompiler>(type, output, isOverlap, isHarResource);
     } else {
-        return make_unique<GenericCompiler>(type, output, isOverlap);
+        return make_unique<GenericCompiler>(type, output, isOverlap, isHarResource);
     }
 }
 

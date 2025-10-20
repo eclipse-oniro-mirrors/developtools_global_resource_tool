@@ -42,6 +42,7 @@ protected:
 private:
     void Push(const std::map<int64_t, std::vector<ResourceItem>> &other);
     static const std::vector<ResType> SCAN_SEQ;
+    bool isHarResource_ = false;
 };
 }
 }

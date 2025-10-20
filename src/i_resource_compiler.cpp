@@ -25,8 +25,8 @@ namespace OHOS {
 namespace Global {
 namespace Restool {
 using namespace std;
-IResourceCompiler::IResourceCompiler(ResType type, const string &output, bool isOverlap)
-    :type_(type), output_(output), isOverlap_(isOverlap)
+IResourceCompiler::IResourceCompiler(ResType type, const string &output, bool isOverlap, bool isHarResource)
+    :type_(type), output_(output), isOverlap_(isOverlap), isHarResource_(isHarResource)
 {
 }
 
@@ -121,10 +121,12 @@ uint32_t IResourceCompiler::PostCommit()
     for (const auto &nameInfo : nameInfos_) {
         int64_t id = idWorker.GenerateId(nameInfo.first.first, nameInfo.first.second);
         if (id < 0) {
-            PrintError(GetError(ERR_CODE_RESOURCE_ID_NOT_DEFINED)
-                           .FormatCause(nameInfo.first.second.c_str(),
-                                        ResourceUtil::ResTypeToString(nameInfo.first.first).c_str()));
+            PrintError(GetError(ERR_CODE_RESOURCE_ID_NOT_DEFINED).FormatCause(nameInfo.first.second.c_str(),
+                ResourceUtil::ResTypeToString(nameInfo.first.first).c_str()));
             return RESTOOL_ERROR;
+        }
+        if (isHarResource_) {
+            ResourceUtil::AddHarResourceId(id);
         }
         resourceInfos_.emplace(id, nameInfo.second);
     }

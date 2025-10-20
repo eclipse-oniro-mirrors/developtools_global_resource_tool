@@ -24,7 +24,7 @@ namespace Global {
 namespace Restool {
 class GenericCompiler : public IResourceCompiler {
 public:
-    GenericCompiler(ResType type, const std::string &output, bool isOverlap = false);
+    GenericCompiler(ResType type, const std::string &output, bool isOverlap = false, bool isHarResource = false);
     virtual ~GenericCompiler();
 
 protected:

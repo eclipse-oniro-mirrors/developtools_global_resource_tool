@@ -14,8 +14,11 @@
  */
 
 #include "resource_module.h"
+
 #include <algorithm>
 #include <iostream>
+
+#include "config_parser.h"
 #include "resource_compiler_factory.h"
 #include "restool_errors.h"
 
@@ -31,6 +34,15 @@ const vector<ResType> ResourceModule::SCAN_SEQ = {
 ResourceModule::ResourceModule(const string &modulePath, const string &moduleOutput, const string &moduleName)
     : modulePath_(modulePath), moduleOutput_(moduleOutput), moduleName_(moduleName)
 {
+    string config = ResourceUtil::GetMainPath(modulePath).Append(CONFIG_JSON).GetPath();
+    if (!ResourceUtil::FileExist(config)) {
+        config = ResourceUtil::GetMainPath(modulePath).Append(MODULE_JSON).GetPath();
+    }
+    if (ResourceUtil::FileExist(config)) {
+        ConfigParser parser = ConfigParser(config);
+        parser.Init();
+        isHarResource_ = parser.GetModuleType() == ConfigParser::ModuleType::HAR;
+    }
 }
 
 uint32_t ResourceModule::ScanResource(bool isHap)
@@ -54,7 +66,7 @@ uint32_t ResourceModule::ScanResource(bool isHap)
         }
 
         unique_ptr<IResourceCompiler> resourceCompiler =
-            ResourceCompilerFactory::CreateCompiler(type, moduleOutput_, isHap);
+            ResourceCompilerFactory::CreateCompiler(type, moduleOutput_, isHap, isHarResource_);
         resourceCompiler->SetModuleName(moduleName_);
         if (resourceCompiler->Compile(item->second) != RESTOOL_SUCCESS) {
             return RESTOOL_ERROR;

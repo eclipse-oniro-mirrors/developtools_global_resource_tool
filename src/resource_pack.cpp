@@ -280,29 +280,47 @@ uint32_t ResourcePack::GenerateJsHeader(const std::string &headerPath) const
 uint32_t ResourcePack::GenerateTsHeader(const std::string &headerPath) const
 {
     Header tsHeader(headerPath);
-    string itemType;
-    std::string itemTypesDeclare;
     std::string moduleName = configJson_.GetModuleName();
+    std::map<std::string, std::vector<std::pair<std::string, int64_t>>> typeNameIds;
     uint32_t result = tsHeader.Create([](stringstream &buffer) {
         buffer << Header::LICENSE_HEADER << "\n";
         buffer << "//@ts-noCheck" << "\n";
-    }, [&itemType, &itemTypesDeclare](stringstream &buffer, const ResourceId& resourceId) {
-        if (itemType != resourceId.type) {
-            if (!itemType.empty()) {
-                buffer << "}\n";
-            }
-            std::string className = "__res_" + resourceId.type + "__";
-            buffer << "class " << className << " {\n";
-            itemType = resourceId.type;
-            itemTypesDeclare.append("  readonly ").append(itemType).append(": ").append(className);
-            itemTypesDeclare.append(" = new ").append(className).append("();\n");
+    }, [&typeNameIds](stringstream &buffer, const ResourceId& resourceId) {
+        if (!ResourceUtil::IsHarResource(resourceId.id)) {
+            return;
         }
-        buffer << "  readonly " << resourceId.name << ": " << "number" << " = " << resourceId.id << ";\n";
-    }, [&itemTypesDeclare, &moduleName](stringstream &buffer) {
-        buffer << "}\n";
+        auto it = typeNameIds.find(resourceId.type);
+        if (it != typeNameIds.end()) {
+            it->second.emplace_back(make_pair(resourceId.name, resourceId.id));
+        } else {
+            std::vector<std::pair<std::string, int64_t>> ids;
+            ids.emplace_back(make_pair(resourceId.name, resourceId.id));
+            typeNameIds.emplace(make_pair(resourceId.type, ids));
+        }
+    }, [&moduleName, &typeNameIds](stringstream &buffer) {
+        std::string typesDeclare;
+        std::string idsDeclare;
+        for (const auto &it : typeNameIds) {
+            if (it.second.empty()) {
+                continue;
+            }
+            std::string className = "__res_" + it.first + "__";
+            idsDeclare.append("class ").append(className).append("{\n");
+            for (const auto &nameId : it.second) {
+                idsDeclare.append("  readonly ").append(nameId.first).append(": ").append("number");
+                idsDeclare.append(" = ").append(to_string(nameId.second)).append(";\n");
+            }
+            idsDeclare.append("}\n");
+            typesDeclare.append("  readonly ").append(it.first).append(": ").append(className);
+            typesDeclare.append(" = new ").append(className).append("();\n");
+        }
+        if (idsDeclare.empty()) {
+            return;
+        }
+        buffer << idsDeclare;
         std::string tableClassName = "__res_table_" + moduleName + "__";
         buffer << "export default class " << tableClassName << " {\n";
-        buffer << itemTypesDeclare << "}\n";
+        buffer << typesDeclare << "}\n";
         buffer << "if (!globalThis.__resourceTables__) {\n";
         buffer << "  globalThis.__resourceTables__ = {};\n}\n";
         buffer << "globalThis.__resourceTables__[\"" << moduleName << "\"] = new " << tableClassName << "();\n";

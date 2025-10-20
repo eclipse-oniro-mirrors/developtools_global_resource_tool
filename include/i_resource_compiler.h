@@ -25,7 +25,7 @@ namespace Global {
 namespace Restool {
 class IResourceCompiler {
 public:
-    IResourceCompiler(ResType type, const std::string &output, bool isOverlap = false);
+    IResourceCompiler(ResType type, const std::string &output, bool isOverlap = false, bool isHarResource = false);
     virtual ~IResourceCompiler();
     uint32_t Compile(const std::vector<DirectoryInfo> &directoryInfos);
     const std::map<int64_t, std::vector<ResourceItem>> &GetResult() const;
@@ -43,6 +43,7 @@ protected:
     std::string output_;
     std::string moduleName_;
     bool isOverlap_;
+    bool isHarResource_ = false;
 
     // id, resource items
     std::map<int64_t, std::vector<ResourceItem>> resourceInfos_;

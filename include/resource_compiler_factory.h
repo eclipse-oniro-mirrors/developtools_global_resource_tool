@@ -24,7 +24,8 @@ namespace Global {
 namespace Restool {
 class ResourceCompilerFactory {
 public:
-    static std::unique_ptr<IResourceCompiler> CreateCompiler(ResType type, const std::string &output, bool isHap);
+    static std::unique_ptr<IResourceCompiler> CreateCompiler(ResType type, const std::string &output, bool isHap,
+        bool isHarResource = false);
     static std::unique_ptr<IResourceCompiler> CreateCompilerForAppend(ResType type, const std::string &output);
 };
 }
