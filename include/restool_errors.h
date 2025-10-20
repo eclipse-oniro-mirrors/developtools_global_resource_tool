@@ -168,6 +168,16 @@ public:
         return *this;
     }
 
+    template <class... Args>
+    ErrorInfo &FormatSolution(size_t index, Args... args)
+    {
+        if (index < solutions_.size()) {
+            std::string &solution = solutions_[index];
+            solution = FormatString(solution, std::forward<Args>(args)...);
+        }
+        return *this;
+    }
+
     ErrorInfo &SetPosition(const std::string &position)
     {
         position_ = position;

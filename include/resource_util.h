@@ -271,26 +271,21 @@ public:
      * @brief add ignore file regex pattern
      * @param regex: the regex pattern
      * @param ignoreType: the ignore file type
+     * @param option: the ignore option name
      * @return if add succeed, return true
     */
-    static bool AddIgnoreFileRegex(const std::string &regex, IgnoreType ignoreType);
+    static bool AddIgnoreRegex(const std::string &regex, IgnoreType ignoreType, const std::string &option);
 
     /**
      * @brief set whether use custom ignore regex pattern
-     * @param isUseCustomRegex: true is use custom ignore file regex
+     * @param option:the ignore option name
     */
-    static void SetUseCustomIgnoreRegex(const bool &isUseCustomRegex);
+    static void SetIgnoreOption(const std::string &option);
 
     /**
-     * @brief get whether use custom ignore regex pattern
+     * @brief check whether the ignore options is duplicate or conflict.
     */
-    static bool IsUseCustomIgnoreRegex();
-
-    /**
-     * @brief set whether to use ignore regex pattern matching for file paths
-     * @param isUseCustomRegex: true is use custom ignore file regex
-    */
-    static void SetIgnorePath(const bool &isIgnorePath);
+    static bool CheckIgnoreOption(const std::string &option);
 
     /**
      * @brief Add resource id of har to global set
