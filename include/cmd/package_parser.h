@@ -86,7 +86,7 @@ private:
     uint32_t ParseTargetConfig(const std::string &argValue);
     uint32_t AddCompressionPath(const std::string &argValue);
     uint32_t ParseThread(const std::string &argValue);
-    uint32_t ParseIgnoreFileRegex(const std::string &argValue, const bool &isIgnorePath = false);
+    uint32_t ParseIgnoreRegex(const std::string &argValue, const std::string &option);
 
     static const struct option CMD_OPTS[];
     static const std::string CMD_PARAMS;

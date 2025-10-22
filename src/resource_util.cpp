@@ -41,8 +41,10 @@ const map<string, IgnoreType> ResourceUtil::DEFAULT_IGNORE_FILE_REGEX = {
     { "thumbs\\.db", IgnoreType::IGNORE_ALL },
     { ".+~", IgnoreType::IGNORE_ALL }
 };
-static std::map<std::string, IgnoreType> g_userIgnoreFileRegex;
+const std::set<std::string> IGNORE_PATH_OPTIONS = { "--ignored-path", "ignoreResourcePathPattern" };
+static std::map<std::string, IgnoreType> g_userIgnoreRegex;
 static bool g_isUseCustomRegex = false;
+static std::string g_ignoreOption;
 static bool g_isIgnorePath = false;
 static std::set<int64_t> g_harResourceIds;
 
@@ -262,7 +264,7 @@ bool ResourceUtil::IsIgnoreFile(const FileEntry &fileEntry)
     string filePath = fileEntry.GetFilePath().GetPath();
     filePath = regex_replace(filePath, regex("\\\\+"), "/");
     if (g_isUseCustomRegex) {
-        regexs = g_userIgnoreFileRegex;
+        regexs = g_userIgnoreRegex;
         regexSources = "user";
     } else {
         regexs = DEFAULT_IGNORE_FILE_REGEX;
@@ -537,31 +539,35 @@ string ResourceUtil::KeyTypeToStr(KeyType type)
     return ret;
 }
 
-bool ResourceUtil::AddIgnoreFileRegex(const std::string &regex, IgnoreType ignoreType)
+bool ResourceUtil::AddIgnoreRegex(const std::string &regex, IgnoreType ignoreType, const std::string &option)
 {
     try {
         std::regex rg(regex);
     } catch (std::regex_error err) {
-        PrintError(GetError(ERR_CODE_INVALID_IGNORE_FILE).FormatCause(regex.c_str(), err.what()));
+        PrintError(GetError(ERR_CODE_INVALID_IGNORE_FILE).FormatCause(regex.c_str(), err.what())
+            .FormatSolution(0, option.c_str()));
         return false;
     }
-    g_userIgnoreFileRegex[regex] = ignoreType;
+    g_userIgnoreRegex[regex] = ignoreType;
     return true;
 }
 
-void ResourceUtil::SetUseCustomIgnoreRegex(const bool &isUseCustomRegex)
+void ResourceUtil::SetIgnoreOption(const std::string &option)
 {
-    g_isUseCustomRegex = isUseCustomRegex;
+    g_ignoreOption = option;
+    g_isUseCustomRegex = !option.empty();
+    g_isIgnorePath = IGNORE_PATH_OPTIONS.count(option);
 }
 
-void ResourceUtil::SetIgnorePath(const bool &isIgnorePath)
+bool ResourceUtil::CheckIgnoreOption(const std::string &option)
 {
-    g_isIgnorePath = isIgnorePath;
-}
-
-bool ResourceUtil::IsUseCustomIgnoreRegex()
-{
-    return g_isUseCustomRegex;
+    if (!g_ignoreOption.empty()) {
+        std::string msg = g_ignoreOption == option ? "are duplicate" : "cannot be used together";
+        PrintError(
+            GetError(ERR_CODE_EXCLUSIVE_OPTION).FormatCause(g_ignoreOption.c_str(), option.c_str(), msg.c_str()));
+        return false;
+    }
+    return true;
 }
 
 void ResourceUtil::AddHarResourceId(int64_t harId)

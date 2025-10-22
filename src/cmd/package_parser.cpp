@@ -331,7 +331,7 @@ uint32_t PackageParser::CheckParam() const
     }
 
     if (isTargetConfig_ && !append_.empty()) {
-        PrintError(GetError(ERR_CODE_EXCLUSIVE_OPTION).FormatCause("-x", "--target-config"));
+        PrintError(GetError(ERR_CODE_EXCLUSIVE_OPTION).FormatCause("-x", "--target-config", "cannot be used together"));
         return RESTOOL_ERROR;
     }
 
@@ -350,7 +350,7 @@ uint32_t PackageParser::CheckParam() const
     }
 
     if (startId_ != 0 && !idDefinedInputPath_.empty()) {
-        PrintError(GetError(ERR_CODE_EXCLUSIVE_OPTION).FormatCause("-e", "--defined-ids"));
+        PrintError(GetError(ERR_CODE_EXCLUSIVE_OPTION).FormatCause("-e", "--defined-ids", "cannot be used together"));
         return RESTOOL_ERROR;
     }
 
@@ -479,18 +479,16 @@ uint32_t PackageParser::ParseThread(const std::string &argValue)
     return RESTOOL_SUCCESS;
 }
 
-uint32_t PackageParser::ParseIgnoreFileRegex(const std::string &argValue, const bool &isIgnorePath)
+uint32_t PackageParser::ParseIgnoreRegex(const std::string &argValue, const std::string &option)
 {
-    if (ResourceUtil::IsUseCustomIgnoreRegex()) {
-        PrintError(GetError(ERR_CODE_EXCLUSIVE_OPTION).FormatCause("--ignored-file", "--ignored-path"));
+    if (!ResourceUtil::CheckIgnoreOption(option)) {
         return RESTOOL_ERROR;
     }
     std::stringstream in(argValue);
     std::string regex;
-    ResourceUtil::SetUseCustomIgnoreRegex(true);
-    ResourceUtil::SetIgnorePath(isIgnorePath);
+    ResourceUtil::SetIgnoreOption(option);
     while (getline(in, regex, ':')) {
-        bool isSucceed = ResourceUtil::AddIgnoreFileRegex(regex, IgnoreType::IGNORE_ALL);
+        bool isSucceed = ResourceUtil::AddIgnoreRegex(regex, IgnoreType::IGNORE_ALL, option);
         if (!isSucceed) {
             return RESTOOL_ERROR;
         }
@@ -573,8 +571,8 @@ void PackageParser::InitCommand()
     handles_.emplace(Option::DEFINED_SYSIDS, bind(&PackageParser::AddSysIdDefined, this, _1));
     handles_.emplace(Option::COMPRESSED_CONFIG, bind(&PackageParser::AddCompressionPath, this, _1));
     handles_.emplace(Option::THREAD, bind(&PackageParser::ParseThread, this, _1));
-    handles_.emplace(Option::IGNORED_FILE, bind(&PackageParser::ParseIgnoreFileRegex, this, _1, false));
-    handles_.emplace(Option::IGNORED_PATH, bind(&PackageParser::ParseIgnoreFileRegex, this, _1, true));
+    handles_.emplace(Option::IGNORED_FILE, bind(&PackageParser::ParseIgnoreRegex, this, _1, "--ignored-file"));
+    handles_.emplace(Option::IGNORED_PATH, bind(&PackageParser::ParseIgnoreRegex, this, _1, "--ignored-path"));
 }
 
 uint32_t PackageParser::HandleProcess(int c, const string &argValue)

@@ -95,9 +95,9 @@ void ResConfigParser::InitFileListCommand(HandleBack callback)
     fileListHandles_.emplace("thread", bind(&ResConfigParser::GetNumber, this, "thread", _1,
         Option::THREAD, callback));
     fileListHandles_.emplace("ignoreResourcePattern", bind(&ResConfigParser::GetIgnorePatterns, this,
-        "ignoreResourcePattern", _1, Option::IGNORED_FILE, false));
+        "ignoreResourcePattern", _1, Option::IGNORED_FILE));
     fileListHandles_.emplace("ignoreResourcePathPattern", bind(&ResConfigParser::GetIgnorePatterns, this,
-        "ignoreResourcePathPattern", _1, Option::IGNORED_PATH, true));
+        "ignoreResourcePathPattern", _1, Option::IGNORED_PATH));
 }
 
 uint32_t ResConfigParser::GetString(const std::string &nodeName, const cJSON *node, int c, HandleBack callback)
@@ -201,20 +201,18 @@ uint32_t ResConfigParser::GetNumber(const std::string &nodeName, const cJSON *no
     return RESTOOL_SUCCESS;
 }
 
-uint32_t ResConfigParser::GetIgnorePatterns(const std::string &nodeName, const cJSON *node, int c, const bool &isPath)
+uint32_t ResConfigParser::GetIgnorePatterns(const std::string &nodeName, const cJSON *node, int c)
 {
     if (!node) {
         PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause(nodeName.c_str()).SetPosition(filePath_));
         return RESTOOL_ERROR;
     }
-    if (ResourceUtil::IsUseCustomIgnoreRegex()) {
-        PrintError(GetError(ERR_CODE_EXCLUSIVE_OPTION).FormatCause("--ignored-file", "--ignored-path"));
+    if (!ResourceUtil::CheckIgnoreOption(nodeName)) {
         return RESTOOL_ERROR;
     }
-    ResourceUtil::SetUseCustomIgnoreRegex(true);
-    ResourceUtil::SetIgnorePath(isPath);
-    HandleBack callback = [](int c, const string &argValue) {
-        bool isSucceed = ResourceUtil::AddIgnoreFileRegex(argValue, IgnoreType::IGNORE_ALL);
+    ResourceUtil::SetIgnoreOption(nodeName);
+    HandleBack callback = [nodeName](int c, const string &argValue) {
+        bool isSucceed = ResourceUtil::AddIgnoreRegex(argValue, IgnoreType::IGNORE_ALL, nodeName);
         if (!isSucceed) {
             return RESTOOL_ERROR;
         }

@@ -271,7 +271,7 @@ const std::map<uint32_t, ErrorInfo> ERRORS_MAP = {
     { ERR_CODE_EXCLUSIVE_OPTION,
       { ERR_CODE_EXCLUSIVE_OPTION,
         ERR_TYPE_COMMAND_PARSE,
-        "Options '%s' and '%s' cannot be used together.",
+        "Options '%s' and '%s' %s.",
         "",
         {},
         {} } },
@@ -314,9 +314,9 @@ const std::map<uint32_t, ErrorInfo> ERRORS_MAP = {
     { ERR_CODE_INVALID_IGNORE_FILE,
       { ERR_CODE_INVALID_IGNORE_FILE,
         ERR_TYPE_COMMAND_PARSE,
-        "Invalid ignore file pattern '%s', %s",
+        "Invalid ignore pattern '%s', %s",
         "",
-        { "Make sure the argument of the option --ignored-file is not empty and contains valid regular expressions." },
+        { "Make sure the argument of the option '%s' contains valid regular expressions." },
         {} } },
 
     // 11211xxx
