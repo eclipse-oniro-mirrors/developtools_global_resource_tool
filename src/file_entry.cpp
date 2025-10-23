@@ -183,7 +183,9 @@ bool FileEntry::IsDirectory(const string &path)
     return true;
 #else
     struct stat s;
-    stat(path.c_str(), &s);
+    if (stat(path.c_str(), &s) != 0) {
+        return false;
+    }
     return S_ISDIR(s.st_mode);
 #endif
 }
