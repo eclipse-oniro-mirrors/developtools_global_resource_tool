@@ -299,25 +299,22 @@ uint32_t ResourcePack::GenerateTsHeader(const std::string &headerPath) const
         }
     }, [&moduleName, &typeNameIds](stringstream &buffer) {
         std::string typesDeclare;
-        std::string idsDeclare;
         for (const auto &it : typeNameIds) {
+            std::string idsDeclare;
             if (it.second.empty()) {
                 continue;
             }
-            std::string className = "__res_" + it.first + "__";
-            idsDeclare.append("class ").append(className).append("{\n");
+            idsDeclare.append("{\n");
             for (const auto &nameId : it.second) {
-                idsDeclare.append("  readonly ").append(nameId.first).append(": ").append("number");
-                idsDeclare.append(" = ").append(to_string(nameId.second)).append(";\n");
+                idsDeclare.append("    \"").append(nameId.first).append("\" : ");
+                idsDeclare.append(to_string(nameId.second)).append(",\n");
             }
-            idsDeclare.append("}\n");
-            typesDeclare.append("  readonly ").append(it.first).append(": ").append(className);
-            typesDeclare.append(" = new ").append(className).append("();\n");
+            idsDeclare.append("  };\n");
+            typesDeclare.append("  readonly ").append(it.first).append(" = ").append(idsDeclare);
         }
-        if (idsDeclare.empty()) {
+        if (typesDeclare.empty()) {
             return;
         }
-        buffer << idsDeclare;
         std::string tableClassName = "__res_table_" + moduleName + "__";
         buffer << "export default class " << tableClassName << " {\n";
         buffer << typesDeclare << "}\n";
