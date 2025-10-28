@@ -21,7 +21,7 @@ restool（资源编译工具）是一种资源构建工具。通过编译资源�
 
 ### SDK编译命令
 
-[SDK编译命令参考](https://gitee.com/openharmony/build/blob/master/README_zh.md)
+[SDK编译命令参考](https://gitcode.com/openharmony/build/blob/master/README_zh.md)
 
 ### 参数说明
 
@@ -29,11 +29,11 @@ restool（资源编译工具）是一种资源构建工具。通过编译资源�
 
 | 选项 | 是否可缺省 | 是否存在入参 | 描述 |
 | -------- | -------- | -------- | -------- |
-| -i/--inputPath | 不可缺省 | 带参数 | 指定需要构建的资源目录或者资源中间件。<br>在资源目录中支持指定一个编译好的Hap资源目录（解压态），在此Hap的基础上完成叠加编译。|
+| -i/--inputPath | 不可缺省 | 带参数 | 指定需要构建的资源目录或者资源中间件。<br>在资源目录中支持指定一个编译好的HAP/HSP资源目录（解压态），在此HAP/HSP的基础上完成叠加编译。<br>具体可参考如下[编译资源命令](#编译资源)。 |
 | -j/--json | 不可缺省 | 带参数 | 指定config.json或者module.json文件路径。 |
 | -o/--outputPath | 不可缺省 | 带参数 | 指定已编译资源的输出路径。 |
 | -p/--packageName | 不可缺省 | 带参数 | 指定编译资源的bundle名称。 |
-| -r/--resHeader | 不可缺省 | 带参数 | 指定资源的头文件路径，有三种格式：“.txt”、“.js”、“.h”。 |
+| -r/--resHeader | 不可缺省 | 带参数 | 指定资源的头文件生成路径，文件内容为资源名称与资源ID的映射表，支持4种格式：“.txt”、“.js”、“.h”、“.ts”。<br>**说明：**<br>- “.txt”、“.js”、“.h”格式的文件包含-i指定的所有资源目录下的资源映射表。<br>- 从API version 22开始，支持“.ts”格式，文件内容仅包含-i指定的HAR编译产物的资源目录下的资源映射表。|
 | -e/--startId | 可缺省 | 带参数 | 指定生成资源的起始ID值，例如：0x01000000,范围[0x01000000, 0x06FFFFFF),[0x08000000, 0x41FFFFFF) |
 | -f/--forceWrite | 可缺省 | 不带参数 | 如果输出路径已经存在。强制删除，重新生成。 |
 | -h/--help | 可缺省 | 不带参数 | 查看工具帮助信息。 |
@@ -47,9 +47,9 @@ restool（资源编译工具）是一种资源构建工具。通过编译资源�
 | --dependEntry | 可缺省 | 带参数 | FA模型下单独编译feature时，指定entry模块的编译结果目录。 |
 | --icon-check | 可缺省 | 不带参数 | 开启icon和startWindowIcon的PNG图片校验功能。 |
 | --target-config | 可缺省 | 带参数 | 与“-i”命令同时使用，支持选择编译。<br>具体可参考如下**target-config参数说明**。|
-| --thread | 可缺省 | 带参数 | 指定资源编译时开启的子线程数量。|
-| --ignored-file | 可缺省 | 带参数 | 指定资源文件和文件夹的忽略规则，格式为正则表达式，匹配文件名称，多个规则之间以“:”分隔。例如：“\\.git:\\.svn”表示忽略名称为“.git”、“.svn”的文件和文件夹。|
-| --ignored-path | 可缺省 | 带参数 | 指定资源文件和文件夹的忽略规则，格式为正则表达式，匹配文件名称和文件路径，多个规则之间以“:”分隔。例如：“.+/rawfile/\\.git:.+/rawfile/\\.svn”表示忽略rawfile目录下的“.git”、“.svn”的文件和文件夹。|
+| --thread | 可缺省 | 带参数 | 指定资源编译时开启的子线程数量。 <br>**说明：** 从API version 18开始，支持该选项。|
+| --ignored-file | 可缺省 | 带参数 | 指定资源文件和资源目录的忽略规则，格式为正则表达式，多个规则之间以“:”分隔。文件、目录的名称与正则表达式匹配的会被忽略。<br>例如：“\\.git:\\.svn”可以忽略所有名称为“.git”、“.svn”的文件和目录。<br>**说明：** 从API version 19开始，支持该选项。|
+| --ignored-path | 可缺省 | 带参数 | 指定资源文件和资源目录的忽略规则，格式为正则表达式，多个规则之间以“:”分隔。文件、目录的名称或路径与正则表达式匹配的会被忽略。<br>例如：“.+/rawfile/\\.git:\\.svn”中第一个正则包含指定路径“.+/rawfile/”，可以忽略rawfile目录下的“.git”文件和目录，但不会忽略其他目录下的“.git”文件和目录；第二个规则不包含任何指定路径，可以忽略所有名称为“.svn”的文件和目录。<br>**说明：** 从API version 22开始，支持该选项。|
 
 
 
@@ -76,7 +76,7 @@ Locale匹配规则：Locale匹配需满足以下三条规则。
 
 | 命令  | 描述 |
 | ---  | ---- |
-| dump | 以json的格式输出hap包中resource的内容。 |
+| dump | 以json的格式输出HAP包中resource的内容。 |
 
 **dump命令**
 
@@ -88,14 +88,14 @@ dump命令参数列表
 | 参数 | 是否可缺省 | 是否存在入参 | 描述 |
 | --- | --------- | ---------- |------- |
 | -h  | 可缺省 | 不带参数 | 帮助信息。 |
-| config | 可缺省 | 不带参数 | 只打印hap包中资源的限定词信息。 |
+| config | 可缺省 | 不带参数 | 只打印HAP包中资源的限定词信息。 |
 
 示例:
 
 ```sh
-# 打印hap包中所有的资源信息
+# 打印HAP包中所有的资源信息
 restool dump entry.hap
-# 打印hap包中资源的限定词信息
+# 打印HAP包中资源的限定词信息
 restool dump config entry.hap
 ```
 
@@ -133,7 +133,7 @@ restool -i out1 -i out2 -o out -p com.ohos.demo -r out/ResourceTable.txt -j entr
 叠加资源编译命令：
 
 ```
-# hapResource为解压后的Hap包路径
+# hapResource为解压后的HAP包路径
 restool -i entry/src/main -i hapResource -j entry/src/main/module.json -p com.ohos.demo -o out -r out/ResourceTable.txt -f
 ```
 
@@ -154,14 +154,14 @@ restool -i entry/src/main  -j entry/src/main/module.json -p com.ohos.demo -o out
 ```
 
 ### 资源类型介绍
-[资源类型介绍](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/quick-start/resource-categories-and-access.md)
+[资源类型介绍](https://gitcode.com/openharmony/docs/blob/master/zh-cn/application-dev/quick-start/resource-categories-and-access.md)
 
 ## 相关仓
 
 **global_resource_tool**
 
-[third_party_cJSON](https://gitee.com/openharmony/third_party_cJSON/blob/master/README.md)
+[third_party_cJSON](https://gitcode.com/openharmony/third_party_cJSON/blob/master/README.md)
 
-[third_party_libpng](https://gitee.com/openharmony/third_party_libpng/blob/master/README.md)
+[third_party_libpng](https://gitcode.com/openharmony/third_party_libpng/blob/master/README)
 
-[third_party_bounds_checking_function](https://gitee.com/openharmony/third_party_bounds_checking_function/blob/master/README.md )
+[third_party_bounds_checking_function](https://gitcode.com/openharmony/third_party_bounds_checking_function/blob/master/README.md )
