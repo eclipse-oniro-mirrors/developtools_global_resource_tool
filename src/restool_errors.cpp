@@ -235,8 +235,8 @@ const std::map<uint32_t, ErrorInfo> ERRORS_MAP = {
     { ERR_CODE_INVALID_TARGET_CONFIG,
       { ERR_CODE_INVALID_TARGET_CONFIG,
         ERR_TYPE_COMMAND_PARSE,
-        "Invalid target configuration argument '%s'. The argument format for option --target-config should be like "
-        "'Locale[zh_CN,en_US];Device[phone]'.",
+        "Invalid target configuration argument '%s'. The argument format for option '%s' should be like "
+        "'MccMnc[mcc460_mnc001];Locale[zh_CN,en_US];Device[phone];ColorMode[dark];Density[ldpi,xldpi]'.",
         "",
         { "For more information, see the developer documentation." },
         {} } },

@@ -14,8 +14,11 @@
  */
 
 #include "resconfig_parser.h"
+
 #include <iostream>
+
 #include "restool_errors.h"
+#include "select_compile_parse.h"
 
 namespace OHOS {
 namespace Global {
@@ -98,6 +101,8 @@ void ResConfigParser::InitFileListCommand(HandleBack callback)
         "ignoreResourcePattern", _1, Option::IGNORED_FILE));
     fileListHandles_.emplace("ignoreResourcePathPattern", bind(&ResConfigParser::GetIgnorePatterns, this,
         "ignoreResourcePathPattern", _1, Option::IGNORED_PATH));
+    fileListHandles_.emplace("qualifiersConfig", bind(&ResConfigParser::GetQualifiersConfig, this,
+        "qualifiersConfig", _1, Option::TARGET_CONFIG));
 }
 
 uint32_t ResConfigParser::GetString(const std::string &nodeName, const cJSON *node, int c, HandleBack callback)
@@ -222,6 +227,44 @@ uint32_t ResConfigParser::GetIgnorePatterns(const std::string &nodeName, const c
         return RESTOOL_ERROR;
     }
     return RESTOOL_SUCCESS;
+}
+
+uint32_t ResConfigParser::GetQualifiersConfig(const std::string &nodeName, const cJSON *node, int c)
+{
+    if (!node) {
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISSING).FormatCause(nodeName.c_str()).SetPosition(filePath_));
+        return RESTOOL_ERROR;
+    }
+    if (!cJSON_IsObject(node)) {
+        PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(node->string, "object").SetPosition(filePath_));
+        return RESTOOL_ERROR;
+    }
+    string configs;
+    for (cJSON *qualifierNode = node->child; qualifierNode; qualifierNode = qualifierNode->next) {
+        const string qualifier = qualifierNode->string;
+        if (!cJSON_IsArray(qualifierNode)) {
+            PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH).FormatCause(qualifier.c_str(), "array")
+                .SetPosition(filePath_));
+            return RESTOOL_ERROR;
+        }
+        if (cJSON_GetArraySize(qualifierNode) == 0) {
+            PrintError(GetError(ERR_CODE_JSON_NODE_EMPTY).FormatCause(qualifier.c_str()).SetPosition(filePath_));
+            return RESTOOL_ERROR;
+        }
+        configs.append(qualifier).append("[");
+        for (cJSON *value = qualifierNode->child; value; value = value->next) {
+            if (!cJSON_IsString(value)) {
+                PrintError(GetError(ERR_CODE_JSON_NODE_MISMATCH)
+                    .FormatCause(string(qualifier + "'s child").c_str(), "string").SetPosition(filePath_));
+                return RESTOOL_ERROR;
+            }
+            configs.append(value->valuestring).append(",");
+        }
+        configs.pop_back();
+        configs.append("]").append(";");
+    }
+    configs.pop_back();
+    return SelectCompileParse::ParseTargetConfig(configs, nodeName);
 }
 }
 }

@@ -23,10 +23,13 @@ namespace Global {
 namespace Restool {
 class SelectCompileParse {
 public:
-    static bool ParseTargetConfig(const std::string &limitParams, TargetConfig &targetConfig);
+    static uint32_t ParseTargetConfig(const std::string &limitParams, const std::string &optionName);
+    static bool HasTargetConfig();
     static bool IsSelectCompile(std::vector<KeyParam> &keyParams);
 
 private:
+    static bool ParseTargetConfigInner(const std::string &limitParams);
+    static bool CheckTargetConfig(const std::string &limitParams);
     static bool IsSelectableMccmnc(std::vector<KeyParam> &keyParams, size_t &index, std::vector<KeyParam> &limit);
     static bool IsSelectableLocale(std::vector<KeyParam> &keyParams, size_t &index, std::vector<KeyParam> &limit);
     static bool IsSelectableOther(std::vector<KeyParam> &keyParams, size_t &index, std::vector<KeyParam> &limit);
