@@ -249,7 +249,7 @@ uint32_t PackageParser::ForceWrite()
 
 uint32_t PackageParser::PrintVersion()
 {
-    std::string restoolVersion = RESTOOL_NAME + RESTOOL_VERSION;
+    std::string restoolVersion = RESTOOLV2_NAME + RESTOOL_VERSION;
     cout << "Info: Restool version = " << restoolVersion << endl;
     exit(RESTOOL_SUCCESS);
     return RESTOOL_SUCCESS;
@@ -330,7 +330,7 @@ uint32_t PackageParser::CheckParam() const
         return RESTOOL_ERROR;
     }
 
-    if (isTargetConfig_ && !append_.empty()) {
+    if (SelectCompileParse::HasTargetConfig() && !append_.empty()) {
         PrintError(GetError(ERR_CODE_EXCLUSIVE_OPTION).FormatCause("-x", "--target-config", "cannot be used together"));
         return RESTOOL_ERROR;
     }
@@ -444,19 +444,9 @@ bool PackageParser::GetIconCheck() const
     return isIconCheck_;
 }
 
-uint32_t PackageParser::ParseTargetConfig(const string& argValue)
+uint32_t PackageParser::ParseTargetConfig(const string &argValue)
 {
-    if (isTargetConfig_) {
-        PrintError(GetError(ERR_CODE_DOUBLE_TARGET_CONFIG).FormatCause(targetConfigValue_.c_str(), argValue.c_str()));
-        return RESTOOL_ERROR;
-    }
-    if (!SelectCompileParse::ParseTargetConfig(argValue, targetConfig_)) {
-        PrintError(GetError(ERR_CODE_INVALID_TARGET_CONFIG).FormatCause(argValue.c_str()));
-        return RESTOOL_ERROR;
-    }
-    isTargetConfig_ = true;
-    targetConfigValue_ = argValue;
-    return RESTOOL_SUCCESS;
+    return SelectCompileParse::ParseTargetConfig(argValue, "--target-config");
 }
 
 uint32_t PackageParser::ParseThread(const std::string &argValue)
@@ -499,16 +489,6 @@ uint32_t PackageParser::ParseIgnoreRegex(const std::string &argValue, const std:
 size_t PackageParser::GetThreadCount() const
 {
     return threadCount_;
-}
-
-const TargetConfig &PackageParser::GetTargetConfigValues() const
-{
-    return targetConfig_;
-}
-
-bool PackageParser::IsTargetConfig() const
-{
-    return isTargetConfig_;
 }
 
 bool PackageParser::IsAscii(const string& argValue) const

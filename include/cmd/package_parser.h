@@ -49,7 +49,6 @@ public:
     const std::string &GetIdDefinedInputPath() const;
     bool GetIconCheck() const;
     const TargetConfig &GetTargetConfigValues() const;
-    bool IsTargetConfig() const;
     const std::vector<std::string> &GetSysIdDefinedPaths() const;
     const std::string &GetCompressionPath() const;
     bool IsOverlap() const;
@@ -108,9 +107,6 @@ private:
     std::string idDefinedOutput_;
     std::string idDefinedInputPath_;
     bool isIconCheck_ = false;
-    TargetConfig targetConfig_;
-    bool isTargetConfig_ = false;
-    std::string targetConfigValue_;
     std::vector<std::string> sysIdDefinedPaths_;
     std::string compressionPath_;
     size_t threadCount_{ 0 };

@@ -26,8 +26,28 @@ using namespace std;
 vector<Mccmnc> SelectCompileParse::mccmncArray_ = {};
 vector<Locale> SelectCompileParse::localeArray_ = {};
 
-// eg: Device[ phone, car ];ColorMode[ dark ]
-bool SelectCompileParse::ParseTargetConfig(const string &limitParams, TargetConfig &targetConfig)
+static bool g_hasTargetConfig = false;
+static TargetConfig g_targetConfig = {};
+static std::string g_targetConfigValue = "";
+static std::string g_optionName = "";
+
+// eg: MccMnc[mcc460_mnc001];Locale[zh_CN,en_US];Device[phone];ColorMode[dark];Density[ldpi,xldpi]
+uint32_t SelectCompileParse::ParseTargetConfig(const string &limitParams, const std::string &optionName)
+{
+    if (!CheckTargetConfig(limitParams)) {
+        return RESTOOL_ERROR;
+    }
+    if (!ParseTargetConfigInner(limitParams)) {
+        PrintError(GetError(ERR_CODE_INVALID_TARGET_CONFIG).FormatCause(limitParams.c_str(), optionName.c_str()));
+        return RESTOOL_ERROR;
+    }
+    g_hasTargetConfig = true;
+    g_targetConfigValue = limitParams;
+    g_optionName = optionName;
+    return RESTOOL_SUCCESS;
+}
+
+bool SelectCompileParse::ParseTargetConfigInner(const string &limitParams)
 {
     vector<string> limitArray;
     ResourceUtil::Split(limitParams, limitArray, ";");
@@ -53,9 +73,24 @@ bool SelectCompileParse::ParseTargetConfig(const string &limitParams, TargetConf
         auto &limitType = limit.front();
         ResourceUtil::RemoveSpaces(limitType);
         transform(limitType.begin(), limitType.end(), limitType.begin(), ::tolower);
-        if (!KeyParser::ParseLimit(limitType, limitValues, targetConfig)) {
+        if (!KeyParser::ParseLimit(limitType, limitValues, g_targetConfig)) {
             return false;
         }
+    }
+    return true;
+}
+
+bool SelectCompileParse::HasTargetConfig()
+{
+    return g_hasTargetConfig;
+}
+
+bool SelectCompileParse::CheckTargetConfig(const std::string &limitParams)
+{
+    if (g_hasTargetConfig) {
+        PrintError(GetError(ERR_CODE_DOUBLE_TARGET_CONFIG)
+            .FormatCause(g_targetConfigValue.c_str(), limitParams.c_str()));
+        return false;
     }
     return true;
 }
@@ -65,19 +100,16 @@ bool SelectCompileParse::IsSelectCompile(vector<KeyParam> &keyParams)
     if (keyParams.empty()) {
         return true;
     }
-    auto &cmdParser = CmdParser::GetInstance().GetPackageParser();
-    bool isTtargetConfig = cmdParser.IsTargetConfig();
-    if (!isTtargetConfig) {
+    if (!g_hasTargetConfig) {
         return true;
     }
-    TargetConfig targetConfig = cmdParser.GetTargetConfigValues();
     map<KeyType, function<bool(size_t &)>> selectableFuncMatch {
-        {KeyType::MCC, bind(&IsSelectableMccmnc, keyParams, placeholders::_1, targetConfig.mccmnc)},
-        {KeyType::LANGUAGE, bind(&IsSelectableLocale, keyParams, placeholders::_1, targetConfig.locale)},
-        {KeyType::ORIENTATION, bind(&IsSelectableOther, keyParams, placeholders::_1, targetConfig.orientation)},
-        {KeyType::DEVICETYPE, bind(&IsSelectableOther, keyParams, placeholders::_1, targetConfig.device)},
-        {KeyType::NIGHTMODE, bind(&IsSelectableOther, keyParams, placeholders::_1, targetConfig.colormode)},
-        {KeyType::RESOLUTION, bind(&IsSelectableOther, keyParams, placeholders::_1, targetConfig.density)},
+        {KeyType::MCC, bind(&IsSelectableMccmnc, keyParams, placeholders::_1, g_targetConfig.mccmnc)},
+        {KeyType::LANGUAGE, bind(&IsSelectableLocale, keyParams, placeholders::_1, g_targetConfig.locale)},
+        {KeyType::ORIENTATION, bind(&IsSelectableOther, keyParams, placeholders::_1, g_targetConfig.orientation)},
+        {KeyType::DEVICETYPE, bind(&IsSelectableOther, keyParams, placeholders::_1, g_targetConfig.device)},
+        {KeyType::NIGHTMODE, bind(&IsSelectableOther, keyParams, placeholders::_1, g_targetConfig.colormode)},
+        {KeyType::RESOLUTION, bind(&IsSelectableOther, keyParams, placeholders::_1, g_targetConfig.density)},
     };
     for (size_t index = 0; index < keyParams.size(); index++) {
         auto iter = selectableFuncMatch.find(keyParams[index].keyType);
