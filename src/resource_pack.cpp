@@ -280,22 +280,26 @@ uint32_t ResourcePack::GenerateJsHeader(const std::string &headerPath) const
 uint32_t ResourcePack::GenerateTsHeader(const std::string &headerPath) const
 {
     Header tsHeader(headerPath);
-    std::string moduleName = configJson_.GetModuleName();
-    std::map<std::string, std::vector<std::pair<std::string, int64_t>>> typeNameIds;
-    uint32_t result = tsHeader.Create([](stringstream &buffer) {
+    Header::HandleHeaderTail handleHeader = [](stringstream &buffer) {
         buffer << Header::LICENSE_HEADER << "\n";
         buffer << "//@ts-noCheck" << "\n";
-    }, [&typeNameIds](stringstream &buffer, const ResourceId& resourceId) {
-        if (!ResourceUtil::IsHarResource(resourceId.id)) {
+    };
+    if (!configJson_.isSupportTsHeader()) {
+        return tsHeader.Create(handleHeader, nullptr, nullptr);
+    }
+    std::string moduleName = configJson_.GetModuleName();
+    std::map<std::string, std::vector<std::pair<std::string, int64_t>>> typeNameIds;
+    uint32_t result = tsHeader.Create(handleHeader, [&typeNameIds](stringstream &buffer, const ResourceId& resource) {
+        if (!ResourceUtil::IsHarResource(resource.id)) {
             return;
         }
-        auto it = typeNameIds.find(resourceId.type);
+        auto it = typeNameIds.find(resource.type);
         if (it != typeNameIds.end()) {
-            it->second.emplace_back(make_pair(resourceId.name, resourceId.id));
+            it->second.emplace_back(make_pair(resource.name, resource.id));
         } else {
             std::vector<std::pair<std::string, int64_t>> ids;
-            ids.emplace_back(make_pair(resourceId.name, resourceId.id));
-            typeNameIds.emplace(make_pair(resourceId.type, ids));
+            ids.emplace_back(make_pair(resource.name, resource.id));
+            typeNameIds.emplace(make_pair(resource.type, ids));
         }
     }, [&moduleName, &typeNameIds](stringstream &buffer) {
         std::string typesDeclare;

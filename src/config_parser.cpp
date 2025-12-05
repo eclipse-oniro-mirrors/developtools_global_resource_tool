@@ -86,8 +86,12 @@ uint32_t ConfigParser::Init()
     cJSON *appNode = cJSON_GetObjectItem(root_, "app");
     if (appNode && cJSON_IsObject(appNode)) {
         cJSON *minAPIVersionNode = cJSON_GetObjectItem(appNode, "minAPIVersion");
-        if (minAPIVersionNode && minAPIVersionNode->valueint >= MIN_SUPPORT_NEW_MODULE_API_VERSION) {
+        int version = minAPIVersionNode ? minAPIVersionNode->valueint : 0;
+        if (version >= MIN_SUPPORT_NEW_MODULE_API_VERSION) {
             newModule_ = true;
+        }
+        if (version % API_VERSION_DIVISOR >= MIN_SUPPORT_TS_HEADER_API_VERSION) {
+            tsHeader_ = true;
         }
     }
 
