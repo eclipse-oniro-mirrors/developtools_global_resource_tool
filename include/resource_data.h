@@ -50,13 +50,13 @@ const static std::string LONG_PATH_HEAD = "\\\\?\\";
 const static int32_t VERSION_MAX_LEN = 128;
 static const std::string RESTOOL_NAME = "Restool";
 static const std::string RESTOOLV2_NAME = "RestoolV2";
-static const std::string RESTOOL_VERSION = { " 6.1.0.001" };
+static const std::string RESTOOL_VERSION = { " 6.1.0.002" };
 const static int32_t TAG_LEN = 4;
 constexpr static int DEFAULT_POOL_SIZE = 8;
 static std::set<std::string> g_resourceSet;
 static std::set<std::string> g_hapResourceSet;
 const static int8_t INVALID_ID = -1;
-const static int MIN_SUPPORT_NEW_MODULE_API_VERSION = 60000020;
+const static int MIN_SUPPORT_NEW_MODULE_API_VERSION = 20;
 const static int MIN_SUPPORT_TS_HEADER_API_VERSION = 22;
 const static int API_VERSION_DIVISOR = 1000;
 
