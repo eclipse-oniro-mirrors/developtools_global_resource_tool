@@ -295,7 +295,8 @@ string CompressionParser::ParseJsonStr(const cJSON *node)
         return "";
     }
     string res(jsonString);
-    free(jsonString);
+    cJSON_free(jsonString);
+    jsonString = nullptr;
     return res;
 }
 
