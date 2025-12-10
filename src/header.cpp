@@ -58,11 +58,17 @@ uint32_t Header::Create(HandleHeaderTail headerHandler, HandleBody bodyHandler, 
     }
 
     stringstream buffer;
-    headerHandler(buffer);
-    for (const auto &resourceId : resourceIds) {
-        bodyHandler(buffer, resourceId);
+    if (headerHandler) {
+        headerHandler(buffer);
     }
-    tailHandler(buffer);
+    if (bodyHandler) {
+        for (const auto &resourceId : resourceIds) {
+            bodyHandler(buffer, resourceId);
+        }
+    }
+    if (tailHandler) {
+        tailHandler(buffer);
+    }
     out << buffer.rdbuf();
     out.close();
     return RESTOOL_SUCCESS;

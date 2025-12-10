@@ -71,6 +71,10 @@ public:
     {
         return newModule_;
     }
+    inline bool isSupportTsHeader() const
+    {
+        return tsHeader_;
+    }
     static void SetUseModule()
     {
         useModule_ = true;
@@ -108,6 +112,7 @@ private:
     static bool useModule_;
     cJSON *root_;
     bool newModule_ = false;
+    bool tsHeader_ = false;
 };
 }
 }
