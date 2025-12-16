@@ -118,8 +118,8 @@ bool ResourceUtil::SaveToJsonFile(const string &path, const cJSON *root)
     }
     char *jsonString = cJSON_Print(root);
     out << jsonString;
-    free(jsonString);
-
+    cJSON_free(jsonString);
+    jsonString = nullptr;
     out.close();
     return true;
 }
