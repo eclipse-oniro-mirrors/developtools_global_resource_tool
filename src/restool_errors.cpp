@@ -833,15 +833,21 @@ void PrintError(const ErrorInfo &error)
         return;
     }
     errMsg.append("* Try the following:").append("\n");
-    for (const auto &solution : error.solutions_) { errMsg.append("  > ").append(solution).append("\n"); }
     auto faq = faqInfos.find(error.code_);
     if (faq != faqInfos.end()) {
         std::vector<ExtSolution> extSolutions = faq->second.extSolutions;
         for (const auto &solution : extSolutions) {
+            if (solution.fileName.empty()) {
+                errMsg.append("  > ").append(solution.solution).append("\n");
+                continue;
+            }
             if (FileEntry(error.position_).GetFilePath().GetFilename() == solution.fileName) {
                 errMsg.append("  > ").append(solution.solution).append("\n");
             }
         }
+    }
+    for (const auto &solution : error.solutions_) {
+        errMsg.append("  > ").append(solution).append("\n");
     }
     std::string moreInfo;
     if (osLanguage == Language::CN) {
