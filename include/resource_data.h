@@ -57,7 +57,7 @@ static std::set<std::string> g_resourceSet;
 static std::set<std::string> g_hapResourceSet;
 const static int8_t INVALID_ID = -1;
 const static int MIN_SUPPORT_NEW_MODULE_API_VERSION = 20;
-const static int MIN_SUPPORT_TS_HEADER_API_VERSION = 22;
+const static int MIN_SUPPORT_TS_HEADER_API_VERSION = 23;
 const static int API_VERSION_DIVISOR = 1000;
 
 enum class IgnoreType {
