@@ -88,6 +88,8 @@ ohos_executable("restool") {
   if (is_mac) {
     defines = [ "__MAC__" ]
   }
+  branch_protector_ret = "pac_ret"
+  stack_protector_ret = true
   subsystem_name = "developtools"
   part_name = "global_resource_tool"
 }
